@@ -7,7 +7,7 @@
   justify-content: center;
   color: white;
   text-align: center;
-  padding: 120px 20px 40px 20px; /* Space for the top title */
+  padding: 240px 20px 40px 20px; /* Expanded space to guarantee content rests below the 200px tall global logo */
   box-sizing: border-box;
   overflow-y: auto;
   position: relative;
@@ -134,7 +134,9 @@
 
 .revelation-card-block {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 30px;
   background: rgba(255, 255, 255, 0.03);
   padding: 25px;
@@ -191,6 +193,7 @@
 
 .dichotomy-buttons {
   display: flex;
+  justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
 }
