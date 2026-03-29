@@ -11,7 +11,7 @@ function App() {
   const [selectedCards, setSelectedCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [interpretation, setInterpretation] = useState(null);
-  const [apiKey, setApiKey] = useState('AIzaSyAh0v4J-ucH6S2L9j6ijej_EOljiapFuK8'); // Hardcoded user key
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [introspectionMessage, setIntrospectionMessage] = useState('');
   const [isFading, setIsFading] = useState(false);
   
