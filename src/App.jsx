@@ -35,6 +35,14 @@ function App() {
   // Test mode removed, Vortex flows purely natively in the background.
 
   useEffect(() => {
+    const deck = [...cardsData];
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    setShuffledDeck(deck);
+  }, []);
+  useEffect(() => {
     if (phase === 'revelation' && !loading) {
       if (cardsFlippedCount < 3) {
         const timer = setTimeout(() => {
