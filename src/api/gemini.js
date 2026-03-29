@@ -47,6 +47,88 @@ export async function generateIntrospection(cards, apiKey, userContext = {}) {
   }
 }
 
+export const generateDeepening = async (originalCard, extraCard, userQuestion, previousReading, context, apiKey) => {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", safetySettings });
+  const prompt = `
+[SECRETO: Eres el antiguo Guía del Oráculo de Vidas Pasadas].
+El viajero "${context.userName}" recibió esta revelación inicial sobre su vida pasada:
+"${previousReading}"
+(Basada en la carta "${originalCard.name}: ${originalCard.meaning}").
+
+El viajero se ha sentido inquieto y te ha pedido PROFUNDIZAR en esa revelación, preguntando específicamente:
+"${userQuestion}"
+
+Para buscar esa respuesta, ha sacado una misteriosa Carta Clarificadora: "${extraCard.name}: ${extraCard.meaning}".
+
+Tu tarea: Entregar un "Susurro de Profundización". Responde cálidamente, refiriéndote por su nombre a ${context.userName}.
+Integra el significado psíquico/kármico de la carta clarificadora con la pregunta del viajero para entregar luz sobre su duda puntual, como si descubrieras un detalle oculto de la revelación original.
+Debe sonar como un consejo místico directo.
+
+Responde estrictamente en formato JSON puro:
+{
+  "deepeningResponse": "Tu texto clarificador místico y empático aquí..."
+}
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const cleanJson = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    const data = JSON.parse(cleanJson);
+    return data.deepeningResponse;
+  } catch (error) {
+    console.error('Error generating deepening:', error);
+    return "La niebla del tiempo oscurece los detalles. El oráculo no puede profundizar en este misterio particular.";
+  }
+};
+
+export const generateAnchoring = async (selectedCards, visitReason, dichotomy, userName, clarifications = {}, apiKey) => {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", safetySettings });
+  const cardsContext = selectedCards.map(c => `[${c.name}]: ${c.meaning}`).join('\n');
+  
+  let clarificationsContext = '';
+  Object.keys(clarifications).forEach((cardId) => {
+    const clar = clarifications[cardId];
+    if (clar.extraCard && clar.extraResponse) {
+      clarificationsContext += `\n- Durante la lectura, el usuario profundizó sobre la carta "${selectedCards.find(c=>c.id === parseInt(cardId))?.name}".\n`;
+      clarificationsContext += `  Su inquietud específica fue: "${clar.question}".\n`;
+      clarificationsContext += `  Sacó la carta clarificadora: "${clar.extraCard.name}".\n`;
+      clarificationsContext += `  La revelación adicional fue: "${clar.extraResponse}".\n`;
+    }
+  });
+
+  const prompt = `
+[SECRETO: Eres el antiguo Guía del Oráculo de Vidas Pasadas].
+Nombre del viajero: ${userName}
+Su dolor original (Intención de visita): "${visitReason}"
+Estilo de lectura: "${dichotomy}"
+Cartas sacadas:
+${cardsContext}
+${clarificationsContext ? '\nAdemás, el viajero buscó sanación adicional durante el ritual:\n' + clarificationsContext : ''}
+
+Tu tarea: Entregar la 'Gran Síntesis' Final, el cierre kármico del ritual.
+Debes usar todos estos elementos (la herida inicial, el significado entrelazado de las tres cartas, y cualquier profundización extra que el usuario haya revelado) para redactar un mensaje final, compasivo, empático y directo hacia ${userName}.
+Responde estrictamente en formato JSON:
+{
+  "conclusionFinal": "El texto final..."
+}
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(cleanText);
+    return data.conclusionFinal;
+  } catch (error) {
+    console.error('Error in Anchoring generation:', error);
+    return "Las brumas del tiempo están perturbadas. No puedo vislumbrar el cierre en este momento.";
+  }
+};
+
 export async function interpretCards(cards, soulFeeling, apiKey, userContext = {}) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ 

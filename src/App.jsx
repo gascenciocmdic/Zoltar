@@ -21,6 +21,9 @@ function App() {
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [isInfoFading, setIsInfoFading] = useState(false);
 
+  const [shuffledDeck, setShuffledDeck] = useState([]);
+  const [clarifications, setClarifications] = useState({});
+  
   const [revealedStage, setRevealedStage] = useState(0); // 0: overview, 1: card1, 2: card2, 3: card3
   const [thresholdStep, setThresholdStep] = useState(0); // 0: intro, 1: name, 2: reason, 3: dichotomy, 4: question
   const [userName, setUserName] = useState('');
@@ -142,11 +145,70 @@ function App() {
       }
     } else {
       setIsFading(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         setPhase('anchoring');
         setIsFading(false);
+        try {
+          // Anchoring now waits for clarifications too
+          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, apiKey);
+          setAnchoringReading(finalSynthesis);
+        } catch (error) {
+          console.error(error);
+          setAnchoringReading("Las brumas impiden el cierre en este instante.");
+        }
       }, 1500);
     }
+  };
+
+  // -------------- DEEPENING FLOW HANDLERS --------------
+  const initDeepening = (cardId) => {
+    setClarifications(prev => ({
+      ...prev,
+      [cardId]: { step: 'question', question: '', extraCard: null, extraResponse: '' }
+    }));
+  };
+
+  const submitDeepenQuestion = (cardId, questionText) => {
+    if (!questionText.trim()) return alert("El universo necesita escuchar tu inquietud puntual...");
+    setIsFading(true);
+    setTimeout(() => {
+      setClarifications(prev => ({
+        ...prev,
+        [cardId]: { ...prev[cardId], question: questionText, step: 'selectCard' }
+      }));
+      setIsFading(false);
+    }, 1000);
+  };
+
+  const submitDeepenCardSelect = async (cardId, extraCard) => {
+    setIsFading(true);
+    // Move to loading
+    setClarifications(prev => ({
+      ...prev,
+      [cardId]: { ...prev[cardId], extraCard, step: 'loading' }
+    }));
+    
+    // Simulate profound pause then restore to revelation view
+    setTimeout(async () => {
+      setIsFading(false);
+      // Now call gemini
+      const originalCard = selectedCards.find(c => c.id === cardId);
+      const clarState = clarifications[cardId];
+      if (originalCard && clarState) {
+        try {
+          const resp = await generateDeepening(originalCard, extraCard, clarState.question, originalCard.reading, {userName}, apiKey);
+          setClarifications(prev => ({
+            ...prev,
+            [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
+          }));
+        } catch (e) {
+          setClarifications(prev => ({
+            ...prev,
+            [cardId]: { ...prev[cardId], extraResponse: "La clarificación fue interrumpida por las mareas del tiempo.", step: 'done' }
+          }));
+        }
+      }
+    }, 1500);
   };
 
   return (
@@ -304,7 +366,7 @@ function App() {
             <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>Haz click en una carta seleccionada para removerla de tu tirada ({selectedCards.length}/3).</p>
             
             <div className="card-grid">
-              {cardsData.map((card, index) => {
+              {shuffledDeck.map((card, index) => {
                 const seed = index * 137.5;
                 const spreadX = Math.sin(seed) * 40;
                 const spreadY = Math.cos(seed) * 30;
@@ -383,42 +445,140 @@ function App() {
       {phase === 'revelation' && (
         <div className="revelation-content">
           <h2 className="phase-title">La Revelación</h2>
-          <div className="selected-cards-display">
-            {selectedCards.map((card, index) => (
-              <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`}>
-                <Card card={card} isSelected={false} isFaceUp={cardsFlippedCount > index} />
-              </div>
-            ))}
-          </div>
           
-          {loading ? (
-            <p className="welcome-text" style={{ marginTop: '20px' }}>Invocando el conocimiento de tus vidas pasadas...</p>
-          ) : (
-            <>
-              {revealedStage > 0 && interpretation && (
-                <div className="narrative-container">
-                  <div className="interpretation-bubbles" style={{ opacity: isFading ? 0 : 1, transition: 'opacity 1s ease-in-out' }}>
-                    <div className="brain-bubble narrative" key={revealedStage}>
-                      <p className="narrative-meta" style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                        {revealedStage === 1 && "I. El Origen Kármico"}
-                        {revealedStage === 2 && "II. El Bloqueo Presente"}
-                        {revealedStage === 3 && "III. El Consejo de Sanación"}
-                      </p>
-                      {Array.isArray(interpretation.narrativaAncestral) 
-                        ? interpretation.narrativaAncestral[revealedStage - 1]
-                        : interpretation.narrativaAncestral}
-                    </div>
+          {(() => {
+            const clarifyingCardId = Object.keys(clarifications).find(id => clarifications[id]?.step === 'selectCard');
+            
+            if (clarifyingCardId) {
+              return (
+                <div style={{ animation: 'fadeIn 1s ease' }}>
+                  <p className="subtitle" style={{ fontSize: '1.2rem', color: '#ffd700', marginBottom: '30px' }}>
+                    Sintoniza tu intuición con la pregunta que acabas de hacer.<br/>Selecciona una Carta Clarificadora del mazo restante.
+                  </p>
+                  <div className="card-grid">
+                    {shuffledDeck.map((c, i) => {
+                      if (selectedCards.find(sc => sc.id === c.id)) return null; // Exclude already selected
+                      
+                      const seed = i * 137.5;
+                      const spreadX = Math.sin(seed) * 40;
+                      const spreadY = Math.cos(seed) * 30;
+                      const rotation = Math.sin(seed * 2) * 18;
+                      
+                      return (
+                        <Card 
+                          key={c.id} 
+                          card={c} 
+                          isSelected={false}
+                          onSelect={() => submitDeepenCardSelect(parseInt(clarifyingCardId), c)}
+                          style={{
+                            '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
-              )}
+              );
+            }
 
-              {autoRevealStarted && cardsFlippedCount === 3 && (
-                <button className={`start-button ${revealedStage === 0 ? 'blinking-button' : ''}`} onClick={handleNextStage}>
-                  {revealedStage === 0 ? "Comenzar Lectura" : revealedStage < 3 ? "Continuar" : "Continuar con el último paso"}
-                </button>
-              )}
-            </>
-          )}
+            return (
+              <>
+                <div className="selected-cards-display">
+                  {selectedCards.map((card, index) => {
+                    const clar = clarifications[card.id];
+                    return (
+                    <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`} style={{ position: 'relative' }}>
+                      <div style={{ position: 'relative', zIndex: 2 }}>
+                        <Card card={card} isSelected={false} isFaceUp={cardsFlippedCount > index} />
+                      </div>
+                      
+                      {clar?.extraCard && clar.step === 'done' && (
+                        <div style={{ position: 'absolute', top: '60px', left: '40px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
+                          <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
+                        </div>
+                      )}
+                    </div>
+                  )})}
+                </div>
+                
+                {loading ? (
+                  <p className="welcome-text" style={{ marginTop: '20px' }}>Invocando el conocimiento de tus vidas pasadas...</p>
+                ) : (
+                  <>
+                    {revealedStage > 0 && interpretation && (
+                      <div className="narrative-container">
+                        <div className="interpretation-bubbles" style={{ opacity: isFading ? 0 : 1, transition: 'opacity 1s ease-in-out' }}>
+                          <div className="brain-bubble narrative" key={revealedStage}>
+                            <p className="narrative-meta" style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                              {revealedStage === 1 && "I. El Origen Kármico"}
+                              {revealedStage === 2 && "II. El Bloqueo Presente"}
+                              {revealedStage === 3 && "III. El Consejo de Sanación"}
+                            </p>
+                            
+                            <div style={{ marginBottom: '20px' }}>
+                              {Array.isArray(interpretation.narrativaAncestral) 
+                                ? interpretation.narrativaAncestral[revealedStage - 1]
+                                : interpretation.narrativaAncestral}
+                            </div>
+
+                            {/* Deepening Extensions */}
+                            {(() => {
+                              const currentCard = selectedCards[revealedStage - 1];
+                              const clarState = clarifications[currentCard.id];
+                              
+                              if (!clarState) {
+                                return (
+                                  <button onClick={() => initDeepening(currentCard.id)} className="start-button" style={{ marginTop: '15px', fontSize: '0.8rem', padding: '8px 20px', borderColor: 'rgba(255,215,0,0.4)', color: '#ffd700' }}>
+                                    ¿Quieres profundizar esta respuesta?
+                                  </button>
+                                );
+                              }
+                              if (clarState.step === 'question') {
+                                return (
+                                  <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '15px', border: '1px solid rgba(255,215,0,0.2)' }} className="fade-in-text">
+                                    <p style={{ fontSize: '1rem', color: '#e0e0e0', marginBottom: '15px' }}>¿Qué detalle exactamente deseas clarificar al Oráculo?</p>
+                                    <input type="text" id={`deep-q-${currentCard.id}`} className="soul-input" style={{ marginBottom: '15px', fontSize: '0.95rem' }} placeholder="Tu pregunta profunda aquí..." />
+                                    <button onClick={() => submitDeepenQuestion(currentCard.id, document.getElementById(`deep-q-${currentCard.id}`).value)} className="start-button" style={{ borderColor: '#ffd700', color: '#ffd700' }}>
+                                      Buscar Claridad
+                                    </button>
+                                  </div>
+                                );
+                              }
+                              if (clarState.step === 'loading') {
+                                return (
+                                  <p className="narrative-meta" style={{ marginTop: '20px', animation: 'pulse 2s infinite' }}>
+                                    Develando el susurro del tiempo...
+                                  </p>
+                                );
+                              }
+                              if (clarState.step === 'done') {
+                                return (
+                                  <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
+                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '10px' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
+                                    <div style={{ fontSize: '1.1rem', color: '#f1f5f9', fontStyle: 'italic', lineHeight: '1.8' }}>
+                                      {clarState.extraResponse}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
+                            
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {autoRevealStarted && cardsFlippedCount === 3 && (
+                      <button className={`start-button ${revealedStage === 0 ? 'blinking-button' : ''}`} onClick={handleNextStage} style={{ marginTop: '30px' }}>
+                        {revealedStage === 0 ? "Comenzar Lectura" : revealedStage < 3 ? "Continuar al siguiente misterio" : "Ir a la Gran Síntesis"}
+                      </button>
+                    )}
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 
