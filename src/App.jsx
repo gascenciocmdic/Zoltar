@@ -18,6 +18,9 @@ function App() {
   const [showSynchronyPopup, setShowSynchronyPopup] = useState(false);
   const [isPopupFading, setIsPopupFading] = useState(false);
 
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [isInfoFading, setIsInfoFading] = useState(false);
+
   const [revealedStage, setRevealedStage] = useState(0); // 0: overview, 1: card1, 2: card2, 3: card3
   const [thresholdStep, setThresholdStep] = useState(0); // 0: intro, 1: name, 2: reason, 3: dichotomy, 4: question
   const [userName, setUserName] = useState('');
@@ -173,6 +176,17 @@ function App() {
               <button className="start-button" onClick={handleStart}>
                 Permitir
               </button>
+              
+              <div style={{ marginTop: '30px' }}>
+                <button 
+                  style={{ background: 'transparent', border: 'none', color: '#ffd700', opacity: 0.5, fontSize: '0.85rem', textDecoration: 'underline', cursor: 'pointer', fontStyle: 'italic', letterSpacing: '1px', transition: 'opacity 0.3s ease' }}
+                  onMouseEnter={(e) => e.target.style.opacity = 0.9}
+                  onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                  onClick={() => setShowInfoPopup(true)}
+                >
+                  ¿Qué es el Oráculo de Vidas Pasadas?
+                </button>
+              </div>
             </>
           )}
 
@@ -225,6 +239,35 @@ function App() {
               <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>Elegir Cartas</button>
             </>
           )}
+        </div>
+      )}
+
+      {showInfoPopup && (
+        <div className={`popup-overlay ${isInfoFading ? 'fade-out-text' : 'fade-in-text'}`} style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="popup-box" style={{
+             background: 'rgba(20,22,28,0.95)', padding: '50px', borderRadius: '20px',
+             maxWidth: '90%', width: '500px', textAlign: 'center', border: '1px solid rgba(255,215,0,0.3)',
+             boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.05)'
+          }}>
+            <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.4rem', letterSpacing: '2px', textTransform: 'uppercase'}}>El Espejo del Tiempo</h3>
+            <p style={{fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '20px', fontStyle: 'italic', color: '#b0b0b5', fontWeight: '300'}}>
+              El Oráculo no adivina el futuro; destapa los ecos de tu pasado. 
+            </p>
+            <p style={{fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '35px', fontStyle: 'italic', color: '#b0b0b5', fontWeight: '300'}}>
+              Cada carta es una llave maestra hacia las vidas que ya caminaste. Al sintonizar tu inquietud actual con estos arquetipos, accedemos a tu herida kármica original o a un don de tu alma que creías olvidado. A través del reconocimiento de nuestras encarnaciones pasadas, el universo nos entrega las respuestas más profundas y precisas para desatar nuestros nudos emocionales y espirituales del presente.
+            </p>
+            <button className="start-button blinking-button" onClick={() => {
+              setIsInfoFading(true);
+              setTimeout(() => {
+                setShowInfoPopup(false);
+                setIsInfoFading(false);
+              }, 800);
+            }}>Comprendo</button>
+          </div>
         </div>
       )}
 
