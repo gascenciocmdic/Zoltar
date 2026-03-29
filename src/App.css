@@ -224,67 +224,47 @@
   100% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
 }
 
-.fade-in-text {
-  animation: crossFade 0.8s ease;
-}
-
-@keyframes crossFade {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.narrative-meta {
-  font-style: italic;
-  font-size: 0.9rem;
-  color: #ffd700;
-  margin-bottom: 0.5rem;
-  opacity: 0.7;
-}
-
-.brain-bubble.narrative {
-  background: rgba(10, 10, 15, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 215, 0, 0.15);
-  border-radius: 12px;
-  padding: 2.5rem;
-  font-size: 1.25rem;
-  line-height: 1.9;
-  text-align: center;
-  font-family: 'Georgia', serif;
-  font-style: italic;
-  color: #f1f5f9;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0,0,0,0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.brain-bubble.narrative::before {
-  content: '';
+.global-logo {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
+  height: 200px;
+  background-image: url('/zoltar-logo.jpg');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  z-index: 1000;
   pointer-events: none;
-}
-
-.reptilian { background: rgba(139, 0, 0, 0.1); border-left-color: #8b0000; }
-.limbic { background: rgba(0, 210, 255, 0.1); border-left-color: #00d2ff; }
-.neocortex { background: rgba(255, 215, 0, 0.1); border-left-color: #ffd700; }
-
-.anchoring-block {
-  margin: 30px 0;
-  padding: 25px;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  animation: fadeIn 3s ease;
 }
 
 @media (max-width: 768px) {
+  .global-logo {
+    height: 120px;
+    top: 5px;
+  }
+  .app-container {
+    padding: 140px 15px 30px 15px;
+  }
+  .threshold-content, .synchrony-content, .introspection-content, .revelation-content, .anchoring-content {
+    padding: 25px 15px;
+  }
+  .phase-title {
+    font-size: 1.4rem;
+  }
   .revelation-card-block {
-    flex-direction: column;
-    align-items: center;
+    padding: 15px;
+  }
+  .brain-bubble.narrative {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+  }
+  .popup-overlay .popup-box {
+    padding: 25px !important;
+    width: 90% !important;
   }
 }

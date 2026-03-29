@@ -7,7 +7,7 @@ import { VortexShader } from './VortexShader';
 const VIBE_COLORS = {
   healing_blue: new THREE.Color(0x00d2ff),
   revelation_gold: new THREE.Color(0xffd700),
-  karmic_red: new THREE.Color(0x8b0000),
+  karmic_red: new THREE.Color(0xff007f), // High contrast Violet-Red
 };
 
 const VortexField = ({ vibe = 'healing_blue' }) => {
