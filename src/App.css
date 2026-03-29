@@ -1,0 +1,287 @@
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 120px 20px 40px 20px; /* Space for the top title */
+  box-sizing: border-box;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.fade-out-text {
+  animation: fadeOut 0.8s ease forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+.global-logo {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 200px;
+  background-image: url('/zoltar-logo.jpg');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen; /* Strips black background */
+  z-index: 1000;
+  pointer-events: none;
+  animation: fadeIn 3s ease;
+}
+
+.threshold-content, .synchrony-content, .introspection-content, .revelation-content, .anchoring-content {
+  width: 100%;
+  max-width: 800px;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  animation: fadeIn 1.5s ease-out;
+  margin: 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.welcome-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #e0e0e0;
+  margin-bottom: 30px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.phase-title {
+  margin-bottom: 10px;
+  letter-spacing: 4px;
+  color: #ffd700;
+  text-transform: uppercase;
+  font-size: 1.8rem;
+}
+
+.subtitle {
+  margin-bottom: 40px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.soul-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.soul-input:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.8);
+}
+
+.start-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 12px 40px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50px;
+}
+
+.start-button:hover {
+  background: white;
+  color: black;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.selected-cards-display {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.revelation-card-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.5s ease;
+  flex: 1;
+  max-width: 250px;
+}
+
+.revelation-card-block.dimmed {
+  opacity: 0.4;
+  transform: scale(0.9);
+  filter: blur(2px);
+}
+
+.revelation-card-block.active-reveal {
+  opacity: 1;
+  transform: scale(1.1);
+  filter: none;
+  z-index: 10;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.narrative-container {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 800px;
+  animation: fadeIn 1s ease;
+}
+
+.narrative-text {
+  font-style: italic;
+  color: #ffd700;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.interpretation-bubbles {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brain-bubble {
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border-left: 4px solid transparent;
+}
+
+.dichotomy-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.choice-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.choice-button.selected {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+.blinking-button {
+  animation: relaxPulse 3s infinite ease-in-out;
+}
+
+@keyframes relaxPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
+  50% { transform: scale(1.02); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+  100% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
+}
+
+.fade-in-text {
+  animation: crossFade 0.8s ease;
+}
+
+@keyframes crossFade {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.narrative-meta {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
+}
+
+.brain-bubble.narrative {
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 12px;
+  padding: 2.5rem;
+  font-size: 1.25rem;
+  line-height: 1.9;
+  text-align: center;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  color: #f1f5f9;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.brain-bubble.narrative::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
+  pointer-events: none;
+}
+
+.reptilian { background: rgba(139, 0, 0, 0.1); border-left-color: #8b0000; }
+.limbic { background: rgba(0, 210, 255, 0.1); border-left-color: #00d2ff; }
+.neocortex { background: rgba(255, 215, 0, 0.1); border-left-color: #ffd700; }
+
+.anchoring-block {
+  margin: 30px 0;
+  padding: 25px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .revelation-card-block {
+    flex-direction: column;
+    align-items: center;
+  }
+}
