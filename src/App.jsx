@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
-import { interpretCards, generateIntrospection } from './api/gemini';
+import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
 
 function App() {
