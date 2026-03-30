@@ -29,13 +29,13 @@ export default async function handler(req, res) {
   try {
     switch (action) {
       case 'introspection':
-        return await handleIntrospection(model, payload, res);
+        return res.status(200).json(await handleIntrospection(model, payload));
       case 'interpretation':
-        return await handleInterpretation(model, payload, res);
+        return res.status(200).json(await handleInterpretation(model, payload));
       case 'anchoring':
-        return await handleAnchoring(model, payload, res);
+        return res.status(200).json(await handleAnchoring(model, payload));
       case 'deepening':
-        return await handleDeepening(model, payload, res);
+        return res.status(200).json(await handleDeepening(model, payload));
       default:
         return res.status(400).json({ error: 'Invalid action' });
     }
