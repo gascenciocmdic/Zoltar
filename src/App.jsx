@@ -409,7 +409,7 @@ function App() {
           
           {loading ? (
             <div style={{ marginTop: '20px' }}>
-              <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'pulse 2s infinite' }}>
+              <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out' }}>
                 El Vortex está fusionando tus energías con las memorias de tus vidas pasadas...
               </p>
               <p className="subtitle">Un momento de profundo silencio. El universo te está escuchando.</p>
@@ -510,7 +510,7 @@ function App() {
                 </div>
                 
                 {loading ? (
-                  <p className="welcome-text" style={{ marginTop: '20px' }}>Invocando el conocimiento de tus vidas pasadas...</p>
+                  <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out' }}>Invocando el conocimiento de tus vidas pasadas...</p>
                 ) : (
                   <>
                     {revealedStage > 0 && interpretation && (

@@ -224,6 +224,12 @@
   100% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
 }
 
+@keyframes slowFadePulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+  100% { opacity: 0.4; }
+}
+
 .global-logo {
   position: absolute;
   top: 15px;
