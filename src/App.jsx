@@ -11,7 +11,6 @@ function App() {
   const [selectedCards, setSelectedCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [interpretation, setInterpretation] = useState(null);
-  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [introspectionMessage, setIntrospectionMessage] = useState('');
   const [isFading, setIsFading] = useState(false);
   
@@ -91,15 +90,11 @@ function App() {
   };
 
   const handleGoToIntrospection = async () => {
-    if (!apiKey) {
-      alert("Necesitas tu API Key de Gemini para conectar con el Oráculo.");
-      return;
-    }
     setLoading(true);
     setVibe('karmic_red'); // visual cue of energetic reaction
     try {
       const userContext = { name: userName, reason: visitReason };
-      const result = await generateIntrospection(selectedCards, apiKey, userContext);
+      const result = await generateIntrospection(selectedCards, null, userContext);
       setIntrospectionMessage(result.mensajeGuia);
       setPhase('introspection');
       setLoading(false);
@@ -124,13 +119,13 @@ function App() {
       
       try {
         const userContext = { name: userName, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
-        const result = await interpretCards(selectedCards, visitReason, apiKey, userContext);
+        const result = await interpretCards(selectedCards, visitReason, null, userContext);
         setInterpretation(result);
         setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
         console.error("Error al interpretar:", error);
-        alert("El Oráculo está nublado en este momento. Revisa tu API Key de Gemini.");
+        alert("El Oráculo está nublado en este momento. Inténtalo de nuevo más tarde.");
         setLoading(false);
       }
     }, 5000); // 5-second transition phase
@@ -158,7 +153,7 @@ function App() {
         setIsFading(false);
         try {
           // Anchoring now waits for clarifications too
-          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, apiKey);
+          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null);
           setAnchoringReading(finalSynthesis);
         } catch (error) {
           console.error(error);
@@ -204,7 +199,7 @@ function App() {
       const clarState = clarifications[cardId];
       if (originalCard && clarState) {
         try {
-          const resp = await generateDeepening(originalCard, extraCard, clarState.question, originalCard.reading, {userName}, apiKey);
+          const resp = await generateDeepening(originalCard, extraCard, clarState.question, originalCard.reading, {userName}, null);
           setClarifications(prev => ({
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
