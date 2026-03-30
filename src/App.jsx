@@ -501,7 +501,7 @@ function App() {
                       </div>
                       
                       {clar?.extraCard && clar.step === 'done' && (
-                        <div style={{ position: 'absolute', top: '60px', left: '40px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
+                        <div style={{ position: 'absolute', top: '30px', left: '130px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
                           <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
                         </div>
                       )}
@@ -562,8 +562,8 @@ function App() {
                               if (clarState.step === 'done') {
                                 return (
                                   <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
-                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '10px' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
-                                    <div style={{ fontSize: '1.1rem', color: '#f1f5f9', fontStyle: 'italic', lineHeight: '1.8' }}>
+                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '20px', fontSize: '1.2rem', fontFamily: '"Cinzel", serif' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
+                                    <div style={{ fontSize: '1.15rem', color: '#f1f5f9', fontFamily: '"Cinzel", "Playfair Display", serif', lineHeight: '2', letterSpacing: '0.05em', textAlign: 'center', fontWeight: '300' }}>
                                       {clarState.extraResponse}
                                     </div>
                                   </div>

@@ -61,13 +61,12 @@ El viajero se ha sentido inquieto y te ha pedido PROFUNDIZAR en esa revelación,
 
 Para buscar esa respuesta, ha sacado una misteriosa Carta Clarificadora: "${extraCard.name}: ${extraCard.meaning}".
 
-Tu tarea: Entregar un "Susurro de Profundización". Responde cálidamente, refiriéndote por su nombre a ${context.userName}.
-Integra el significado psíquico/kármico de la carta clarificadora con la pregunta del viajero para entregar luz sobre su duda puntual, como si descubrieras un detalle oculto de la revelación original.
-Debe sonar como un consejo místico directo.
+Tu tarea: Entregar un "Susurro de Clarificación" EXTRAORDINARIAMENTE EXTENSO (mínimo 3 párrafos profundos y poéticos). Responde cálidamente, refiriéndote por su nombre a ${context.userName}.
+Integra magistralmente el significado psíquico/kármico de la carta clarificadora con la pregunta exacta del viajero, expandiendo la lectura anterior. Haz que suene a una epifanía espiritual inmensamente sabia y sanadora.
 
 Responde estrictamente en formato JSON puro:
 {
-  "deepeningResponse": "Tu texto clarificador místico y empático aquí..."
+  "deepeningResponse": "Tu extenso y profundo texto clarificador místico aquí..."
 }
 `;
 
