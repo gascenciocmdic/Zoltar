@@ -1,72 +1,59 @@
 let isMuted = false;
-let currentUtterance = null;
-let voicesLoaded = false;
-let preferredVoice = null;
+let currentAudio = null;
 
+/**
+ * Inicializador (ahora simplificado ya que no depende de voces locales)
+ */
 export const initSpeech = () => {
-  if (!('speechSynthesis' in window)) return;
-  
-  const loadVoices = () => {
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      // Buscar una voz masculina joven, profunda y humana (México/Latino)
-      const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419') || v.lang.startsWith('es'));
-      preferredVoice = mxVoices.find(v => 
-          v.name.includes('Jorge') || v.name.includes('Juan') || v.name.includes('Alonso') || 
-          v.name.includes('Diego') || v.name.includes('Carlos') || v.name.includes('Manuel') ||
-          v.name.includes('Enrique') || v.name.includes('Sabino') || v.name.includes('David') || 
-          v.name.includes('Mateo') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hombre')
-      ) 
-        || mxVoices[0] 
-        || voices[0];
-      voicesLoaded = true;
-    }
-  };
-
-  loadVoices();
-  if (window.speechSynthesis.onvoiceschanged !== undefined) {
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-  }
+  console.log("Human Voice Engine (ElevenLabs) Initialized.");
 };
 
 export const toggleMute = () => {
   isMuted = !isMuted;
-  if (isMuted && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  if (isMuted) {
+    stopSpeech();
   }
   return isMuted;
 };
 
 export const getIsMuted = () => isMuted;
 
-export const speakText = (text) => {
-  if (!('speechSynthesis' in window) || isMuted || !text) return;
+/**
+ * Llama al endpoint de backend para obtener el audio humano y reproducirlo.
+ */
+export const speakText = async (text) => {
+  if (isMuted || !text) return;
   
-  // Limpiar/cancelar cualquier audio previo para no hacer cola
-  window.speechSynthesis.cancel();
+  // Detener audio previo
+  stopSpeech();
   
-  // Pequeña pausa para asegurar limpieza de buffer en ciertos navegadores (ej. Safari)
-  setTimeout(() => {
-    // Si la web speech framework está mudo externamente o si mute es true, salir de emergencia
-    if (isMuted) return;
+  try {
+    const response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
 
-    currentUtterance = new SpeechSynthesisUtterance(text);
-    
-    if (preferredVoice) {
-      currentUtterance.voice = preferredVoice;
+    if (!response.ok) {
+        throw new Error("Falla en la respuesta de TTS");
     }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
     
-    currentUtterance.lang = 'es-MX'; // Forzar metadata
-    currentUtterance.pitch = 0.75; // Baja el tono para que sea profundo pero joven
-    currentUtterance.rate = 0.9; // Velocidad pausada y humana
-    currentUtterance.volume = 1.0; 
+    currentAudio = new Audio(url);
+    currentAudio.play().catch(e => console.error("Error al reproducir audio:", e));
     
-    window.speechSynthesis.speak(currentUtterance);
-  }, 50);
+  } catch (error) {
+    console.error("Error en ElevenLabs TTS:", error);
+    // Fallback silencioso (no interrumpir la experiencia visual)
+  }
 };
 
 export const stopSpeech = () => {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
   }
 };
