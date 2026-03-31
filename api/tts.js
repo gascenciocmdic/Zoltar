@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs en las variables de entorno.' });
   }
 
-  // Usaremos la voz 'Antoni' (ID: ErXw9S9iW7E6fRtep5V7) que es profunda y masculina en español.
-  // Alternativa: 'Marcus' (ID: bVMeS97Y496Uf859Enf8)
-  const voiceId = "ErXw9S9iW7E6fRtep5V7"; 
+  // Cambiaremos Antoni (que no se encontró) por 'Adam' (ID: pN9s6DILuGj99j3YJcKM)
+  // Adam es la voz más universal, profunda y de alta calidad en ElevenLabs.
+  const voiceId = "pN9s6DILuGj99j3YJcKM"; 
   const modelId = "eleven_multilingual_v2";
 
   try {
