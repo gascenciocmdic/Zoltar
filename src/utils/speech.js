@@ -10,10 +10,14 @@ export const initSpeech = () => {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
       // Buscar una voz masculina joven, profunda y humana (México/Latino)
-      const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419'));
-      preferredVoice = mxVoices.find(v => v.name.includes('Alonso') || v.name.includes('Sabino') || v.name.includes('David') || v.name.includes('Mateo') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hombre')) 
+      const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419') || v.lang.startsWith('es'));
+      preferredVoice = mxVoices.find(v => 
+          v.name.includes('Jorge') || v.name.includes('Juan') || v.name.includes('Alonso') || 
+          v.name.includes('Diego') || v.name.includes('Carlos') || v.name.includes('Manuel') ||
+          v.name.includes('Enrique') || v.name.includes('Sabino') || v.name.includes('David') || 
+          v.name.includes('Mateo') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hombre')
+      ) 
         || mxVoices[0] 
-        || voices.find(v => v.lang.startsWith('es'))
         || voices[0];
       voicesLoaded = true;
     }

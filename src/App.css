@@ -113,7 +113,8 @@
 }
 
 p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
-  text-align: justify;
+  text-align: center;
+  font-style: italic;
 }
 
 .typing-cursor {
@@ -219,7 +220,8 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
   border-left: 4px solid transparent;
   width: 100%;
   box-sizing: border-box;
-  text-align: justify;
+  text-align: center;
+  font-style: italic;
   display: block;
 }
 
