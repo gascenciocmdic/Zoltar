@@ -4,7 +4,7 @@ import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
-import { initSpeech, toggleMute, speakText, stopSpeech } from './utils/speech';
+import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import TypewriterText from './components/TypewriterText';
 
 const GREETINGS = [
@@ -62,7 +62,7 @@ function App() {
 
   useEffect(() => {
     initSpeech();
-    return () => stopSpeech();
+    return () => { stopSpeech(); stopAmbient(); };
   }, []);
 
   useEffect(() => {
@@ -287,6 +287,7 @@ function App() {
           <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>El Oráculo de Vidas Pasadas</h2>
           <button className="start-button blinking-button" onClick={() => {
             initSpeech();
+            startAmbientMusic();
             setHasStarted(true);
             setTimeout(() => {
               speakText(sessionTexts.greeting);
@@ -504,7 +505,7 @@ function App() {
           ) : (
             <>
               <p className="welcome-text" style={{ fontSize: '1rem', fontStyle: 'italic' }}>
-                <TypewriterText text={`"${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."`} speed={45} />
+                <span className="reveal-text">{`"${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."`}</span>
               </p>
               
               <div style={{ textAlign: 'left', marginBottom: '30px', marginTop: '20px' }}>
@@ -512,7 +513,7 @@ function App() {
                   <div className="narrative-container" style={{ margin: '0 auto 20px auto', maxWidth: '600px' }}>
                     <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#c084fc' }}>
                       <p style={{ fontStyle: 'italic', lineHeight: '1.6', color: '#e5e4e7', margin: 0 }}>
-                        <TypewriterText text={introspectionMessage} speed={45} />
+                        <span className="reveal-text">{introspectionMessage}</span>
                       </p>
                     </div>
                   </div>
@@ -615,9 +616,9 @@ function App() {
                             </p>
                             
                             <div style={{ marginBottom: '20px' }}>
-                              <TypewriterText text={Array.isArray(interpretation.narrativaAncestral) 
+                              <span className="reveal-text">{Array.isArray(interpretation.narrativaAncestral) 
                                 ? interpretation.narrativaAncestral[revealedStage - 1]
-                                : interpretation.narrativaAncestral} speed={45} />
+                                : interpretation.narrativaAncestral}</span>
                             </div>
 
                             {/* Deepening Extensions */}
@@ -657,7 +658,7 @@ function App() {
                                   <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
                                     <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '15px', fontWeight: 'bold' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
                                     <div style={{ color: '#e5e4e7', textAlign: 'left', lineHeight: '1.5', fontSize: '0.95rem' }}>
-                                      <TypewriterText text={clarState.extraResponse} speed={45} />
+                                      <span className="reveal-text">{clarState.extraResponse}</span>
                                     </div>
                                   </div>
                                 );
@@ -698,20 +699,20 @@ function App() {
           {interpretation.conclusionFinal && (
             <div className="brain-bubble narrative fade-in-text" style={{ marginBottom: '40px', borderColor: '#ffd700', margin: '0 auto 40px auto' }}>
               <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '1.2rem', marginBottom: '20px' }}>
-                <TypewriterText text={`La Gran Síntesis para ti, ${userName}...`} speed={45} />
+                <span className="reveal-text">{`La Gran Síntesis para ti, ${userName}...`}</span>
               </p>
-              <p style={{ margin: 0 }}><TypewriterText text={interpretation.conclusionFinal} speed={45} /></p>
+              <p style={{ margin: 0 }}><span className="reveal-text">{interpretation.conclusionFinal}</span></p>
             </div>
           )}
 
           <div className="anchoring-grid">
             <div className="anchor-block">
               <h3>Decreto de Sanación</h3>
-              <p className="decree-text"><TypewriterText text={`"${interpretation.decreto}"`} speed={40} /></p>
+              <p className="decree-text"><span className="reveal-text">{`"${interpretation.decreto}"`}</span></p>
             </div>
             <div className="anchor-block">
               <h3>Tarea Terrenal</h3>
-              <p className="task-text"><TypewriterText text={interpretation.tarea_terrenal} speed={40} /></p>
+              <p className="task-text"><span className="reveal-text">{interpretation.tarea_terrenal}</span></p>
             </div>
           </div>
           <button className="start-button" onClick={() => window.location.reload()}>Nueva Consulta</button>

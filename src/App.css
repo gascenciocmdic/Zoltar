@@ -328,3 +328,27 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
   opacity: 1;
   filter: drop-shadow(0px 0px 20px rgba(192, 132, 252, 0.6));
 }
+
+/* Reveal Text: Aparición suave y pausada del texto completo */
+.reveal-text {
+  display: inline;
+  animation: revealFadeIn 3s ease-in forwards;
+  opacity: 0;
+}
+
+@keyframes revealFadeIn {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(8px);
+  }
+  30% {
+    opacity: 0.3;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+}
