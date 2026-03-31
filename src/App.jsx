@@ -304,6 +304,7 @@ function App() {
           background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
+          <div className="global-logo" style={{ position: 'relative', marginBottom: '10px' }} />
           <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>El Oráculo de Vidas Pasadas</h2>
           <button className="start-button blinking-button" onClick={() => {
             initSpeech();
@@ -479,7 +480,8 @@ function App() {
           <>
             <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>Haz click en una carta seleccionada para removerla de tu tirada ({selectedCards.length}/3).</p>
             
-            <div className="card-grid">
+            <div className="card-grid" style={{ position: 'relative' }}>
+              <Dragonfly visible={true} />
               {shuffledDeck.map((card, index) => {
                 const seed = index * 137.5;
                 const spreadX = Math.sin(seed) * 40;
