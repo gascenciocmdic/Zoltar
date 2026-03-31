@@ -112,7 +112,9 @@
   margin: 0 auto;
 }
 
-p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
+p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
+.narrative-container, .interpretation-bubbles, .reveal-text,
+.anchoring-content p, .anchoring-content div {
   text-align: center;
   font-style: italic;
 }

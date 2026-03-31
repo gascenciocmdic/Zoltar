@@ -508,7 +508,7 @@ function App() {
                 <span className="reveal-text">{`"${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."`}</span>
               </p>
               
-              <div style={{ textAlign: 'left', marginBottom: '30px', marginTop: '20px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '30px', marginTop: '20px' }}>
                 {introspectionMessage && (
                   <div className="narrative-container" style={{ margin: '0 auto 20px auto', maxWidth: '600px' }}>
                     <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#c084fc' }}>
@@ -657,7 +657,7 @@ function App() {
                                 return (
                                   <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
                                     <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '15px', fontWeight: 'bold' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
-                                    <div style={{ color: '#e5e4e7', textAlign: 'left', lineHeight: '1.5', fontSize: '0.95rem' }}>
+                                    <div style={{ color: '#e5e4e7', textAlign: 'center', lineHeight: '1.5', fontSize: '0.95rem' }}>
                                       <span className="reveal-text">{clarState.extraResponse}</span>
                                     </div>
                                   </div>
