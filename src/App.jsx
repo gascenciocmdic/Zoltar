@@ -4,6 +4,7 @@ import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
+import { initSpeech, toggleMute, speakText, stopSpeech } from './utils/speech';
 
 const GREETINGS = [
   "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
@@ -54,8 +55,14 @@ function App() {
   const [dichotomousChoice, setDichotomousChoice] = useState('');
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
+  
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isMutedState, setIsMutedState] = useState(false);
 
-  // Test mode removed, Vortex flows purely natively in the background.
+  useEffect(() => {
+    initSpeech();
+    return () => stopSpeech();
+  }, []);
 
   useEffect(() => {
     const deck = [...cardsData];
@@ -80,6 +87,7 @@ function App() {
 
   const handleStart = () => {
     setIsFading(true);
+    speakText(sessionTexts.askName);
     setTimeout(() => {
       setThresholdStep(1);
       setIsFading(false);
@@ -91,6 +99,16 @@ function App() {
     if (thresholdStep === 2 && !visitReason) return alert("Cuéntame un poco más...");
     
     setIsFading(true);
+    
+    // Narradores
+    if (thresholdStep === 1) {
+      speakText(`Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?`);
+    } else if (thresholdStep === 2) {
+      speakText("Antes de consultar a las cartas... ¿prefieres la verdad cruda y directa, o el susurro elocuente de la metáfora?");
+    } else if (thresholdStep === 3) {
+      speakText("Cierra los ojos un instante. Respira. Visualiza aquello que buscas entender. Haz tu pregunta en silencio y permite que las cartas hablen desde tu propia energía.");
+    }
+
     setTimeout(() => {
       if (thresholdStep < 4) {
         setThresholdStep(thresholdStep + 1);
@@ -98,6 +116,7 @@ function App() {
         setPhase('synchrony');
         setVibe('revelation_gold');
         setShowSynchronyPopup(true);
+        speakText("Concéntrate profundamente en tu inquietud. Transmite tu energía a través de la pantalla. Las cartas te llamarán para ser elegidas. Selecciona exactamente tres.");
       }
       setIsFading(false);
     }, 1500); // 1.5 second calm transition
@@ -116,6 +135,7 @@ function App() {
   const handleGoToIntrospection = async () => {
     setLoading(true);
     setVibe('karmic_red'); // visual cue of energetic reaction
+    speakText(sessionTexts.waitMsg);
     try {
       const userContext = { name: userName, reason: visitReason };
       const result = await generateIntrospection(selectedCards, null, userContext);
@@ -123,6 +143,7 @@ function App() {
       setPhase('introspection');
       setLoading(false);
       setVibe('healing_blue');
+      speakText(`${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón...`);
     } catch (error) {
       console.error(error);
       alert("El poder de los ancestros está bloqueado. Verifica que tu API Key de Gemini sea válida y tenga fondos/cuota.");
@@ -134,6 +155,7 @@ function App() {
   const handleStartRevelation = async ({ introspectionAnswer = '' } = {}) => {
     setLoading(true);
     setVibe('karmic_red'); // Trigger the energetic reaction for 5 seconds
+    speakText(sessionTexts.waitMsg);
     
     setTimeout(async () => {
       setPhase('revelation');
@@ -157,19 +179,25 @@ function App() {
 
   const handleNextStage = () => {
     if (revealedStage < 3) {
-      if (revealedStage === 0) {
-        setIsFading(true);
-        setTimeout(() => {
-          setRevealedStage(1);
-          setIsFading(false);
-        }, 1500);
-      } else {
-        setIsFading(true);
-        setTimeout(() => {
-          setRevealedStage(revealedStage + 1);
-          setIsFading(false);
-        }, 1500);
-      }
+      setIsFading(true);
+      setTimeout(() => {
+        const nextStage = revealedStage + 1;
+        setRevealedStage(nextStage);
+        setIsFading(false);
+        
+        // Speak the new reading
+        if (interpretation && interpretation.narrativaAncestral) {
+          const textToRead = Array.isArray(interpretation.narrativaAncestral) 
+            ? interpretation.narrativaAncestral[nextStage - 1] 
+            : interpretation.narrativaAncestral;
+            
+          let prefix = "";
+          if (nextStage === 1) prefix = "El Origen Kármico. ";
+          if (nextStage === 2) prefix = "El Bloqueo Presente. ";
+          if (nextStage === 3) prefix = "El Consejo de Sanación. ";
+          speakText(prefix + textToRead);
+        }
+      }, 1500);
     } else {
       setIsFading(true);
       setTimeout(async () => {
@@ -179,6 +207,7 @@ function App() {
           // Anchoring now waits for clarifications too
           const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null);
           setAnchoringReading(finalSynthesis);
+          speakText(`La Gran Síntesis para ti, ${userName}. ${finalSynthesis.conclusionFinal} Decreto de Sanación: ${finalSynthesis.decreto}. Tarea terrenal: ${finalSynthesis.tarea_terrenal}`);
         } catch (error) {
           console.error(error);
           setAnchoringReading("Las brumas impiden el cierre en este instante.");
@@ -198,6 +227,7 @@ function App() {
   const submitDeepenQuestion = (cardId, questionText) => {
     if (!questionText.trim()) return alert("El universo necesita escuchar tu inquietud puntual...");
     setIsFading(true);
+    speakText("Sintoniza tu intuición con la pregunta que acabas de hacer. Selecciona una Carta Clarificadora del mazo restante.");
     setTimeout(() => {
       setClarifications(prev => ({
         ...prev,
@@ -209,6 +239,7 @@ function App() {
 
   const submitDeepenCardSelect = async (cardId, extraCard) => {
     setIsFading(true);
+    speakText("Buscando la profundidad interior a través de tus vidas pasadas...");
     // Move to loading
     setClarifications(prev => ({
       ...prev,
@@ -233,6 +264,7 @@ function App() {
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
           }));
+          speakText(`Susurro de Clarificación. ${resp}`);
         } catch (e) {
           setClarifications(prev => ({
             ...prev,
@@ -245,6 +277,37 @@ function App() {
 
   return (
     <div className="app-container">
+      {!hasStarted && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
+        }}>
+          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>El Oráculo de Vidas Pasadas</h2>
+          <button className="start-button blinking-button" onClick={() => {
+            initSpeech();
+            setHasStarted(true);
+            setTimeout(() => {
+              speakText(sessionTexts.greeting);
+            }, 600);
+          }}>Entrar al Portal</button>
+        </div>
+      )}
+
+      {/* Botón Silenciar Global */}
+      <button 
+        onClick={() => setIsMutedState(toggleMute())}
+        title={isMutedState ? "Activar Voz" : "Silenciar Guía"}
+        style={{
+          position: 'fixed', top: '25px', right: '25px', zIndex: 9999,
+          background: 'rgba(20,22,28,0.8)', border: '1px solid rgba(255,215,0,0.4)', borderRadius: '50%',
+          width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center',
+          cursor: 'pointer', color: '#ffd700', fontSize: '1.4rem', boxShadow: '0 0 15px rgba(0,0,0,0.8)'
+        }}
+      >
+        {isMutedState ? '🔇' : '🔊'}
+      </button>
+
       <VortexCanvas vibe={vibe} />
       
       {/* Global Overlay Logo via CSS mix-blend-mode */}
