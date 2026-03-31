@@ -9,9 +9,9 @@ export const initSpeech = () => {
   const loadVoices = () => {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
-      // Buscar una voz femenina joven, suave, mexicana o latinoamericana
+      // Buscar una voz masculina joven, profunda y humana (México/Latino)
       const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419'));
-      preferredVoice = mxVoices.find(v => v.name.includes('Paulina') || v.name.includes('Sabina') || v.name.includes('Mia') || v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('mujer')) 
+      preferredVoice = mxVoices.find(v => v.name.includes('Alonso') || v.name.includes('Sabino') || v.name.includes('David') || v.name.includes('Mateo') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hombre')) 
         || mxVoices[0] 
         || voices.find(v => v.lang.startsWith('es'))
         || voices[0];
@@ -53,9 +53,9 @@ export const speakText = (text) => {
     }
     
     currentUtterance.lang = 'es-MX'; // Forzar metadata
-    currentUtterance.pitch = 1.4; // Tono más alto para sonar más joven y suave
-    currentUtterance.rate = 0.95; // Velocidad fluida y juvenil
-    currentUtterance.volume = 0.85; // Voz suave y delicada
+    currentUtterance.pitch = 0.75; // Baja el tono para que sea profundo pero joven
+    currentUtterance.rate = 0.9; // Velocidad pausada y humana
+    currentUtterance.volume = 1.0; 
     
     window.speechSynthesis.speak(currentUtterance);
   }, 50);

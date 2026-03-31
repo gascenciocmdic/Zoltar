@@ -212,11 +212,15 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
 }
 
 .brain-bubble {
-  padding: 12px 15px;
+  padding: 15px 20px;
   border-radius: 8px;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 1.05rem;
+  line-height: 1.6;
   border-left: 4px solid transparent;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: justify;
+  display: block;
 }
 
 .dichotomy-buttons {
