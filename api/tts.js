@@ -13,8 +13,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs en las variables de entorno.' });
   }
 
-  // Voice ID personalizado del usuario: 6iWkTWoJzrCzM5FKyQ9g
-  const voiceId = "6iWkTWoJzrCzM5FKyQ9g"; 
+  // Antoni (Estándar) - Voz pre-fabricada gratuita: ErXwobaYiN019PkySvjV
+  const voiceId = "ErXwobaYiN019PkySvjV"; 
   const modelId = "eleven_multilingual_v2";
 
   try {
