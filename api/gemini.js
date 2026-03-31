@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleIntrospection(model, { cards, userContext }) {
+async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
   const { name, reason } = userContext;
   const prompt = `
     Instrucciones Paralelas: Eres "El Guía".
@@ -59,6 +59,8 @@ async function handleIntrospection(model, { cards, userContext }) {
     Debes generar un ÚNICO MENSAJE (1 o 2 párrafos máximo). Este mensaje debe ser hablado directamente al usuario de manera seductora, sutil y misteriosa. 
     Llama su atención mencionando sutilmente la energía letal de las cartas que eligió combinada con su inquietud, y hazle UNA pregunta final, indirecta y muy profunda, diseñada para que el usuario revele información íntima, emocional o corporal que te sirva como combustible para la lectura final.
 
+    IMPORTANTE: Responde ESTRICTAMENTE en el idioma: ${language}.
+    
     IMPORTANTE: Responde ÚNICAMENTE con un objeto JSON (sin markdown extra) siguiendo este esquema exacto:
     {
       "mensajeGuia": "Tu mensaje profundo, poético y tu pregunta sutil aquí..."
@@ -72,8 +74,9 @@ async function handleIntrospection(model, { cards, userContext }) {
   return JSON.parse(cleanText);
 }
 
-async function handleInterpretation(model, { cards, reason, userContext }) {
+async function handleInterpretation(model, { cards, reason, userContext, language = 'es' }) {
   const { name, preference, introspectionAnswer } = userContext;
+  const translationInstruction = `IMPORTANTE: Toda tu respuesta debe estar ESTRICTAMENTE en el idioma: ${language}.`;
   const toneInstruction = preference === 'direct' 
     ? "Sé directo, profundo y claro, sin rodeos, pero mantén la contención emocional de un Guía."
     : "Sé extremadamente elocuente, usa metáforas seductoras, poéticas y revela secretos místicos paso a paso.";
@@ -98,6 +101,8 @@ async function handleInterpretation(model, { cards, reason, userContext }) {
     Mantén siempre un lenguaje poético, inspirador y ligeramente misterioso pero aterrizado. 
     LAS LECTURAS DEBEN SER MUY EXTENSAS Y ESTRICTAMENTE PROFUNDAS Y DETALLADAS. Para CADA CARTA debes generar al menos 3 a 5 párrafos de detalle, analizando profundamente la conexión de la carta con las emociones declaradas por el consultante.
     ${toneInstruction}
+
+    ${translationInstruction}
 
     Datos Íntimos del Consultante actual:
     - Nombre: ${name || 'una alma viajera'}
@@ -127,7 +132,7 @@ async function handleInterpretation(model, { cards, reason, userContext }) {
   return JSON.parse(cleanJson);
 }
 
-async function handleAnchoring(model, { selectedCards, visitReason, dichotomy, userName, clarifications }) {
+async function handleAnchoring(model, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
   const cardsContext = selectedCards.map(c => `[${c.name}]: ${c.meaning}`).join('\n');
   
   let clarificationsContext = '';
@@ -152,6 +157,9 @@ ${clarificationsContext ? '\nAdemás, el viajero buscó sanación adicional dura
 
 Tu tarea: Entregar la 'Gran Síntesis' Final, el cierre kármico del ritual.
 Debes usar todos estos elementos para redactar un mensaje final, compasivo, empático y directo hacia ${userName}.
+
+IMPORTANTE: Responde ESTRICTAMENTE en el idioma: ${language}.
+
 Responde estrictamente en formato JSON:
 {
   "conclusionFinal": "El texto final..."
@@ -165,7 +173,7 @@ Responde estrictamente en formato JSON:
   return JSON.parse(cleanText);
 }
 
-async function handleDeepening(model, { originalCard, extraCard, userQuestion, previousReading, context }) {
+async function handleDeepening(model, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
   const prompt = `
 [SECRETO: Eres el antiguo Guía del Oráculo de Vidas Pasadas].
 El viajero "${context.userName}" recibió esta revelación inicial sobre su vida pasada:
@@ -179,6 +187,8 @@ Para buscar esa respuesta, ha sacado una misteriosa Carta Clarificadora: "${extr
 
 Tu tarea: Entregar un "Susurro de Clarificación" EXTRAORDINARIAMENTE EXTENSO (mínimo 3 párrafos profundos y poéticos). Responde cálidamente, refiriéndote por su nombre a ${context.userName}.
 Integra magistralmente el significado psíquico/kármico de la carta clarificadora con la pregunta exacta del viajero, expandiendo la lectura anterior. 
+
+IMPORTANTE: Responde ESTRICTAMENTE en el idioma: ${language}.
 
 Responde estrictamente en formato JSON puro:
 {

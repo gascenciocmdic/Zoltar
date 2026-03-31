@@ -5,14 +5,23 @@ let ambientAudio = null;
 /**
  * Inicializa el motor de voz de sistema (Web Speech API) - Gratis
  */
-export const initSpeech = () => {
+export const initSpeech = (lang = 'es') => {
   if ('speechSynthesis' in window) {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
-      const esVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419') || v.lang.startsWith('es'));
-      preferredVoice = esVoices.find(v =>
-        v.name.includes('Jorge') || v.name.includes('Juan') || v.name.includes('Diego') || v.name.toLowerCase().includes('male')
-      ) || esVoices[0] || voices.find(v => v.lang.startsWith('es')) || voices[0];
+      const langMap = {
+        'es': 'es',
+        'en': 'en',
+        'pt': 'pt'
+      };
+      const targetLang = langMap[lang] || 'es';
+      
+      const filteredVoices = voices.filter(v => v.lang.startsWith(targetLang));
+      
+      // Try to find a male/deep voice if possible
+      preferredVoice = filteredVoices.find(v =>
+        v.name.toLowerCase().includes('male') || v.name.includes('Google') || v.name.includes('Natural')
+      ) || filteredVoices[0] || voices.find(v => v.lang.startsWith(targetLang)) || voices[0];
     };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -35,13 +44,20 @@ export const getIsMuted = () => isMuted;
 /**
  * Narra el texto usando la voz de sistema (costo $0)
  */
-export const speakText = (text) => {
+export const speakText = (text, lang = 'es') => {
   if (isMuted || !text || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   if (preferredVoice) utterance.voice = preferredVoice;
-  utterance.lang = 'es-MX';
+  
+  const langMap = {
+    'es': 'es-MX',
+    'en': 'en-US',
+    'pt': 'pt-BR'
+  };
+  utterance.lang = langMap[lang] || 'es-MX';
+  
   utterance.pitch = 0.75;
   utterance.rate = 0.9;
   window.speechSynthesis.speak(utterance);

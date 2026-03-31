@@ -1,11 +1,11 @@
-export async function generateIntrospection(cards, apiKey, userContext = {}) {
+export async function generateIntrospection(cards, apiKey, userContext = {}, language = 'es') {
   // El parámetro apiKey se mantiene por compatibilidad de firma, pero se ignora a favor de la clave del servidor
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'introspection',
-      payload: { cards, userContext }
+      payload: { cards, userContext, language }
     })
   });
   
@@ -17,13 +17,13 @@ export async function generateIntrospection(cards, apiKey, userContext = {}) {
   return await response.json();
 }
 
-export const generateDeepening = async (originalCard, extraCard, userQuestion, previousReading, context, apiKey) => {
+export const generateDeepening = async (originalCard, extraCard, userQuestion, previousReading, context, apiKey, language = 'es') => {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'deepening',
-      payload: { originalCard, extraCard, userQuestion, previousReading, context }
+      payload: { originalCard, extraCard, userQuestion, previousReading, context, language }
     })
   });
 
@@ -42,13 +42,13 @@ export const generateDeepening = async (originalCard, extraCard, userQuestion, p
   return data.deepeningResponse;
 };
 
-export const generateAnchoring = async (selectedCards, visitReason, dichotomy, userName, clarifications, apiKey) => {
+export const generateAnchoring = async (selectedCards, visitReason, dichotomy, userName, clarifications, apiKey, language = 'es') => {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'anchoring',
-      payload: { selectedCards, visitReason, dichotomy, userName, clarifications }
+      payload: { selectedCards, visitReason, dichotomy, userName, clarifications, language }
     })
   });
 
@@ -60,13 +60,13 @@ export const generateAnchoring = async (selectedCards, visitReason, dichotomy, u
   return await response.json();
 };
 
-export async function interpretCards(cards, soulFeeling, apiKey, userContext = {}) {
+export async function interpretCards(cards, soulFeeling, apiKey, userContext = {}, language = 'es') {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'interpretation',
-      payload: { cards, reason: soulFeeling, userContext }
+      payload: { cards, reason: soulFeeling, userContext, language }
     })
   });
 

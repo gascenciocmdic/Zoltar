@@ -5,54 +5,25 @@ import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
 import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
+import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
 
-const GREETINGS = [
-  "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
-  "Bienvenido, alma viajera. Soy el guardián de los Ecos Pasados. ¿Estás listo para correr el velo del tiempo y mirar hacia atrás?",
-  "Los hilos del destino nos han reunido. Soy El Guía de Vidas Pasadas. ¿Me das permiso para desentrañar el origen de tu caminar actual?",
-  "Has sido convocado por fuerzas más antiguas que el sol. Soy quien habita entre las sombras del ayer y la promesa del mañana. ¿Aceptas mi mano?",
-  "Las estrellas me dijeron que vendrías. Soy El Guía, y mi voz es la voz de tus ancestros. ¿Estás dispuesto a escuchar lo que tu alma ya sabe?",
-  "El universo no comete errores; si estás aquí, es porque tus vidas pasadas necesitan hablarte. Soy su intérprete. ¿Me concedes ese honor?",
-  "Del otro lado del espejo del tiempo, te esperaba. Soy El Guía de aquellos que buscan respuestas en los ecos de lo que fueron. ¿Avanzamos juntos?",
-  "Tu llegada fue escrita en los registros akáshicos hace eones. Soy la llave que abrirá esos pergaminos. ¿Me permites girar?",
-  "Percibo en ti una vibración ancestral muy particular. Soy El Guía, y reconozco el peso de las vidas que has cargado. ¿Deseas aligerarlo hoy?",
-  "El portal se ha abierto para ti. Soy el custodio de memorias que trascienden el tiempo. ¿Te atreves a recordar quién fuiste?"
-];
-
-const ASK_NAMES = [
-  "Primero, dime... ¿cómo debo llamarte en esta encarnación?",
-  "Para iniciar nuestro vínculo... ¿cuál es el nombre que llevas en esta vida?",
-  "Antes de abrir el portal... ¿con qué nombre se te conoce hoy en el plano físico?",
-  "Cada nombre guarda una vibración sagrada. Dime el tuyo, viajero...",
-  "Las cartas necesitan saber a quién le hablan. ¿Cuál es tu nombre en esta realidad?",
-  "El Oráculo no puede ver tu rostro sin conocer primero tu nombre. ¿Cómo te llamas?",
-  "Para tejer el hilo que conecta tus vidas... necesito saber tu nombre en esta.",
-  "Antes de que las cartas susurren... dime, ¿con qué nombre late tu corazón hoy?"
-];
-
-const WAIT_MESSAGES = [
-  "El Vortex está fusionando tus energías con las memorias de tus vidas pasadas...",
-  "Invocando el conocimiento de tus vidas pasadas. Las mareas del tiempo se agitan...",
-  "Silencio... las almas de antaño están susurrando sus verdades sobre ti.",
-  "Los registros akáshicos se están abriendo. Tu historia ancestral emerge del silencio...",
-  "Las cartas vibran con una frecuencia que solo tú puedes sentir. Escucha el eco...",
-  "El universo está tejiendo los hilos de tu pasado con las fibras de tu presente...",
-  "Un portal dimensional se abre. Las memorias de tus encarnaciones fluyen hacia aquí...",
-  "Los guardianes del tiempo están consultando tus registros. Respira profundamente...",
-  "Tu energía está siendo leída por fuerzas ancestrales. El silencio es parte del ritual...",
-  "Las constelaciones de tu karma se están alineando. Un momento de paciencia sagrada..."
-];
-
 function App() {
-  const sessionTexts = useMemo(() => ({
-    greeting: GREETINGS[Math.floor(Math.random() * GREETINGS.length)],
-    askName: ASK_NAMES[Math.floor(Math.random() * ASK_NAMES.length)],
-    waitMsg: WAIT_MESSAGES[Math.floor(Math.random() * WAIT_MESSAGES.length)]
-  }), []);
+  const [language, setLanguage] = useState('es'); // Default, but will be set by selection
+  const [phase, setPhase] = useState('languageSelection'); // languageSelection, threshold, synchrony, introspection, revelation, anchoring
+  
+  const translations = useMemo(() => I18N[language], [language]);
 
-  const [phase, setPhase] = useState('threshold'); // threshold, synchrony, introspection, revelation, anchoring
+  const sessionTexts = useMemo(() => {
+    const pool = I18N[language] || I18N.es;
+    return {
+      greeting: pool.greetings[Math.floor(Math.random() * pool.greetings.length)],
+      askName: pool.ask_names[Math.floor(Math.random() * pool.ask_names.length)],
+      waitMsg: pool.wait_messages[Math.floor(Math.random() * pool.wait_messages.length)]
+    };
+  }, [language]);
+
   const [vibe, setVibe] = useState('healing_blue');
   const [selectedCards, setSelectedCards] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,13 +48,12 @@ function App() {
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
   
-  const [hasStarted, setHasStarted] = useState(false);
   const [isMutedState, setIsMutedState] = useState(false);
 
   useEffect(() => {
-    initSpeech();
+    initSpeech(language);
     return () => { stopSpeech(); stopAmbient(); };
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const deck = [...cardsData];
@@ -93,6 +63,7 @@ function App() {
     }
     setShuffledDeck(deck);
   }, []);
+
   useEffect(() => {
     if (phase === 'revelation' && !loading) {
       if (cardsFlippedCount < 3) {
@@ -108,26 +79,26 @@ function App() {
 
   const handleStart = () => {
     setIsFading(true);
-    speakText(sessionTexts.askName);
+    speakText(sessionTexts.askName, language);
     setTimeout(() => {
       setThresholdStep(1);
       setIsFading(false);
-    }, 1500); // 1.5 second profound pause
+    }, 1500); 
   };
 
   const handleNextThreshold = () => {
-    if (thresholdStep === 1 && !userName) return alert("Dime tu nombre, alma viajera...");
-    if (thresholdStep === 2 && !visitReason) return alert("Cuéntame un poco más...");
+    if (thresholdStep === 1 && !userName) return alert(translations.ui.your_name_placeholder);
+    if (thresholdStep === 2 && !visitReason) return alert(translations.ui.what_inquires_you);
     
     setIsFading(true);
     
     // Narradores
     if (thresholdStep === 1) {
-      speakText(`Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?`);
+      speakText((translations.ui.what_inquires_you.replace('{name}', userName) || `Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?`), language);
     } else if (thresholdStep === 2) {
-      speakText("Antes de consultar a las cartas... ¿prefieres la verdad cruda y directa, o el susurro elocuente de la metáfora?");
+      speakText(translations.ui.metaphoric_whisper, language);
     } else if (thresholdStep === 3) {
-      speakText("Cierra los ojos un instante. Respira. Visualiza aquello que buscas entender. Haz tu pregunta en silencio y permite que las cartas hablen desde tu propia energía.");
+      speakText(translations.ui.choose_cards, language);
     }
 
     setTimeout(() => {
@@ -137,10 +108,10 @@ function App() {
         setPhase('synchrony');
         setVibe('revelation_gold');
         setShowSynchronyPopup(true);
-        speakText("Concéntrate profundamente en tu inquietud. Transmite tu energía a través de la pantalla. Las cartas te llamarán para ser elegidas. Selecciona exactamente tres.");
+        speakText(translations.ui.call_p1.replace(/"/g, ''), language);
       }
       setIsFading(false);
-    }, 1500); // 1.5 second calm transition
+    }, 1500); 
   };
 
   const handleSelectCard = (card) => {
@@ -155,19 +126,19 @@ function App() {
 
   const handleGoToIntrospection = async () => {
     setLoading(true);
-    setVibe('karmic_red'); // visual cue of energetic reaction
-    speakText(sessionTexts.waitMsg);
+    setVibe('karmic_red'); 
+    speakText(sessionTexts.waitMsg, language);
     try {
       const userContext = { name: userName, reason: visitReason };
-      const result = await generateIntrospection(selectedCards, null, userContext);
+      const result = await generateIntrospection(selectedCards, null, userContext, language);
       setIntrospectionMessage(result.mensajeGuia);
       setPhase('introspection');
       setLoading(false);
       setVibe('healing_blue');
-      speakText(`${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón...`);
+      speakText(translations.ui.magnetic_resonance.replace('{name}', userName), language);
     } catch (error) {
       console.error(error);
-      alert("El poder de los ancestros está bloqueado. Verifica que tu API Key de Gemini sea válida y tenga fondos/cuota.");
+      alert(error.message);
       setLoading(false);
       setVibe('healing_blue');
     }
@@ -175,8 +146,8 @@ function App() {
 
   const handleStartRevelation = async ({ introspectionAnswer = '' } = {}) => {
     setLoading(true);
-    setVibe('karmic_red'); // Trigger the energetic reaction for 5 seconds
-    speakText(sessionTexts.waitMsg);
+    setVibe('karmic_red'); 
+    speakText(sessionTexts.waitMsg, language);
     
     setTimeout(async () => {
       setPhase('revelation');
@@ -186,16 +157,16 @@ function App() {
       
       try {
         const userContext = { name: userName, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
-        const result = await interpretCards(selectedCards, visitReason, null, userContext);
+        const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
         setInterpretation(result);
         setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
         console.error("Error al interpretar:", error);
-        alert("El Oráculo está nublado en este momento. Inténtalo de nuevo más tarde.");
+        alert(error.message);
         setLoading(false);
       }
-    }, 5000); // 5-second transition phase
+    }, 5000); 
   };
 
   const handleNextStage = () => {
@@ -213,10 +184,10 @@ function App() {
             : interpretation.narrativaAncestral;
             
           let prefix = "";
-          if (nextStage === 1) prefix = "El Origen Kármico. ";
-          if (nextStage === 2) prefix = "El Bloqueo Presente. ";
-          if (nextStage === 3) prefix = "El Consejo de Sanación. ";
-          speakText(prefix + textToRead);
+          if (nextStage === 1) prefix = translations.ui.origin_karmic + ". ";
+          if (nextStage === 2) prefix = translations.ui.present_blockage + ". ";
+          if (nextStage === 3) prefix = translations.ui.healing_advice + ". ";
+          speakText(prefix + textToRead, language);
         }
       }, 1500);
     } else {
@@ -226,12 +197,11 @@ function App() {
         setIsFading(false);
         try {
           // Anchoring now waits for clarifications too
-          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null);
-          setAnchoringReading(finalSynthesis);
-          speakText(`La Gran Síntesis para ti, ${userName}. ${finalSynthesis.conclusionFinal} Decreto de Sanación: ${finalSynthesis.decreto}. Tarea terrenal: ${finalSynthesis.tarea_terrenal}`);
+          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language);
+          setInterpretation(prev => ({ ...prev, ...finalSynthesis }));
+          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal} ${translations.ui.healing_decree}: ${finalSynthesis.decreto}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal}`, language);
         } catch (error) {
           console.error(error);
-          setAnchoringReading("Las brumas impiden el cierre en este instante.");
         }
       }, 1500);
     }
@@ -246,9 +216,9 @@ function App() {
   };
 
   const submitDeepenQuestion = (cardId, questionText) => {
-    if (!questionText.trim()) return alert("El universo necesita escuchar tu inquietud puntual...");
+    if (!questionText.trim()) return alert(translations.ui.revelation_confession);
     setIsFading(true);
-    speakText("Sintoniza tu intuición con la pregunta que acabas de hacer. Selecciona una Carta Clarificadora del mazo restante.");
+    speakText(translations.ui.deepen_loading, language);
     setTimeout(() => {
       setClarifications(prev => ({
         ...prev,
@@ -260,7 +230,7 @@ function App() {
 
   const submitDeepenCardSelect = async (cardId, extraCard) => {
     setIsFading(true);
-    speakText("Buscando la profundidad interior a través de tus vidas pasadas...");
+    speakText(translations.ui.deepen_loading, language);
     // Move to loading
     setClarifications(prev => ({
       ...prev,
@@ -280,12 +250,12 @@ function App() {
             ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : interpretation.narrativaAncestral)
             : '';
           
-          const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null);
+          const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
           setClarifications(prev => ({
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
           }));
-          speakText(`Susurro de Clarificación. ${resp}`);
+          speakText(`${translations.ui.deepen_subtitle}. ${resp}`, language);
         } catch (e) {
           setClarifications(prev => ({
             ...prev,
@@ -298,29 +268,45 @@ function App() {
 
   return (
     <div className="app-container">
-      {!hasStarted && (
+      {phase === 'languageSelection' && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 999999
+        }}>
+          <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '40px', mixBlendMode: 'screen' }} />
+          <h2 style={{color: '#ffd700', letterSpacing: '4px', marginBottom: '50px', textTransform: 'uppercase', fontSize: '1.5rem', textAlign: 'center'}}>Select your language / Selecciona tu idioma</h2>
+          <div style={{ display: 'grid', gap: '20px', width: '280px' }}>
+            <button className="start-button blinking-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); }}>English</button>
+            <button className="start-button blinking-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); }}>Español</button>
+            <button className="start-button blinking-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); }}>Português</button>
+          </div>
+        </div>
+      )}
+
+      {phase === 'portalEntrance' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
           background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
           <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
-          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>El Oráculo de Vidas Pasadas</h2>
+          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>{translations.ui.title}</h2>
           <button className="start-button blinking-button" onClick={() => {
-            initSpeech();
+            initSpeech(language);
             startAmbientMusic();
-            setHasStarted(true);
+            setPhase('threshold');
             setTimeout(() => {
-              speakText(sessionTexts.greeting);
+              speakText(sessionTexts.greeting, language);
             }, 600);
-          }}>Entrar al Portal</button>
+          }}>{translations.ui.enter_portal}</button>
         </div>
       )}
 
       {/* Botón Silenciar Global */}
       <button 
         onClick={() => setIsMutedState(toggleMute())}
-        title={isMutedState ? "Activar Voz" : "Silenciar Guía"}
+        title={isMutedState ? translations.ui.unmute : translations.ui.mute}
         style={{
           position: 'fixed', top: '25px', right: '25px', zIndex: 9999,
           background: 'rgba(20,22,28,0.8)', border: '1px solid rgba(255,215,0,0.4)', borderRadius: '50%',
@@ -352,7 +338,7 @@ function App() {
                 <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
               </p>
               <button className="start-button" onClick={handleStart}>
-                Permitir
+                {translations.ui.allow}
               </button>
               
               <div style={{ marginTop: '30px' }}>
@@ -362,7 +348,7 @@ function App() {
                   onMouseLeave={(e) => e.target.style.opacity = 0.5}
                   onClick={() => setShowInfoPopup(true)}
                 >
-                  ¿Qué es el Oráculo de Vidas Pasadas?
+                  {translations.ui.what_is_oracle}
                 </button>
               </div>
             </>
@@ -374,46 +360,46 @@ function App() {
               <input 
                 type="text" 
                 className="soul-input" 
-                placeholder="Tu nombre..."
+                placeholder={translations.ui.your_name_placeholder}
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
-              <button className="start-button" onClick={handleNextThreshold}>Continuar</button>
+              <button className="start-button" onClick={handleNextThreshold}>{translations.ui.continue}</button>
             </>
           )}
 
           {thresholdStep === 2 && (
             <>
-              <p className="welcome-text"><TypewriterText text={`"Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?"`} speed={45} /></p>
+              <p className="welcome-text"><TypewriterText text={`"${translations.ui.what_inquires_you.replace('{name}', userName)}"`} speed={45} /></p>
               <input 
                 type="text" 
                 className="soul-input" 
-                placeholder="Lo que inquieta tu paz..."
+                placeholder={translations.ui.revelation_confession}
                 value={visitReason}
                 onChange={(e) => setVisitReason(e.target.value)}
               />
-              <button className="start-button" onClick={handleNextThreshold}>Continuar</button>
+              <button className="start-button" onClick={handleNextThreshold}>{translations.ui.continue}</button>
             </>
           )}
 
           {thresholdStep === 3 && (
             <>
-              <p className="welcome-text"><TypewriterText text={`"Antes de consultar a las cartas... ¿prefieres la verdad cruda y directa, o el susurro elocuente de la metáfora?"`} speed={45} /></p>
+              <p className="welcome-text"><TypewriterText text={`"${translations.ui.metaphoric_whisper}"`} speed={45} /></p>
               <div className="dichotomy-buttons">
-                <button className={`choice-button ${dichotomousChoice === 'direct' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('direct')}>Verdad Directa</button>
-                <button className={`choice-button ${dichotomousChoice === 'metaphor' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('metaphor')}>Susurro Metafórico</button>
+                <button className={`choice-button ${dichotomousChoice === 'direct' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('direct')}>{translations.ui.direct_truth}</button>
+                <button className={`choice-button ${dichotomousChoice === 'metaphor' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('metaphor')}>{translations.ui.metaphoric_whisper}</button>
               </div>
-              <button className="start-button" onClick={handleNextThreshold} disabled={!dichotomousChoice}>Continuar</button>
+              <button className="start-button" onClick={handleNextThreshold} disabled={!dichotomousChoice}>{translations.ui.continue}</button>
             </>
           )}
 
           {thresholdStep === 4 && (
             <>
               <p className="welcome-text">
-                <TypewriterText text={`"Cierra los ojos un instante. Respira. Visualiza aquello que buscas entender. Haz tu pregunta en silencio y permite que las cartas hablen desde tu propia energía."`} speed={45} />
+                <TypewriterText text={`"${translations.ui.choose_cards}"`} speed={45} />
               </p>
               
-              <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>Elegir Cartas</button>
+              <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>{translations.ui.choose_cards}</button>
             </>
           )}
         </div>
@@ -430,12 +416,12 @@ function App() {
              maxWidth: '90%', width: '500px', textAlign: 'center', border: '1px solid rgba(255,215,0,0.3)',
              boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.05)'
           }}>
-            <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.4rem', letterSpacing: '2px', textTransform: 'uppercase'}}>El Espejo del Tiempo</h3>
+            <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.4rem', letterSpacing: '2px', textTransform: 'uppercase'}}>{translations.ui.info_popup_title}</h3>
             <p style={{fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '20px', fontStyle: 'italic', color: '#b0b0b5', fontWeight: '300'}}>
-              El Oráculo no adivina el futuro; destapa los ecos de tu pasado. 
+              {translations.ui.info_popup_p1}
             </p>
             <p style={{fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '35px', fontStyle: 'italic', color: '#b0b0b5', fontWeight: '300'}}>
-              Cada carta es una llave maestra hacia las vidas que ya caminaste. Al sintonizar tu inquietud actual con estos arquetipos, accedemos a tu herida kármica original o a un don de tu alma que creías olvidado. A través del reconocimiento de nuestras encarnaciones pasadas, el universo nos entrega las respuestas más profundas y precisas para desatar nuestros nudos emocionales y espirituales del presente.
+              {translations.ui.info_popup_p2}
             </p>
             <button className="start-button blinking-button" onClick={() => {
               setIsInfoFading(true);
@@ -443,7 +429,7 @@ function App() {
                 setShowInfoPopup(false);
                 setIsInfoFading(false);
               }, 800);
-            }}>Comprendo</button>
+            }}>{translations.ui.understanding}</button>
           </div>
         </div>
       )}
@@ -459,9 +445,9 @@ function App() {
              maxWidth: '500px', textAlign: 'center', border: '1px solid rgba(255,215,0,0.3)',
              boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.05)'
           }}>
-            <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.6rem', letterSpacing: '2px', textTransform: 'uppercase'}}>El Llamado</h3>
+            <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.6rem', letterSpacing: '2px', textTransform: 'uppercase'}}>{translations.ui.call_title}</h3>
             <p style={{fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '40px', fontStyle: 'italic', color: '#e0e0e0', fontWeight: '300'}}>
-              "Concéntrate profundamente en tu inquietud. Transmite tu energía a través de la pantalla... Las cartas te llamarán para ser elegidas. Selecciona exactamente 3."
+              {translations.ui.call_p1}
             </p>
             <button className="start-button blinking-button" onClick={() => {
               setIsPopupFading(true);
@@ -469,16 +455,16 @@ function App() {
                 setShowSynchronyPopup(false);
                 setIsPopupFading(false);
               }, 800);
-            }}>ACEPTAR</button>
+            }}>{translations.ui.accept}</button>
           </div>
         </div>
       )}
 
       {phase === 'synchrony' && (
         <div className="synchrony-content">
-          <h2 className="phase-title">La Sincronía</h2>
+          <h2 className="phase-title">{translations.ui.synchrony_title}</h2>
           <>
-            <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>Haz click en una carta seleccionada para removerla de tu tirada ({selectedCards.length}/3).</p>
+            <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>{translations.ui.card_selection_subtitle} ({selectedCards.length}/3).</p>
             
             <div className="card-grid" style={{ position: 'relative' }}>
               <Dragonfly visible={true} />
@@ -505,7 +491,7 @@ function App() {
             {selectedCards.length === 3 && (
               <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
                 <button className="start-button blinking-button" onClick={() => setPhase('introspection')} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
-                  Continuar
+                  {translations.ui.continue}
                 </button>
               </div>
             )}
@@ -515,19 +501,19 @@ function App() {
 
       {phase === 'introspection' && (
         <div className="introspection-content threshold-content">
-          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>El Espejo del Alma</h2>
+          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>{translations.ui.introspection_title}</h2>
           
           {loading ? (
             <div style={{ marginTop: '20px' }}>
               <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
                 <TypewriterText text={sessionTexts.waitMsg} speed={45} />
               </p>
-              <p className="subtitle" style={{ textAlign: 'center' }}><TypewriterText text="Un momento de profundo silencio. El universo te está escuchando." speed={40} /></p>
+              <p className="subtitle" style={{ textAlign: 'center' }}><TypewriterText text={translations.ui.wait_silence} speed={40} /></p>
             </div>
           ) : (
             <>
               <p className="welcome-text" style={{ fontSize: '1rem', fontStyle: 'italic' }}>
-                <span className="reveal-text">{`"${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."`}</span>
+                <span className="reveal-text">{translations.ui.magnetic_resonance.replace('{name}', userName)}</span>
               </p>
               
               <div style={{ textAlign: 'center', marginBottom: '30px', marginTop: '20px' }}>
@@ -544,16 +530,16 @@ function App() {
                 <textarea 
                   className="soul-input" 
                   style={{ height: '120px', resize: 'none', maxWidth: '600px', margin: '0 auto', display: 'block' }}
-                  placeholder="Revela tu sentir con total honestidad..."
+                  placeholder={translations.ui.revelation_confession}
                   id="deepAnswer"
                 />
               </div>
-
+ 
               <button className="start-button blinking-button" onClick={() => {
                 const answer = document.getElementById('deepAnswer')?.value || '';
                 handleStartRevelation({ introspectionAnswer: answer });
               }}>
-                Entregar al Oráculo
+                {translations.ui.submit_to_oracle}
               </button>
             </>
           )}
@@ -571,7 +557,7 @@ function App() {
               return (
                 <div style={{ animation: 'fadeIn 1s ease' }}>
                   <p className="subtitle" style={{ fontSize: '1.2rem', color: '#ffd700', marginBottom: '30px' }}>
-                    Sintoniza tu intuición con la pregunta que acabas de hacer.<br/>Selecciona una Carta Clarificadora del mazo restante.
+                    {translations.ui.deepen_loading}
                   </p>
                   <div className="card-grid" style={{ position: 'relative' }}>
                     <Dragonfly visible={true} />
@@ -606,15 +592,18 @@ function App() {
                   <Dragonfly visible={cardsFlippedCount < 3} />
                   {selectedCards.map((card, index) => {
                     const clar = clarifications[card.id];
+                    const cardI18n = translations.cards[card.id] || card;
+                    const translatedCard = { ...card, name: cardI18n.name, info: cardI18n.info };
+                    
                     return (
                     <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`} style={{ position: 'relative' }}>
                       <div style={{ position: 'relative', zIndex: 2 }}>
-                        <Card card={card} isSelected={false} isFaceUp={cardsFlippedCount > index} />
+                        <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} />
                       </div>
                       
                       {clar?.extraCard && (
                         <div className="clarification-card-wrapper fade-in-text">
-                          <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
+                          <Card card={{...clar.extraCard, name: translations.cards[clar.extraCard.id]?.name || clar.extraCard.name}} isSelected={false} isFaceUp={true} />
                         </div>
                       )}
                     </div>
@@ -632,11 +621,11 @@ function App() {
                     {revealedStage > 0 && interpretation && (
                       <div className="narrative-container">
                         <div className="interpretation-bubbles" style={{ opacity: isFading ? 0 : 1, transition: 'opacity 1s ease-in-out' }}>
-                          <div className="brain-bubble narrative" key={revealedStage}>
+                           <div className="brain-bubble narrative" key={revealedStage}>
                             <p className="narrative-meta" style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                              {revealedStage === 1 && "I. El Origen Kármico"}
-                              {revealedStage === 2 && "II. El Bloqueo Presente"}
-                              {revealedStage === 3 && "III. El Consejo de Sanación"}
+                              {revealedStage === 1 && translations.ui.origin_karmic}
+                              {revealedStage === 2 && translations.ui.present_blockage}
+                              {revealedStage === 3 && translations.ui.healing_advice}
                             </p>
                             
                             <div style={{ marginBottom: '20px' }}>
@@ -644,60 +633,41 @@ function App() {
                                 ? interpretation.narrativaAncestral[revealedStage - 1]
                                 : interpretation.narrativaAncestral}</span>
                             </div>
-
-                            {/* Deepening Extensions */}
-                            {(() => {
-                              const currentCard = selectedCards[revealedStage - 1];
-                              const clarState = clarifications[currentCard.id];
-                              
-                              if (!clarState) {
-                                return (
-                                  <button onClick={() => initDeepening(currentCard.id)} className="start-button" style={{ marginTop: '15px', fontSize: '0.8rem', padding: '8px 20px', borderColor: 'rgba(255,215,0,0.4)', color: '#ffd700' }}>
-                                    ¿Quieres profundizar esta respuesta?
-                                  </button>
-                                );
-                              }
-                              if (clarState.step === 'question') {
-                                return (
-                                  <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '15px', border: '1px solid rgba(255,215,0,0.2)' }} className="fade-in-text">
-                                      <p style={{ fontSize: '1rem', color: '#e0e0e0', marginBottom: '15px' }}>
-                                        <TypewriterText text="¿Qué detalle exactamente deseas clarificar al Oráculo?" speed={45} />
-                                      </p>
-                                    <input type="text" id={`deep-q-${currentCard.id}`} className="soul-input" style={{ marginBottom: '15px', fontSize: '0.95rem' }} placeholder="Tu pregunta profunda aquí..." />
-                                    <button onClick={() => submitDeepenQuestion(currentCard.id, document.getElementById(`deep-q-${currentCard.id}`).value)} className="start-button" style={{ borderColor: '#ffd700', color: '#ffd700' }}>
-                                      Buscar Claridad
-                                    </button>
-                                  </div>
-                                );
-                              }
-                              if (clarState.step === 'loading') {
-                                return (
-                                  <p className="narrative-meta" style={{ marginTop: '30px', animation: 'slowFadePulse 2.5s infinite ease-in-out', color: '#c084fc', fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center' }}>
-                                    <TypewriterText text="Buscando la profundidad interior a través de tus vidas pasadas..." speed={40} />
-                                  </p>
-                                );
-                              }
-                              if (clarState.step === 'done') {
-                                return (
-                                  <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
-                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '15px', fontWeight: 'bold' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
-                                    <div style={{ color: '#e5e4e7', textAlign: 'center', lineHeight: '1.5', fontSize: '0.95rem' }}>
-                                      <span className="reveal-text">{clarState.extraResponse}</span>
-                                    </div>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
                             
+                            {/* Deepen logic per card */}
+                            <div className="deepen-box">
+                               {!clarifications[selectedCards[revealedStage-1].id] ? (
+                                 <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
+                                    {translations.ui.deepen}
+                                 </button>
+                               ) : clarifications[selectedCards[revealedStage-1].id].step === 'question' ? (
+                                 <div className="fade-in-text">
+                                    <input 
+                                      type="text" 
+                                      className="soul-input" 
+                                      style={{ fontSize: '0.9rem', marginBottom: '10px'}} 
+                                      placeholder={translations.ui.revelation_confession}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') submitDeepenQuestion(selectedCards[revealedStage-1].id, e.target.value);
+                                      }}
+                                    />
+                                    <p style={{ fontSize: '0.7rem', color: '#ffd700' }}>{translations.ui.press_enter}</p>
+                                 </div>
+                               ) : clarifications[selectedCards[revealedStage-1].id].step === 'done' ? (
+                                 <div className="brain-bubble narrative fade-in-text" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)'}}>
+                                    <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem'}}>{translations.ui.deepen_subtitle}</p>
+                                    <p style={{ fontSize: '0.95rem', fontStyle: 'italic'}}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</p>
+                                 </div>
+                               ) : null}
+                            </div>
                           </div>
                         </div>
                       </div>
                     )}
-
-                    {autoRevealStarted && cardsFlippedCount === 3 && (
-                      <button className={`start-button ${revealedStage === 0 ? 'blinking-button' : ''}`} onClick={handleNextStage} style={{ marginTop: '30px' }}>
-                        {revealedStage === 0 ? "Comenzar Lectura" : revealedStage < 3 ? "Continuar al siguiente misterio" : "Ir a la Gran Síntesis"}
+                    
+                    {autoRevealStarted && (
+                      <button className="start-button blinking-button" onClick={handleNextStage} style={{ marginTop: '20px' }}>
+                        {revealedStage < 3 ? translations.ui.continue : translations.ui.view_synthesis}
                       </button>
                     )}
                   </>
@@ -709,40 +679,24 @@ function App() {
       )}
 
       {phase === 'anchoring' && interpretation && (
-        <div className="anchoring-content">
-          <h2 className="phase-title" style={{ textAlign: 'center' }}>El Anclaje Místico</h2>
-
-          <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
-            {selectedCards.map((card, index) => (
-              <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px' }}>
-                <Card card={card} isSelected={false} isFaceUp={true} />
-              </div>
-            ))}
+        <div className="anchoring-content threshold-content">
+          <h2 className="phase-title">{translations.ui.great_synthesis_title}</h2>
+          <div className="narrative-container">
+             <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#ffd700' }}>
+                <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>{interpretation.conclusionFinal}</p>
+                <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(255,215,0,0.05)', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.2)' }}>
+                  <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
+                  <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>"{interpretation.decreto}"</p>
+                </div>
+                <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(192,132,252,0.05)', borderRadius: '10px', border: '1px solid rgba(192,132,252,0.2)' }}>
+                  <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
+                  <p>{interpretation.tarea_terrenal}</p>
+                </div>
+             </div>
           </div>
-
-          {interpretation.conclusionFinal && (
-            <div className="brain-bubble narrative fade-in-text" style={{ marginBottom: '40px', borderColor: '#ffd700', margin: '0 auto 40px auto' }}>
-              <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '1.2rem', marginBottom: '20px' }}>
-                <span className="reveal-text">{`La Gran Síntesis para ti, ${userName}...`}</span>
-              </p>
-              <p style={{ margin: 0 }}><span className="reveal-text">{interpretation.conclusionFinal}</span></p>
-            </div>
-          )}
-
-          <div className="anchoring-grid">
-            <div className="anchor-block">
-              <h3>Decreto de Sanación</h3>
-              <p className="decree-text"><span className="reveal-text">{`"${interpretation.decreto}"`}</span></p>
-            </div>
-            <div className="anchor-block">
-              <h3>Tarea Terrenal</h3>
-              <p className="task-text"><span className="reveal-text">{interpretation.tarea_terrenal}</span></p>
-            </div>
-          </div>
-          <button className="start-button" onClick={() => window.location.reload()}>Nueva Consulta</button>
+          <button className="start-button" onClick={() => window.location.reload()} style={{ marginTop: '40px' }}>{translations.ui.reset_ritual}</button>
         </div>
       )}
-      
       </div>
     </div>
   );
