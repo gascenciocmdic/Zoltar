@@ -13,8 +13,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs en las variables de entorno.' });
   }
 
-  // Antoni (Estándar) - Voz pre-fabricada gratuita: ErXwobaYiN019PkySvjV
-  const voiceId = "ErXwobaYiN019PkySvjV"; 
+  // Thomas (Estándar) - Voz sabia y calmada: GBv7mTt0atIp3Br8iCZE
+  const voiceId = "GBv7mTt0atIp3Br8iCZE"; 
   const modelId = "eleven_multilingual_v2";
 
   try {
@@ -28,8 +28,8 @@ export default async function handler(req, res) {
         text,
         model_id: modelId,
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
+          stability: 0.75, // Mayor estabilidad para un tono espiritual
+          similarity_boost: 0.75,
           style: 0.0,
           use_speaker_boost: true
         }
