@@ -495,8 +495,8 @@ function App() {
                         <Card card={card} isSelected={false} isFaceUp={cardsFlippedCount > index} />
                       </div>
                       
-                      {clar?.extraCard && clar.step === 'done' && (
-                        <div style={{ position: 'absolute', top: '30px', left: '130px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
+                      {clar?.extraCard && (
+                        <div style={{ position: 'absolute', top: '20px', left: '80px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
                           <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
                         </div>
                       )}
@@ -549,16 +549,16 @@ function App() {
                               }
                               if (clarState.step === 'loading') {
                                 return (
-                                  <p className="narrative-meta" style={{ marginTop: '20px', animation: 'pulse 2s infinite' }}>
-                                    Develando el susurro del tiempo...
+                                  <p className="narrative-meta" style={{ marginTop: '30px', animation: 'slowFadePulse 2.5s infinite ease-in-out', color: '#c084fc', fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center' }}>
+                                    Buscando la profundidad interior a través de tus vidas pasadas...
                                   </p>
                                 );
                               }
                               if (clarState.step === 'done') {
                                 return (
                                   <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
-                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '20px', fontSize: '1.2rem', fontFamily: '"Cinzel", serif' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
-                                    <div style={{ fontSize: '1.15rem', color: '#f1f5f9', fontFamily: '"Cinzel", "Playfair Display", serif', lineHeight: '2', letterSpacing: '0.05em', textAlign: 'center', fontWeight: '300' }}>
+                                    <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '15px', fontWeight: 'bold' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
+                                    <div style={{ color: '#e5e4e7', textAlign: 'left', lineHeight: '1.5', fontSize: '0.95rem' }}>
                                       {clarState.extraResponse}
                                     </div>
                                   </div>
