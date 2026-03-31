@@ -13,8 +13,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs en las variables de entorno.' });
   }
 
-  // Thomas (Estándar) - Voz sabia y calmada: GBv7mTt0atIp3Br8iCZE
-  const voiceId = "GBv7mTt0atIp3Br8iCZE"; 
+  // Volvemos a Antoni (Confirmado funcional: ErXwobaYiN019PkySvjV)
+  // Lo afinaremos con parámetros para que suene más sabio.
+  const voiceId = "ErXwobaYiN019PkySvjV"; 
   const modelId = "eleven_multilingual_v2";
 
   try {
@@ -37,8 +38,8 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('ElevenLabs API Error:', errorData);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('ElevenLabs API Error Body:', errorData);
       return res.status(response.status).json(errorData);
     }
 

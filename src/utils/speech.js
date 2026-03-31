@@ -42,8 +42,9 @@ export const speakText = async (text) => {
       body: JSON.stringify({ text })
     });
 
-    if (response.status === 402) {
-        console.warn("Cuota de ElevenLabs agotada. Cambiando a voz de sistema (Fallback).");
+    if (response.status !== 200) {
+        console.error(`Error TTS: Codigo ${response.status}. Intentando Fallback...`);
+        if (response.status === 402) console.warn("Cuota agotada o Voz premium restringida.");
         speakSystemFallback(text);
         return;
     }
