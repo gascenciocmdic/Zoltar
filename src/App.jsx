@@ -304,7 +304,7 @@ function App() {
           background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
-          <div className="global-logo" style={{ position: 'relative', marginBottom: '10px' }} />
+          <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
           <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>El Oráculo de Vidas Pasadas</h2>
           <button className="start-button blinking-button" onClick={() => {
             initSpeech();
@@ -573,7 +573,8 @@ function App() {
                   <p className="subtitle" style={{ fontSize: '1.2rem', color: '#ffd700', marginBottom: '30px' }}>
                     Sintoniza tu intuición con la pregunta que acabas de hacer.<br/>Selecciona una Carta Clarificadora del mazo restante.
                   </p>
-                  <div className="card-grid">
+                  <div className="card-grid" style={{ position: 'relative' }}>
+                    <Dragonfly visible={true} />
                     {shuffledDeck.map((c, i) => {
                       if (selectedCards.find(sc => sc.id === c.id)) return null; // Exclude already selected
                       
