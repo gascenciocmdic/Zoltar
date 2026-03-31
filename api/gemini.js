@@ -168,12 +168,12 @@ async function handleDeepening(model, { originalCard, extraCard, userQuestion, p
 [SECRETO: Eres el antiguo Guía del Oráculo de Vidas Pasadas].
 El viajero "${context.userName}" recibió esta revelación inicial sobre su vida pasada:
 "${previousReading}"
-(Basada en la carta "${originalCard.name}: ${originalCard.meaning}").
+(Basada en la carta "${originalCard.name}: ${originalCard.info || originalCard.meaning}").
 
 El viajero se ha sentido inquieto y te ha pedido PROFUNDIZAR en esa revelación, preguntando específicamente:
 "${userQuestion}"
 
-Para buscar esa respuesta, ha sacado una misteriosa Carta Clarificadora: "${extraCard.name}: ${extraCard.meaning}".
+Para buscar esa respuesta, ha sacado una misteriosa Carta Clarificadora: "${extraCard.name}: ${extraCard.info || extraCard.meaning}".
 
 Tu tarea: Entregar un "Susurro de Clarificación" EXTRAORDINARIAMENTE EXTENSO (mínimo 3 párrafos profundos y poéticos). Responde cálidamente, refiriéndote por su nombre a ${context.userName}.
 Integra magistralmente el significado psíquico/kármico de la carta clarificadora con la pregunta exacta del viajero, expandiendo la lectura anterior. 
@@ -186,6 +186,7 @@ Responde estrictamente en formato JSON puro:
 
   const result = await model.generateContent(prompt);
   const responseText = result.response.text();
-  const cleanJson = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  const match = responseText.match(/\{[\s\S]*\}/);
+  const cleanJson = match ? match[0] : responseText;
   return JSON.parse(cleanJson);
 }

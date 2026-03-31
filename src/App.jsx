@@ -199,7 +199,10 @@ function App() {
       const clarState = clarifications[cardId];
       if (originalCard && clarState) {
         try {
-          const resp = await generateDeepening(originalCard, extraCard, clarState.question, originalCard.reading, {userName}, null);
+          const readingIndex = selectedCards.findIndex(c => c.id === cardId);
+          const previousReadingText = interpretation && Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : '';
+          
+          const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null);
           setClarifications(prev => ({
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
@@ -496,7 +499,7 @@ function App() {
                       </div>
                       
                       {clar?.extraCard && (
-                        <div style={{ position: 'absolute', top: '20px', left: '80px', zIndex: 1, opacity: 0.95, transform: 'rotate(8deg)' }} className="fade-in-text">
+                        <div className="clarification-card-wrapper fade-in-text">
                           <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
                         </div>
                       )}
