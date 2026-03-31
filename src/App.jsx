@@ -13,16 +13,34 @@ function App() {
   const [language, setLanguage] = useState('es'); // Default, but will be set by selection
   const [phase, setPhase] = useState('languageSelection'); // languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
-  const translations = useMemo(() => I18N[language], [language]);
+  const [textIndices, setTextIndices] = useState({
+    greeting: 0,
+    askName: 0,
+    waitMsg: 0
+  });
+
+  const translations = useMemo(() => I18N[language] || I18N.es, [language]);
 
   const sessionTexts = useMemo(() => {
     const pool = I18N[language] || I18N.es;
     return {
-      greeting: pool.greetings[Math.floor(Math.random() * pool.greetings.length)],
-      askName: pool.ask_names[Math.floor(Math.random() * pool.ask_names.length)],
-      waitMsg: pool.wait_messages[Math.floor(Math.random() * pool.wait_messages.length)]
+      greeting: pool.greetings[textIndices.greeting % pool.greetings.length] || pool.greetings[0],
+      askName: pool.ask_names[textIndices.askName % pool.ask_names.length] || pool.ask_names[0],
+      waitMsg: pool.wait_messages[textIndices.waitMsg % pool.wait_messages.length] || pool.wait_messages[0]
     };
-  }, [language]);
+  }, [language, textIndices]);
+
+  // Recalculate random indices whenever we enter the threshold phase OR language changes
+  useEffect(() => {
+    if (phase === 'threshold' || phase === 'languageSelection') {
+      const pool = I18N[language] || I18N.es;
+      setTextIndices({
+        greeting: Math.floor(Math.random() * pool.greetings.length),
+        askName: Math.floor(Math.random() * pool.ask_names.length),
+        waitMsg: Math.floor(Math.random() * pool.wait_messages.length)
+      });
+    }
+  }, [language, phase]);
 
   const [vibe, setVibe] = useState('healing_blue');
   const [selectedCards, setSelectedCards] = useState([]);

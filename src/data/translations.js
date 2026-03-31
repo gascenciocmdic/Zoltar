@@ -44,7 +44,11 @@ export const I18N = {
       present_blockage: "II. El Bloqueo Presente",
       healing_advice: "III. El Consejo de Sanación",
       magnetic_resonance: "{name}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón...",
-      revelation_confession: "Revela tu sentir con total honestidad..."
+      revelation_confession: "Revela tu sentir con total honestidad...",
+      deepen: "Profundizar Carta",
+      press_enter: "Presiona Enter para confirmar tu inquietud",
+      view_synthesis: "Ver la Gran Síntesis",
+      reset_ritual: "Nueva Consulta Astral"
     },
     greetings: [
       "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
@@ -172,7 +176,11 @@ export const I18N = {
       present_blockage: "II. The Present Blockage",
       healing_advice: "III. The Healing Advice",
       magnetic_resonance: "{name}, the cards have been chosen not by chance, but by Ancestral Magnetic Resonance. Before revealing their message, take a deep breath. Observe the void before you and be honest with your heart...",
-      revelation_confession: "Reveal your feelings with total honesty..."
+      revelation_confession: "Reveal your feelings with total honesty...",
+      deepen: "Deepen Reading",
+      press_enter: "Press Enter to confirm your inquiry",
+      view_synthesis: "View Great Synthesis",
+      reset_ritual: "New Astral Consultation"
     },
     greetings: [
       "I am The Guide, your bridge between who you were and who you are. I have walked a thousand lives to find you at this precise moment. Will you allow me to accompany you on this journey back to your own light?",
@@ -300,7 +308,11 @@ export const I18N = {
       present_blockage: "II. O Bloqueio Presente",
       healing_advice: "III. O Conselho de Cura",
       magnetic_resonance: "{name}, as cartas foram escolhidas não por acaso, mas por Ressonância Magnética Ancestral. Antes de revelar sua mensagem, respire fundo. Observe o vazio à sua frente e seja honesto com seu coração...",
-      revelation_confession: "Revele seu sentir com total honestidade..."
+      revelation_confession: "Revele seu sentir com total honestidade...",
+      deepen: "Aprofundar Carta",
+      press_enter: "Pressione Enter para confirmar sua inquietude",
+      view_synthesis: "Ver a Grande Síntese",
+      reset_ritual: "Nova Consulta Astral"
     },
     greetings: [
       "Eu sou O Guia, sua ponte entre quem você foi e quem você é. Eu caminhei mil vidas para te encontrar neste momento preciso. Você me permite acompanhá-lo nesta jornada de retorno à sua própria luz?",
