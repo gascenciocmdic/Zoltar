@@ -35,6 +35,15 @@ export const speakText = async (text) => {
     });
 
     if (!response.ok) {
+        const errorDetail = await response.json().catch(() => ({}));
+        console.error("Falla en la respuesta de TTS:", response.status, errorDetail);
+        if (response.status === 500) {
+          alert("Error del servidor (500): ¿Añadiste la clave ELEVENLABS_API_KEY en Vercel o en tu .env local?");
+        } else if (response.status === 401) {
+          alert("Error de Autorización (401): Tu API KEY de ElevenLabs parece ser inválida.");
+        } else {
+          alert(`Error de ElevenLabs (${response.status}): Revisa tu consola para más detalles.`);
+        }
         throw new Error("Falla en la respuesta de TTS");
     }
 
