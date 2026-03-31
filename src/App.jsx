@@ -200,7 +200,9 @@ function App() {
       if (originalCard && clarState) {
         try {
           const readingIndex = selectedCards.findIndex(c => c.id === cardId);
-          const previousReadingText = interpretation && Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : '';
+          const previousReadingText = interpretation?.narrativaAncestral 
+            ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : interpretation.narrativaAncestral)
+            : '';
           
           const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null);
           setClarifications(prev => ({
@@ -210,7 +212,7 @@ function App() {
         } catch (e) {
           setClarifications(prev => ({
             ...prev,
-            [cardId]: { ...prev[cardId], extraResponse: "La clarificación fue interrumpida por las mareas del tiempo.", step: 'done' }
+            [cardId]: { ...prev[cardId], extraResponse: `La clarificación fue interrumpida por las mareas del tiempo. (Error Técnico: ${e.message})`, step: 'done' }
           }));
         }
       }

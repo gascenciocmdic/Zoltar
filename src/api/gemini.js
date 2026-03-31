@@ -28,8 +28,14 @@ export const generateDeepening = async (originalCard, extraCard, userQuestion, p
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Error al profundizar');
+    let errorMsg = 'Error al profundizar';
+    try {
+      const errorData = await response.json();
+      errorMsg = errorData.error || errorMsg;
+    } catch(err) {
+      errorMsg = `HTTP ${response.status} (Posible Timeout de servidor)`;
+    }
+    throw new Error(errorMsg);
   }
 
   const data = await response.json();
