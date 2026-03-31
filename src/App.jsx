@@ -5,7 +5,31 @@ import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
 
+const GREETINGS = [
+  "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
+  "Bienvenido, alma viajera. Soy el guardián de los Ecos Pasados. ¿Estás listo para correr el velo del tiempo y mirar hacia atrás?",
+  "Los hilos del destino nos han reunido. Soy El Guía de Vidas Pasadas. ¿Me das permiso para desentrañar el origen de tu caminar actual?"
+];
+
+const ASK_NAMES = [
+  "Primero, dime... ¿cómo debo llamarte en esta encarnación?",
+  "Para iniciar nuestro vínculo... ¿cuál es el nombre que llevas en esta vida?",
+  "Antes de abrir el portal... ¿con qué nombre se te conoce hoy en el plano físico?"
+];
+
+const WAIT_MESSAGES = [
+  "El Vortex está fusionando tus energías con las memorias de tus vidas pasadas...",
+  "Invocando el conocimiento de tus vidas pasadas. Las mareas del tiempo se agitan...",
+  "Silencio... las almas de antaño están susurrando sus verdades sobre ti."
+];
+
 function App() {
+  const sessionTexts = useMemo(() => ({
+    greeting: GREETINGS[Math.floor(Math.random() * GREETINGS.length)],
+    askName: ASK_NAMES[Math.floor(Math.random() * ASK_NAMES.length)],
+    waitMsg: WAIT_MESSAGES[Math.floor(Math.random() * WAIT_MESSAGES.length)]
+  }), []);
+
   const [phase, setPhase] = useState('threshold'); // threshold, synchrony, introspection, revelation, anchoring
   const [vibe, setVibe] = useState('healing_blue');
   const [selectedCards, setSelectedCards] = useState([]);
@@ -239,9 +263,7 @@ function App() {
           {thresholdStep === 0 && (
             <>
               <p className="welcome-text">
-                "Soy El Guía, tu puente entre lo que fuiste y lo que eres. 
-                He caminado mil vidas para encontrarte en este preciso instante. 
-                ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?"
+                "{sessionTexts.greeting}"
               </p>
               <button className="start-button" onClick={handleStart}>
                 Permitir
@@ -262,7 +284,7 @@ function App() {
 
           {thresholdStep === 1 && (
             <>
-              <p className="welcome-text">"Primero, dime... ¿cómo debo llamarte en esta encarnación?"</p>
+              <p className="welcome-text">"{sessionTexts.askName}"</p>
               <input 
                 type="text" 
                 className="soul-input" 
@@ -395,9 +417,11 @@ function App() {
             </div>
             
             {selectedCards.length === 3 && (
-              <button className="start-button blinking-button" onClick={() => setPhase('introspection')} style={{ marginTop: '30px' }}>
-                Continuar
-              </button>
+              <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
+                <button className="start-button blinking-button" onClick={() => setPhase('introspection')} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
+                  Continuar
+                </button>
+              </div>
             )}
           </>
         </div>
@@ -409,10 +433,10 @@ function App() {
           
           {loading ? (
             <div style={{ marginTop: '20px' }}>
-              <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out' }}>
-                El Vortex está fusionando tus energías con las memorias de tus vidas pasadas...
+              <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
+                {sessionTexts.waitMsg}
               </p>
-              <p className="subtitle">Un momento de profundo silencio. El universo te está escuchando.</p>
+              <p className="subtitle" style={{ textAlign: 'center' }}>Un momento de profundo silencio. El universo te está escuchando.</p>
             </div>
           ) : (
             <>
@@ -510,7 +534,9 @@ function App() {
                 </div>
                 
                 {loading ? (
-                  <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out' }}>Invocando el conocimiento de tus vidas pasadas...</p>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>{sessionTexts.waitMsg}</p>
+                  </div>
                 ) : (
                   <>
                     {revealedStage > 0 && interpretation && (
@@ -592,7 +618,15 @@ function App() {
 
       {phase === 'anchoring' && interpretation && (
         <div className="anchoring-content">
-          <h2 className="phase-title">El Anclaje Místico</h2>
+          <h2 className="phase-title" style={{ textAlign: 'center' }}>El Anclaje Místico</h2>
+
+          <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
+            {selectedCards.map((card, index) => (
+              <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px' }}>
+                <Card card={card} isSelected={false} isFaceUp={true} />
+              </div>
+            ))}
+          </div>
 
           {interpretation.conclusionFinal && (
             <div className="brain-bubble narrative fade-in-text" style={{ marginBottom: '40px', borderColor: '#ffd700', margin: '0 auto 40px auto' }}>

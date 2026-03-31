@@ -70,6 +70,7 @@
   color: #ffd700;
   text-transform: uppercase;
   font-size: 1.8rem;
+  text-align: center;
 }
 
 .subtitle {
@@ -107,6 +108,12 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 50px;
+  display: block;
+  margin: 0 auto;
+}
+
+p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
+  text-align: justify;
 }
 
 .start-button:hover {
