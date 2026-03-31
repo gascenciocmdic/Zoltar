@@ -13,9 +13,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs en las variables de entorno.' });
   }
 
-  // Volvemos a Antoni (Confirmado funcional: ErXwobaYiN019PkySvjV)
-  // Lo afinaremos con parámetros para que suene más sabio.
-  const voiceId = "ErXwobaYiN019PkySvjV"; 
+  // Voice ID solicitado por el usuario: 6iWkTWoJzrCzM5FKyQ9g
+  const voiceId = "6iWkTWoJzrCzM5FKyQ9g"; 
   const modelId = "eleven_multilingual_v2";
 
   try {
