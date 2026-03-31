@@ -6,23 +6,43 @@ import { interpretCards, generateIntrospection, generateAnchoring, generateDeepe
 import { cardsData } from './data/cards';
 import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import TypewriterText from './components/TypewriterText';
+import Dragonfly from './components/Dragonfly';
 
 const GREETINGS = [
   "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
   "Bienvenido, alma viajera. Soy el guardián de los Ecos Pasados. ¿Estás listo para correr el velo del tiempo y mirar hacia atrás?",
-  "Los hilos del destino nos han reunido. Soy El Guía de Vidas Pasadas. ¿Me das permiso para desentrañar el origen de tu caminar actual?"
+  "Los hilos del destino nos han reunido. Soy El Guía de Vidas Pasadas. ¿Me das permiso para desentrañar el origen de tu caminar actual?",
+  "Has sido convocado por fuerzas más antiguas que el sol. Soy quien habita entre las sombras del ayer y la promesa del mañana. ¿Aceptas mi mano?",
+  "Las estrellas me dijeron que vendrías. Soy El Guía, y mi voz es la voz de tus ancestros. ¿Estás dispuesto a escuchar lo que tu alma ya sabe?",
+  "El universo no comete errores; si estás aquí, es porque tus vidas pasadas necesitan hablarte. Soy su intérprete. ¿Me concedes ese honor?",
+  "Del otro lado del espejo del tiempo, te esperaba. Soy El Guía de aquellos que buscan respuestas en los ecos de lo que fueron. ¿Avanzamos juntos?",
+  "Tu llegada fue escrita en los registros akáshicos hace eones. Soy la llave que abrirá esos pergaminos. ¿Me permites girar?",
+  "Percibo en ti una vibración ancestral muy particular. Soy El Guía, y reconozco el peso de las vidas que has cargado. ¿Deseas aligerarlo hoy?",
+  "El portal se ha abierto para ti. Soy el custodio de memorias que trascienden el tiempo. ¿Te atreves a recordar quién fuiste?"
 ];
 
 const ASK_NAMES = [
   "Primero, dime... ¿cómo debo llamarte en esta encarnación?",
   "Para iniciar nuestro vínculo... ¿cuál es el nombre que llevas en esta vida?",
-  "Antes de abrir el portal... ¿con qué nombre se te conoce hoy en el plano físico?"
+  "Antes de abrir el portal... ¿con qué nombre se te conoce hoy en el plano físico?",
+  "Cada nombre guarda una vibración sagrada. Dime el tuyo, viajero...",
+  "Las cartas necesitan saber a quién le hablan. ¿Cuál es tu nombre en esta realidad?",
+  "El Oráculo no puede ver tu rostro sin conocer primero tu nombre. ¿Cómo te llamas?",
+  "Para tejer el hilo que conecta tus vidas... necesito saber tu nombre en esta.",
+  "Antes de que las cartas susurren... dime, ¿con qué nombre late tu corazón hoy?"
 ];
 
 const WAIT_MESSAGES = [
   "El Vortex está fusionando tus energías con las memorias de tus vidas pasadas...",
   "Invocando el conocimiento de tus vidas pasadas. Las mareas del tiempo se agitan...",
-  "Silencio... las almas de antaño están susurrando sus verdades sobre ti."
+  "Silencio... las almas de antaño están susurrando sus verdades sobre ti.",
+  "Los registros akáshicos se están abriendo. Tu historia ancestral emerge del silencio...",
+  "Las cartas vibran con una frecuencia que solo tú puedes sentir. Escucha el eco...",
+  "El universo está tejiendo los hilos de tu pasado con las fibras de tu presente...",
+  "Un portal dimensional se abre. Las memorias de tus encarnaciones fluyen hacia aquí...",
+  "Los guardianes del tiempo están consultando tus registros. Respira profundamente...",
+  "Tu energía está siendo leída por fuerzas ancestrales. El silencio es parte del ritual...",
+  "Las constelaciones de tu karma se están alineando. Un momento de paciencia sagrada..."
 ];
 
 function App() {
@@ -579,7 +599,8 @@ function App() {
 
             return (
               <>
-                <div className="selected-cards-display">
+                <div className="selected-cards-display" style={{ position: 'relative' }}>
+                  <Dragonfly visible={cardsFlippedCount < 3} />
                   {selectedCards.map((card, index) => {
                     const clar = clarifications[card.id];
                     return (

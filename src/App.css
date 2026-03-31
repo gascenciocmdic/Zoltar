@@ -354,3 +354,14 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     transform: translateY(0px);
   }
 }
+
+/* Dragonfly animations */
+@keyframes dragonflyPulse {
+  0% { box-shadow: 0 0 8px 3px rgba(255,255,255,0.7), 0 0 20px 6px rgba(192,132,252,0.4); }
+  100% { box-shadow: 0 0 12px 5px rgba(255,255,255,1), 0 0 30px 10px rgba(192,132,252,0.7), 0 0 45px 15px rgba(255,215,0,0.3); }
+}
+
+@keyframes wingFlutter {
+  0% { transform: scaleY(1) rotate(-5deg); }
+  100% { transform: scaleY(0.3) rotate(5deg); }
+}
