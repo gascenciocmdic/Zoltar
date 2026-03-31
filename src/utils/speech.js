@@ -1,11 +1,23 @@
 let isMuted = false;
 let currentAudio = null;
+let preferredSystemVoice = null;
 
 /**
- * Inicializador (ahora simplificado ya que no depende de voces locales)
+ * Inicializador: Carga voces de sistema para el FALLBACK
  */
 export const initSpeech = () => {
-  console.log("Human Voice Engine (ElevenLabs) Initialized.");
+  if ('speechSynthesis' in window) {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419') || v.lang.startsWith('es'));
+      preferredSystemVoice = mxVoices.find(v => 
+          v.name.includes('Jorge') || v.name.includes('Juan') || v.name.includes('Diego') || v.name.toLowerCase().includes('male')
+      ) || mxVoices[0] || voices[0];
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  console.log("Human Voice Engine (ElevenLabs) Initialized with System Fallback.");
 };
 
 export const toggleMute = () => {
@@ -18,13 +30,9 @@ export const toggleMute = () => {
 
 export const getIsMuted = () => isMuted;
 
-/**
- * Llama al endpoint de backend para obtener el audio humano y reproducirlo.
- */
 export const speakText = async (text) => {
   if (isMuted || !text) return;
   
-  // Detener audio previo
   stopSpeech();
   
   try {
@@ -34,16 +42,13 @@ export const speakText = async (text) => {
       body: JSON.stringify({ text })
     });
 
+    if (response.status === 402) {
+        console.warn("Cuota de ElevenLabs agotada. Cambiando a voz de sistema (Fallback).");
+        speakSystemFallback(text);
+        return;
+    }
+
     if (!response.ok) {
-        const errorDetail = await response.json().catch(() => ({}));
-        console.error("Falla en la respuesta de TTS:", response.status, errorDetail);
-        if (response.status === 500) {
-          alert("Error del servidor (500): ¿Añadiste la clave ELEVENLABS_API_KEY en Vercel o en tu .env local?");
-        } else if (response.status === 401) {
-          alert("Error de Autorización (401): Tu API KEY de ElevenLabs parece ser inválida.");
-        } else {
-          alert(`Error de ElevenLabs (${response.status}): Revisa tu consola para más detalles.`);
-        }
         throw new Error("Falla en la respuesta de TTS");
     }
 
@@ -51,12 +56,30 @@ export const speakText = async (text) => {
     const url = URL.createObjectURL(blob);
     
     currentAudio = new Audio(url);
-    currentAudio.play().catch(e => console.error("Error al reproducir audio:", e));
+    currentAudio.play().catch(e => {
+        console.error("Error al reproducir audio humano:", e);
+        speakSystemFallback(text);
+    });
     
   } catch (error) {
-    console.error("Error en ElevenLabs TTS:", error);
-    // Fallback silencioso (no interrumpir la experiencia visual)
+    console.error("Error en ElevenLabs TTS, usando sistema:", error);
+    speakSystemFallback(text);
   }
+};
+
+/**
+ * Voz de respaldo si ElevenLabs falla
+ */
+const speakSystemFallback = (text) => {
+    if (!('speechSynthesis' in window) || isMuted) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (preferredSystemVoice) utterance.voice = preferredSystemVoice;
+    utterance.lang = 'es-MX';
+    utterance.pitch = 0.75;
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
 };
 
 export const stopSpeech = () => {
@@ -64,5 +87,8 @@ export const stopSpeech = () => {
     currentAudio.pause();
     currentAudio.currentTime = 0;
     currentAudio = null;
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
   }
 };
