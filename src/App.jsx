@@ -5,6 +5,7 @@ import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
 import { initSpeech, toggleMute, speakText, stopSpeech } from './utils/speech';
+import TypewriterText from './components/TypewriterText';
 
 const GREETINGS = [
   "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
@@ -326,7 +327,7 @@ function App() {
           {thresholdStep === 0 && (
             <>
               <p className="welcome-text">
-                "{sessionTexts.greeting}"
+                <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
               </p>
               <button className="start-button" onClick={handleStart}>
                 Permitir
@@ -347,7 +348,7 @@ function App() {
 
           {thresholdStep === 1 && (
             <>
-              <p className="welcome-text">"{sessionTexts.askName}"</p>
+              <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askName}"`} speed={40} /></p>
               <input 
                 type="text" 
                 className="soul-input" 
@@ -361,7 +362,7 @@ function App() {
 
           {thresholdStep === 2 && (
             <>
-              <p className="welcome-text">"Dime, {userName}... ¿qué susurros han traído tus pasos hacia mí hoy?"</p>
+              <p className="welcome-text"><TypewriterText text={`"Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?"`} speed={40} /></p>
               <input 
                 type="text" 
                 className="soul-input" 
@@ -375,7 +376,7 @@ function App() {
 
           {thresholdStep === 3 && (
             <>
-              <p className="welcome-text">"Antes de consultar a las cartas... ¿prefieres la verdad cruda y directa, o el susurro elocuente de la metáfora?"</p>
+              <p className="welcome-text"><TypewriterText text={`"Antes de consultar a las cartas... ¿prefieres la verdad cruda y directa, o el susurro elocuente de la metáfora?"`} speed={40} /></p>
               <div className="dichotomy-buttons">
                 <button className={`choice-button ${dichotomousChoice === 'direct' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('direct')}>Verdad Directa</button>
                 <button className={`choice-button ${dichotomousChoice === 'metaphor' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('metaphor')}>Susurro Metafórico</button>
@@ -387,8 +388,7 @@ function App() {
           {thresholdStep === 4 && (
             <>
               <p className="welcome-text">
-                "Cierra los ojos un instante. Respira. Visualiza aquello que buscas entender. 
-                Haz tu pregunta en silencio y permite que las cartas hablen desde tu propia energía."
+                <TypewriterText text={`"Cierra los ojos un instante. Respira. Visualiza aquello que buscas entender. Haz tu pregunta en silencio y permite que las cartas hablen desde tu propia energía."`} speed={45} />
               </p>
               
               <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>Elegir Cartas</button>
@@ -497,14 +497,14 @@ function App() {
           {loading ? (
             <div style={{ marginTop: '20px' }}>
               <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
-                {sessionTexts.waitMsg}
+                <TypewriterText text={sessionTexts.waitMsg} speed={50} />
               </p>
-              <p className="subtitle" style={{ textAlign: 'center' }}>Un momento de profundo silencio. El universo te está escuchando.</p>
+              <p className="subtitle" style={{ textAlign: 'center' }}><TypewriterText text="Un momento de profundo silencio. El universo te está escuchando." speed={40} /></p>
             </div>
           ) : (
             <>
               <p className="welcome-text" style={{ fontSize: '1rem', fontStyle: 'italic' }}>
-                "{userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."
+                <TypewriterText text={`"${userName}, las cartas han sido elegidas no por azar, sino por Resonancia Magnética Ancestral. Antes de develar su mensaje, tómate un respiro profundo. Observa el vacío frente a ti y sé honesto con tu corazón..."`} speed={45} />
               </p>
               
               <div style={{ textAlign: 'left', marginBottom: '30px', marginTop: '20px' }}>
@@ -512,7 +512,7 @@ function App() {
                   <div className="narrative-container" style={{ margin: '0 auto 20px auto', maxWidth: '600px' }}>
                     <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#c084fc' }}>
                       <p style={{ fontStyle: 'italic', lineHeight: '1.6', color: '#e5e4e7', margin: 0 }}>
-                        {introspectionMessage}
+                        <TypewriterText text={introspectionMessage} speed={30} />
                       </p>
                     </div>
                   </div>
@@ -598,7 +598,9 @@ function App() {
                 
                 {loading ? (
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>{sessionTexts.waitMsg}</p>
+                    <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
+                      <TypewriterText text={sessionTexts.waitMsg} speed={50} />
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -613,9 +615,9 @@ function App() {
                             </p>
                             
                             <div style={{ marginBottom: '20px' }}>
-                              {Array.isArray(interpretation.narrativaAncestral) 
+                              <TypewriterText text={Array.isArray(interpretation.narrativaAncestral) 
                                 ? interpretation.narrativaAncestral[revealedStage - 1]
-                                : interpretation.narrativaAncestral}
+                                : interpretation.narrativaAncestral} speed={35} />
                             </div>
 
                             {/* Deepening Extensions */}
@@ -633,7 +635,9 @@ function App() {
                               if (clarState.step === 'question') {
                                 return (
                                   <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '15px', border: '1px solid rgba(255,215,0,0.2)' }} className="fade-in-text">
-                                    <p style={{ fontSize: '1rem', color: '#e0e0e0', marginBottom: '15px' }}>¿Qué detalle exactamente deseas clarificar al Oráculo?</p>
+                                      <p style={{ fontSize: '1rem', color: '#e0e0e0', marginBottom: '15px' }}>
+                                        <TypewriterText text="¿Qué detalle exactamente deseas clarificar al Oráculo?" speed={35} />
+                                      </p>
                                     <input type="text" id={`deep-q-${currentCard.id}`} className="soul-input" style={{ marginBottom: '15px', fontSize: '0.95rem' }} placeholder="Tu pregunta profunda aquí..." />
                                     <button onClick={() => submitDeepenQuestion(currentCard.id, document.getElementById(`deep-q-${currentCard.id}`).value)} className="start-button" style={{ borderColor: '#ffd700', color: '#ffd700' }}>
                                       Buscar Claridad
@@ -644,7 +648,7 @@ function App() {
                               if (clarState.step === 'loading') {
                                 return (
                                   <p className="narrative-meta" style={{ marginTop: '30px', animation: 'slowFadePulse 2.5s infinite ease-in-out', color: '#c084fc', fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center' }}>
-                                    Buscando la profundidad interior a través de tus vidas pasadas...
+                                    <TypewriterText text="Buscando la profundidad interior a través de tus vidas pasadas..." speed={40} />
                                   </p>
                                 );
                               }
@@ -653,7 +657,7 @@ function App() {
                                   <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed rgba(255,215,0,0.3)' }} className="fade-in-text">
                                     <p className="narrative-meta" style={{ color: '#c084fc', marginBottom: '15px', fontWeight: 'bold' }}>~ Susurro de Clarificación ({clarState.extraCard.name}) ~</p>
                                     <div style={{ color: '#e5e4e7', textAlign: 'left', lineHeight: '1.5', fontSize: '0.95rem' }}>
-                                      {clarState.extraResponse}
+                                      <TypewriterText text={clarState.extraResponse} speed={35} />
                                     </div>
                                   </div>
                                 );
@@ -694,20 +698,20 @@ function App() {
           {interpretation.conclusionFinal && (
             <div className="brain-bubble narrative fade-in-text" style={{ marginBottom: '40px', borderColor: '#ffd700', margin: '0 auto 40px auto' }}>
               <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '1.2rem', marginBottom: '20px' }}>
-                La Gran Síntesis para ti, {userName}...
+                <TypewriterText text={`La Gran Síntesis para ti, ${userName}...`} speed={40} />
               </p>
-              <p style={{ margin: 0 }}>{interpretation.conclusionFinal}</p>
+              <p style={{ margin: 0 }}><TypewriterText text={interpretation.conclusionFinal} speed={35} /></p>
             </div>
           )}
 
           <div className="anchoring-grid">
             <div className="anchor-block">
               <h3>Decreto de Sanación</h3>
-              <p className="decree-text">"{interpretation.decreto}"</p>
+              <p className="decree-text"><TypewriterText text={`"${interpretation.decreto}"`} speed={40} /></p>
             </div>
             <div className="anchor-block">
               <h3>Tarea Terrenal</h3>
-              <p className="task-text">{interpretation.tarea_terrenal}</p>
+              <p className="task-text"><TypewriterText text={interpretation.tarea_terrenal} speed={40} /></p>
             </div>
           </div>
           <button className="start-button" onClick={() => window.location.reload()}>Nueva Consulta</button>

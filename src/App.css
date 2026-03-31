@@ -116,6 +116,27 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text {
   text-align: justify;
 }
 
+.typing-cursor {
+  color: rgba(255, 215, 0, 0.8);
+  margin-left: 2px;
+  font-weight: 300;
+  display: inline-block;
+  opacity: 1;
+}
+
+.blinking-cursor {
+  color: rgba(255, 215, 0, 0.8);
+  margin-left: 2px;
+  font-weight: 300;
+  display: inline-block;
+  animation: blink 1.2s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .start-button:hover {
   background: white;
   color: black;

@@ -9,10 +9,10 @@ export const initSpeech = () => {
   const loadVoices = () => {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
-      // Priorizar México, luego Latino, EEUU o cualquier español
-      preferredVoice = voices.find(v => v.lang.includes('es-MX')) 
-        || voices.find(v => v.lang.includes('es-419'))
-        || voices.find(v => v.lang === 'es-US')
+      // Buscar una voz femenina joven, suave, mexicana o latinoamericana
+      const mxVoices = voices.filter(v => v.lang.includes('es-MX') || v.lang.includes('es-419'));
+      preferredVoice = mxVoices.find(v => v.name.includes('Paulina') || v.name.includes('Sabina') || v.name.includes('Mia') || v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('mujer')) 
+        || mxVoices[0] 
         || voices.find(v => v.lang.startsWith('es'))
         || voices[0];
       voicesLoaded = true;
@@ -53,9 +53,9 @@ export const speakText = (text) => {
     }
     
     currentUtterance.lang = 'es-MX'; // Forzar metadata
-    currentUtterance.pitch = 0.8; // Más grave y esotérico
-    currentUtterance.rate = 0.85; // Un poco más lento para generar mística
-    currentUtterance.volume = 1.0;
+    currentUtterance.pitch = 1.4; // Tono más alto para sonar más joven y suave
+    currentUtterance.rate = 0.95; // Velocidad fluida y juvenil
+    currentUtterance.volume = 0.85; // Voz suave y delicada
     
     window.speechSynthesis.speak(currentUtterance);
   }, 50);
