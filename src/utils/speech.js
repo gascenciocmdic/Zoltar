@@ -60,7 +60,10 @@ export const startAmbientMusic = () => {
   if (ambientAudio) return; // ya está sonando
   ambientAudio = new Audio('/ambient.wav');
   ambientAudio.loop = true;
-  ambientAudio.volume = 0.12; // Volumen bajo para que la voz predomine
+  ambientAudio.volume = 0.20; // Volumen sutil pero audible
+  ambientAudio.addEventListener('canplaythrough', () => {
+    console.log("🎵 Música ambiental cargada y reproduciéndose");
+  });
   ambientAudio.play().catch(e => console.warn("Ambient music blocked:", e));
 };
 
