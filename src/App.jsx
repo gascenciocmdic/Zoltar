@@ -10,7 +10,7 @@ import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
 
 function App() {
-  const [language, setLanguage] = useState('es'); // Default, but will be set by selection
+  const [language, setLanguage] = useState(''); // Default empty to trigger selection
   const [phase, setPhase] = useState('languageSelection'); // languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
   const [textIndices, setTextIndices] = useState({
@@ -119,6 +119,7 @@ function App() {
 
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
+    setPhase('portalEntrance');
     setCanProceed(false);
     // Directly use translations to start welcome speech
     const welcomeMsg = I18N[lang].greetings[Math.floor(Math.random() * I18N[lang].greetings.length)];
