@@ -464,6 +464,16 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   letter-spacing: 1px;
 }
 
+.action-button-reveal {
+  animation: buttonFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards, relaxPulse 3s infinite ease-in-out;
+  opacity: 0;
+}
+
+@keyframes buttonFadeIn {
+  0% { opacity: 0; transform: translateY(15px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+}
+
 @media (max-width: 600px) {
   .anchoring-grid {
     grid-template-columns: 1fr;

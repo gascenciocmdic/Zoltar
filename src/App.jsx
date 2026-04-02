@@ -75,6 +75,7 @@ function App() {
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
   const [revelationReady, setRevelationReady] = useState(false);
+  const [canProceed, setCanProceed] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
 
@@ -116,6 +117,14 @@ function App() {
     }
   }, [phase, loading]);
 
+  const handleSelectLanguage = (lang) => {
+    setLanguage(lang);
+    setCanProceed(false);
+    // Directly use translations to start welcome speech
+    const welcomeMsg = I18N[lang].greetings[Math.floor(Math.random() * I18N[lang].greetings.length)];
+    speakText(welcomeMsg, lang, () => setCanProceed(true));
+  };
+
   const handleStart = () => {
     setIsFading(true);
     speakText(sessionTexts.askName, language);
@@ -132,10 +141,11 @@ function App() {
     setIsFading(true);
     
     // Narradores
+    setCanProceed(false);
     if (thresholdStep === 1) {
-      speakText(sessionTexts.askReason.replace('{name}', userName), language);
+      speakText(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 2) {
-      speakText(sessionTexts.askDichotomy, language);
+      speakText(sessionTexts.askDichotomy, language, () => setCanProceed(true));
     } else if (thresholdStep === 3) {
       speakText(sessionTexts.askQuestion, language);
     }
@@ -147,7 +157,8 @@ function App() {
         setPhase('synchrony');
         setVibe('revelation_gold');
         setShowSynchronyPopup(true);
-        speakText(translations.ui.call_p1.replace(/"/g, ''), language);
+        setCanProceed(false);
+        speakText(translations.ui.call_p1.replace(/"/g, ''), language, () => setCanProceed(true));
       }
       setIsFading(false);
     }, Math.floor(Math.random() * 2000) + 3000); 
@@ -174,7 +185,8 @@ function App() {
       setPhase('introspection');
       setLoading(false);
       setVibe('healing_blue');
-      speakText(translations.ui.magnetic_resonance.replace('{name}', userName), language);
+      setCanProceed(false);
+      speakText(result.mensajeGuia, language, () => setCanProceed(true));
     } catch (error) {
       console.error("Introspection Error:", error);
       setIntrospectionMessage(translations.ui.oracle_misfire);
@@ -243,7 +255,8 @@ function App() {
           if (nextStage === 1) prefix = translations.ui.origin_karmic + ". ";
           if (nextStage === 2) prefix = translations.ui.present_blockage + ". ";
           if (nextStage === 3) prefix = translations.ui.healing_advice + ". ";
-          speakText(prefix + textToRead, language);
+          setCanProceed(false);
+          speakText(prefix + textToRead, language, () => setCanProceed(true));
         }
       }, Math.floor(Math.random() * 2000) + 3000);
     } else {
@@ -261,7 +274,8 @@ function App() {
             tarea_terrenal: finalSynthesis.tarea_terrenal || prev.tarea_terrenal || translations.ui.default_task
           }));
           const synthText = finalSynthesis.conclusionFinal || translations.ui.oracle_misfire;
-          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${synthText} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`, language);
+          setCanProceed(false);
+          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${synthText} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`, language, () => setCanProceed(true));
         } catch (error) {
           console.error("Anchoring failed:", error);
           setInterpretation(prev => ({ 
@@ -326,7 +340,8 @@ function App() {
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
           }));
-          speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
+          setCanProceed(false);
+          speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language, () => setCanProceed(true));
         } catch (e) {
           console.error("Deepening failed:", e);
           setClarifications(prev => ({
@@ -346,53 +361,50 @@ function App() {
       {/* Global Logo - Persistent unless in specific high-z-index phases */}
       {phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
 
-      {phase === 'languageSelection' && (
+      {!language ? (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'transparent', backdropFilter: 'blur(15px)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 999999
-        }}>
-          <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '40px', mixBlendMode: 'screen' }} />
-          <h2 style={{color: '#ffd700', letterSpacing: '4px', marginBottom: '50px', textTransform: 'uppercase', fontSize: '1.5rem', textAlign: 'center'}}>Select your language / Selecciona tu idioma</h2>
-          <div className="language-buttons">
-            <button className="language-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); startAmbientMusic(); }}>
-              <span className="flag-icon">🇬🇧</span> English
-            </button>
-            <button className="language-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); startAmbientMusic(); }}>
-              <span className="flag-icon">🇪🇸</span> Español
-            </button>
-            <button className="language-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); startAmbientMusic(); }}>
-              <span className="flag-icon">🇧🇷</span> Português
-            </button>
-          </div>
-        </div>
-      )}
-
-      {phase === 'portalEntrance' && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'transparent', backdropFilter: 'blur(10px)',
+          background: 'transparent', backdropFilter: 'blur(30px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
           <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
-          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{translations.ui.title}</h2>
-          <p style={{ color: 'rgba(255,215,0,0.8)', fontStyle: 'italic', maxWidth: '80%', textAlign: 'center', marginBottom: '40px', fontSize: '1.1rem' }}>
-            {sessionTexts.greeting}
-          </p>
-          <button className="start-button blinking-button" onClick={() => {
-            initSpeech(language);
-            startAmbientMusic();
-            setIsFading(true);
-            setTimeout(() => {
-              setPhase('threshold');
-              setIsFading(false);
-              setTimeout(() => {
-                speakText(sessionTexts.greeting, language);
-              }, 600);
-            }, Math.floor(Math.random() * 2000) + 3000);
-          }}>{translations.ui.enter_portal}</button>
+          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '45px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{I18N.es.ui.title}</h2>
+          <div className="language-buttons">
+            <button className="language-button" onClick={() => handleSelectLanguage('es')}>
+              <span className="flag-icon">🇪🇸</span> ESPAÑOL
+            </button>
+            <button className="language-button" onClick={() => handleSelectLanguage('en')}>
+              <span className="flag-icon">🇺🇸</span> ENGLISH
+            </button>
+            <button className="language-button" onClick={() => handleSelectLanguage('pt')}>
+              <span className="flag-icon">🇧🇷</span> PORTUGUÊS
+            </button>
+          </div>
         </div>
-      )}
+      ) : phase === 'portalEntrance' ? (
+        <div className="portal-entrance-content transparent-layer" style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh'
+        }}>
+          <p className="welcome-text">
+            <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
+          </p>
+          {canProceed && (
+            <button className="start-button blinking-button action-button-reveal" onClick={() => {
+              initSpeech(language);
+              startAmbientMusic();
+              setIsFading(true);
+              setTimeout(() => {
+                setPhase('threshold');
+                setIsFading(false);
+                setTimeout(() => {
+                  setCanProceed(false);
+                  speakText(sessionTexts.greeting, language, () => setCanProceed(true));
+                }, 600);
+              }, Math.floor(Math.random() * 2000) + 3000);
+            }}>{translations.ui.enter_portal}</button>
+          )}
+        </div>
+      ) : null}
 
       {/* Botón Silenciar Global */}
       <button 
@@ -407,8 +419,6 @@ function App() {
       >
         {isMutedState ? '🔇' : '🔊'}
       </button>
-
-      {/* Remoción de VortexCanvas y Logo duplicados para consolidarlos al inicio */}
 
       {/* Main Content Wrapper with profound fade transitions */}
       <div style={{ 
@@ -425,9 +435,11 @@ function App() {
               <p className="welcome-text">
                 <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
               </p>
-              <button className="start-button" onClick={handleStart}>
-                {translations.ui.allow}
-              </button>
+              {canProceed && (
+                <button className="start-button blinking-button action-button-reveal" onClick={handleStart}>
+                  {translations.ui.allow}
+                </button>
+              )}
               
               <div style={{ marginTop: '30px' }}>
                 <button 
@@ -768,9 +780,13 @@ function App() {
                       </div>
                     )}
                     
-                    {autoRevealStarted && (
-                      <button className="start-button blinking-button" onClick={handleNextStage} style={{ marginTop: '20px' }}>
-                        {revealedStage < 3 ? translations.ui.continue : translations.ui.view_synthesis}
+                    {autoRevealStarted && canProceed && (
+                      <button 
+                        className="start-button blinking-button action-button-reveal" 
+                        onClick={handleNextStage} 
+                        style={{ marginTop: '30px' }}
+                      >
+                        {revealedStage < 3 ? translations.ui.continue : translations.ui.finalize_ritual}
                       </button>
                     )}
                   </>
@@ -818,7 +834,15 @@ function App() {
                 </div>
              </div>
           </div>
-          <button className="start-button" onClick={() => window.location.reload()} style={{ marginTop: '40px' }}>{translations.ui.reset_ritual}</button>
+          {canProceed && (
+            <button 
+              className="start-button blinking-button action-button-reveal" 
+              onClick={() => window.location.reload()} 
+              style={{ marginTop: '40px' }}
+            >
+              {translations.ui.new_consultation}
+            </button>
+          )}
         </div>
       )}
       </div>

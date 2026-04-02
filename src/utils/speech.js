@@ -44,11 +44,19 @@ export const getIsMuted = () => isMuted;
 /**
  * Narra el texto usando la voz de sistema (costo $0)
  */
-export const speakText = (text, lang = 'es') => {
-  if (isMuted || !text || !('speechSynthesis' in window)) return;
+export const speakText = (text, lang = 'es', onEnd = null) => {
+  if (isMuted || !text || !('speechSynthesis' in window)) {
+    if (onEnd) onEnd();
+    return;
+  }
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
+  if (onEnd) {
+    utterance.onend = onEnd;
+    utterance.onerror = onEnd; // avoid stuck state on error
+  }
+  
   if (preferredVoice) utterance.voice = preferredVoice;
   
   const langMap = {
