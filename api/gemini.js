@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
 // Helper to clean and parse JSON from Gemini's response
@@ -36,8 +36,7 @@ export default async function handler(req, res) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash", 
-    safetySettings,
-    generationConfig: { responseMimeType: "application/json" }
+    safetySettings
   });
 
   try {
@@ -61,7 +60,6 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   } catch (error) {
     console.error(`Critical error in Gemini action ${action}:`, error);
-    // Generic fallback if even the specialized handlers fail
     return res.status(200).json({ 
       error: true,
       mensajeGuia: "El éter está agitado ahora mismo. Respira profundo mientras las mallas del tiempo se asientan...",
@@ -69,151 +67,145 @@ export default async function handler(req, res) {
       conclusionFinal: "La visión se fragmenta, pero la luz persiste.",
       decreto: "Confío en mi proceso.",
       tarea_terrenal: "Respira profundo y mantente presente.",
-      vibe: "healing_blue",
-      deepeningResponse: "El susurro es difuso por ahora..."
+      vibe: "healing_blue"
     });
   }
 }
 
 async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
-  const { name, reason } = userContext;
+  const { name, reason } = userContext || { name: "Alma Viajera", reason: "" };
+  const langPrompt = language === 'en' ? "Respond in English." : language === 'pt' ? "Responda em Português." : "Responde en Español.";
+  
   const prompt = `
     Eres "El Guía" del Oráculo de Vidas Pasadas.
-    El consultante ${name || 'una alma viajera'} pregunta: "${reason}".
-    Ha seleccionado estas 3 cartas:
-    ${cards.map((c, i) => `${i+1}. ${c.name}: ${c.info}`).join('\n')}
+    El consultante ${name} pregunta: "${reason}".
+    Cartas: ${cards.map(c => c.name).join(', ')}.
 
     Genera un mensaje misterioso y breve (1 párrafo). 
-    Menciona cómo estas cartas vibran con su inquietud específica ("${reason}"). 
-    Termina con UNA pregunta final muy profunda que lo obligue a confesar algo íntimo sobre su sentir actual.
-
-    Idioma: ${language}
-    Responde ÚNICAMENTE con un objeto JSON:
-    { "mensajeGuia": "..." }
+    Prepara al usuario para la revelación kármica de forma profunda.
+    Devuelve EXCLUSIVAMENTE un JSON: { "mensajeGuia": "..." }.
+    ${langPrompt}
   `;
 
-  const fallback = { mensajeGuia: "Tus cartas vibran con una frecuencia inusual. Antes de revelarlo todo... ¿qué es lo que tu corazón teme soltar realmente?" };
+  const fallback = { 
+    mensajeGuia: language === 'en' 
+      ? "The echoes of your past are resonating with the current energy of your soul. Prepare your heart for the truths that are about to be revealed."
+      : language === 'pt'
+      ? "Os ecos do seu passado estão ressoando com a energia atual da sua alma. Prepare o seu coração para as verdades que estão prestes a ser reveladas."
+      : "Los ecos de tu pasado están resonando con la energía actual de tu alma. Prepara tu corazón para las verdades que están a punto de ser reveladas."
+  };
+
   try {
     const result = await model.generateContent(prompt);
-    const text = (await result.response).text() || "";
+    const text = result.response.text() || "";
     return cleanAndParse(text, fallback);
   } catch (e) {
-    console.error("Introspection API Error:", e);
+    console.error("Introspection Error:", e);
     return fallback;
   }
 }
 
-async function handleInterpretation(model, { cards, reason, userContext, language = 'es' }) {
-  const { name, preference, introspectionAnswer } = userContext;
-  const toneInstruction = preference === 'direct' 
-    ? "Sé directo, profundo y claro. Sin rodeos."
-    : "Usa metáforas poéticas y seductoras, pero mantente enfocado en la respuesta.";
+async function handleInterpretation(model, { cards, reason, introspectionAnswer, userContext, language }) {
+  const { name } = userContext || { name: "Alma Viajera" };
+  const langPrompt = language === 'en' ? "Respond in English." : language === 'pt' ? "Responda em Português." : "Responde en Español.";
 
   const prompt = `
     Eres "El Guía". Interpreta estas cartas para ${name}.
     Contexto: Inquietud: "${reason}", Sentir Íntimo: "${introspectionAnswer}".
-    Cartas:
-    ${cards.map((c, i) => `${i+1}. ${c.name}: ${c.info}`).join('\n')}
-
-    INSTRUCCIONES:
-    1. Relaciona CADA carta de forma EXCLUSIVA con la inquietud ("${reason}") y el sentir ("${introspectionAnswer}") del usuario. 
-    2. Evita interpretaciones genéricas. 
-    3. Máximo 1 o 2 párrafos concisos por carta. 
-    4. El "decreto" y "tarea_terrenal" deben ser acciones prácticas y frases cortas.
-
-    Idioma: ${language}
-    Responde ÚNICAMENTE con un objeto JSON:
-    {
-      "narrativaAncestral": ["Interpretación carta 1", "Interpretación carta 2", "Interpretación carta 3"],
-      "conclusionFinal": "Resumen final corto",
-      "decreto": "Frase de poder corta",
-      "tarea_terrenal": "Acción física breve",
+    Cartas: ${cards.map(c => c.name).join(', ')}.
+    
+    OBJETIVO: Crea una narrativa ancestral de 3 párrafos profundos.
+    1. Relaciona CADA carta de forma EXCLUSIVA con la inquietud y el sentir del usuario. 
+    2. Sé específico, místico y revelador.
+    
+    Devuelve EXCLUSIVAMENTE un JSON: 
+    { 
+      "narrativaAncestral": ["párrafo 1", "párrafo 2", "párrafo 3"],
+      "conclusionFinal": "...",
+      "decreto": "...",
+      "tarea_terrenal": "...",
       "vibe": "healing_blue"
     }
-    ${toneInstruction}
+    ${langPrompt}
   `;
 
   const fallback = { 
-    narrativaAncestral: ["El pasado se siente denso...", "Hay ecos de gloria y pérdida...", "La sanación requiere paciencia..."],
-    conclusionFinal: "Tus vidas pasadas te observan con amor. El camino se aclara.",
-    decreto: "Suelto lo que ya no me pertenece.",
-    tarea_terrenal: "Enciende una vela y medita en el silencio.",
+    narrativaAncestral: language === 'en' ? [
+      "The past feels dense and full of ancient secrets. The echoes of your previous incarnations vibrate in these cards, indicating that your current path is deeply linked to a wound or a gift that you yet fail to fully recognize.",
+      "There are echoes of glory and loss resonating through the centuries. This vision shows that you have walked paths of great power and also painful renunciations. The universe asks that you integrate these past experiences.",
+      "Healing requires patience and a sincere connection with your ancestral lineage. This card invites you to undo the karmic knots that bind you to repetitive patterns and open the door to peace."
+    ] : language === 'pt' ? [
+      "O passado parece denso e cheio de segredos antigos. Os ecos de suas encarnações anteriores vibram nestas cartas, indicando que seu caminho atual está profundamente ligado a uma ferida ou um dom que você ainda não consegue reconhecer totalmente.",
+      "Há ecos de glória e perda ressoando através dos séculos. Esta visão mostra que você percorreu caminhos de grande poder e também de renúncias dolorosas. O universo pede que você integre essas experiências passadas.",
+      "A cura exige paciência e uma conexão sincera com sua linhagem ancestral. Esta carta convida você a desfazer os nós cármicos que o prendem a padrões repetitivos e abrir a porta para a paz."
+    ] : [
+      "El pasado se siente denso y lleno de secretos antiguos. Los ecos de tus encarnaciones previas vibran en esta carta, señalando que tu camino actual está profundamente ligado a una herida o un don que aún no logras reconocer completamente. La sanación está cerca, pero requiere que mires más allá de la superficie.",
+      "Hay ecos de gloria y pérdida resonando a través de los siglos. Esta visión muestra que has caminado por senderos de gran poder y también de renuncias dolorosas. El universo pide que integres estas experiencias pasadas para que puedas reclamar tu fuerza original en el presente.",
+      "La sanación requiere paciencia y una conexión sincera con tu linaje ancestral. Esta carta te invita a soltar los nudos kármicos que te atan a patrones repetitivos. Al perdonarte y perdonar a quienes fueron parte de tu historia previa, abres la puerta a una paz que ha esperado por muchas vidas manifestarse."
+    ],
+    conclusionFinal: language === 'en' ? "Your past lives watch over you with unconditional love." : "Tus vidas pasadas te observan con amor incondicional.",
+    decreto: language === 'en' ? "I release what no longer belongs to me with gratitude." : "Suelto lo que ya no me pertenece con gratitud y amor.",
+    tarea_terrenal: language === 'en' ? "Light a small candle and meditate in absolute silence today." : "Enciende una pequeña vela y medita en el silencio absoluto hoy.",
     vibe: "healing_blue"
   };
 
   try {
     const result = await model.generateContent(prompt);
-    const text = (await result.response).text() || "";
+    const text = result.response.text() || "";
     return cleanAndParse(text, fallback);
   } catch (e) {
-    console.error("Interpretation API Error:", e);
+    console.error("Interpretation Error:", e);
     return fallback;
   }
 }
 
-async function handleAnchoring(model, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
-  const cardsInfo = selectedCards.map(c => `[${c.name}]: ${c.info}`).join(', ');
-  const clarEntries = Object.entries(clarifications || {});
-  const clarInfo = clarEntries.length > 0 
-    ? clarEntries.map(([id, data]) => `Duda sobre carta ${id}: ${data.question} -> Clarificado por ${data.extraCard?.name}: ${data.extraResponse}`).join('\n')
-    : 'Ninguna';
-
+async function handleAnchoring(model, { cards, reason, choice, name, clarifications, language }) {
+  const langPrompt = language === 'en' ? "Respond in English." : language === 'pt' ? "Responda em Português." : "Responde en Español.";
   const prompt = `
-    Como "El Guía", entrega la 'Gran Síntesis' Final para ${userName}.
-    Resumen de Sesión:
-    - Inquietud Inicial: "${visitReason}"
-    - Cartas Elegidas: ${cardsInfo}
-    - Clarificaciones Realizadas: ${clarInfo}
-
-    TAREA: Crea una conclusión final COHERENTE, PROFUNDA y CONCISA (máximo 2 párrafos). 
-    Une todos los puntos de la sesión para darle al usuario una dirección clara sobre su inquietud original.
-    También genera un nuevo "decreto" y una "tarea_terrenal" finales basados en toda la experiencia.
-
-    Idioma: ${language}
-    Responde estrictamente en formato JSON: 
-    { 
-      "conclusionFinal": "...",
-      "decreto": "Frase de poder final",
-      "tarea_terrenal": "Acción física recomendada"
-    }
+    Como "El Guía", sintetiza el ritual para ${name}.
+    Inquietud: "${reason}".
+    Clarificaciones: ${JSON.stringify(clarifications || {})}.
+    
+    Devuelve EXCLUSIVAMENTE un JSON: 
+    { "conclusionFinal": "...", "decreto": "...", "tarea_terrenal": "..." }
+    ${langPrompt}
   `;
-
-  const fallback = { 
-    conclusionFinal: "La sincronía es perfecta. Tu viaje apenas comienza.",
-    decreto: "Confío en mi propia sabiduría ancestral.",
-    tarea_terrenal: "Lleva contigo un símbolo de esta visión."
+  
+  const fallback = {
+    conclusionFinal: "La sincronía de este ritual se sella con luz. El camino hacia tu verdad está ahora abierto.",
+    decreto: "Confío en mi propia sabiduría ancestral y en el camino que he caminado.",
+    tarea_terrenal: "Escribe una carta a tu yo del pasado agradeciendo su resistencia y amor."
   };
 
   try {
     const result = await model.generateContent(prompt);
-    const text = (await result.response).text() || "";
+    const text = result.response.text() || "";
     return cleanAndParse(text, fallback);
   } catch (e) {
-    console.error("Anchoring API Error:", e);
+    console.error("Anchoring Error:", e);
     return fallback;
   }
 }
 
 async function handleDeepening(model, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
+  const langPrompt = language === 'en' ? "Respond in English." : language === 'pt' ? "Responda em Português." : "Responde en Español.";
   const prompt = `
-    Eres El Guía. El viajero "${context?.userName || 'alma viajera'}" tiene una duda específica: "${userQuestion}".
-    Esta duda surge tras leer sobre la carta "${originalCard?.name}".
-    La carta clarificadora es: "${extraCard?.name}: ${extraCard?.info}".
-
-    TAREA: Explica de forma concisa (1 o 2 párrafos) cómo la carta clarificadora resuelve exactamente la duda sobre la "${originalCard?.name}" y cómo se aplica a la vida del usuario.
-    Sé poético pero muy AL GRANO.
-
-    Idioma: ${language}
-    Responde en JSON: { "deepeningResponse": "..." }
+    Clarifica esta duda para ${context?.name || 'alma viajera'}: "${userQuestion}".
+    Cartas: "${originalCard?.name}" y "${extraCard?.name}".
+    
+    Genera una respuesta mística y directa (máximo 2 párrafos).
+    Devuelve EXCLUSIVAMENTE un JSON: { "deepeningResponse": "..." }
+    ${langPrompt}
   `;
 
   const fallback = { deepeningResponse: "Los hilos de esta visión son frágiles por ahora. Confía en lo que ya has sentido en tu corazón." };
+
   try {
     const result = await model.generateContent(prompt);
-    const text = (await result.response).text() || "";
+    const text = result.response.text() || "";
     return cleanAndParse(text, fallback);
   } catch (e) {
-    console.error("Deepening API Error:", e);
+    console.error("Deepening Error:", e);
     return fallback;
   }
 }
