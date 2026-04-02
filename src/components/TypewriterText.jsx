@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const TypewriterText = ({ text, speed = 40 }) => {
+const TypewriterText = ({ text, speed = 40, showCursor = true }) => {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
 
@@ -34,7 +34,9 @@ const TypewriterText = ({ text, speed = 40 }) => {
           {idx !== arr.length - 1 && <br />}
         </React.Fragment>
       ))}
-      <span className={isTyping ? 'typing-cursor' : 'blinking-cursor'}>|</span>
+      {showCursor && (
+        <span className={isTyping ? 'typing-cursor' : 'blinking-cursor'}>|</span>
+      )}
     </span>
   );
 };

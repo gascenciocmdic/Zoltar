@@ -401,23 +401,34 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   font-size: 1.4rem;
 }
 
-/* Flashing Cursor for Textarea */
-.flashing-cursor {
+/* Flashing Cursor System */
+.cursor-container {
   position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 600px;
 }
 
-.flashing-cursor::after {
-  content: '|';
+.blinking-caret {
   position: absolute;
-  bottom: 15px;
+  bottom: 12px;
   right: 15px;
-  color: #ffd700;
-  font-weight: bold;
+  width: 10px;
+  height: 20px;
+  background-color: #ffd700;
   animation: blink 1s step-end infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 /* Special Pulse for active input */
-.soul-input.flashing-cursor:focus {
+.soul-input:focus {
+  border-bottom-color: #c084fc;
   box-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
 }
 

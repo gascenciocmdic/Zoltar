@@ -403,7 +403,7 @@ function App() {
 
           {thresholdStep === 2 && (
             <>
-              <p className="welcome-text"><TypewriterText text={`"${translations.ui.what_inquires_you.replace('{name}', userName)}"`} speed={45} /></p>
+              <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askReason.replace('{name}', userName)}"`} speed={45} /></p>
               <input 
                 type="text" 
                 className="soul-input" 
@@ -417,7 +417,7 @@ function App() {
 
           {thresholdStep === 3 && (
             <>
-              <p className="welcome-text"><TypewriterText text={`"${translations.ui.metaphoric_whisper}"`} speed={45} /></p>
+              <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askDichotomy}"`} speed={45} /></p>
               <div className="dichotomy-buttons">
                 <button className={`choice-button ${dichotomousChoice === 'direct' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('direct')}>{translations.ui.direct_truth}</button>
                 <button className={`choice-button ${dichotomousChoice === 'metaphor' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('metaphor')}>{translations.ui.metaphoric_whisper}</button>
@@ -429,7 +429,7 @@ function App() {
           {thresholdStep === 4 && (
             <>
               <p className="welcome-text">
-                <TypewriterText text={`"${translations.ui.choose_cards}"`} speed={45} />
+                <TypewriterText text={`"${sessionTexts.askQuestion}"`} speed={45} />
               </p>
               
               <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>{translations.ui.choose_cards}</button>
@@ -539,9 +539,9 @@ function App() {
           {loading ? (
             <div style={{ marginTop: '20px' }}>
               <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
-                <TypewriterText text={sessionTexts.waitMsg} speed={45} />
+                <TypewriterText text={sessionTexts.waitMsg} speed={45} showCursor={false} />
               </p>
-              <p className="subtitle" style={{ textAlign: 'center' }}><TypewriterText text={translations.ui.wait_silence} speed={40} /></p>
+              <p className="subtitle" style={{ textAlign: 'center' }}><TypewriterText text={translations.ui.wait_silence} speed={40} showCursor={false} /></p>
             </div>
           ) : (
             <>
@@ -560,12 +560,15 @@ function App() {
                   </div>
                 )}
                 
-                <textarea 
-                  className="soul-input flashing-cursor" 
-                  style={{ height: '120px', resize: 'none', maxWidth: '600px', margin: '0 auto', display: 'block' }}
-                  placeholder={translations.ui.revelation_confession}
-                  id="deepAnswer"
-                />
+                <div className="cursor-container" style={{ margin: '0 auto' }}>
+                  <textarea 
+                    className="soul-input" 
+                    style={{ height: '120px', resize: 'none', width: '100%', display: 'block' }}
+                    placeholder={translations.ui.revelation_confession}
+                    id="deepAnswer"
+                  />
+                  <div className="blinking-caret" />
+                </div>
               </div>
  
               <button className="start-button blinking-button" onClick={() => {
@@ -581,7 +584,7 @@ function App() {
 
       {phase === 'revelation' && (
         <div className="revelation-content">
-          <h2 className="phase-title">La Revelación</h2>
+          <h2 className="phase-title">{translations.ui.revelation_title}</h2>
           
           {(() => {
             const clarifyingCardId = Object.keys(clarifications).find(id => clarifications[id]?.step === 'selectCard');
@@ -658,7 +661,7 @@ function App() {
                 {loading ? (
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <p className="welcome-text" style={{ marginTop: '20px', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
-                      <TypewriterText text={sessionTexts.waitMsg} speed={45} />
+                      <TypewriterText text={sessionTexts.waitMsg} speed={45} showCursor={false} />
                     </p>
                   </div>
                 ) : (
