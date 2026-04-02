@@ -308,10 +308,15 @@ function App() {
 
   return (
     <div className="app-container">
+      <VortexCanvas vibe={vibe} />
+      
+      {/* Global Logo - Persistent unless in specific high-z-index phases */}
+      {phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
+
       {phase === 'languageSelection' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(15px)',
+          background: 'transparent', backdropFilter: 'blur(15px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 999999
         }}>
           <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '40px', mixBlendMode: 'screen' }} />
@@ -333,11 +338,14 @@ function App() {
       {phase === 'portalEntrance' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
+          background: 'transparent', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
           <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
-          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '30px', textTransform: 'uppercase', fontSize: '2rem', textAlign: 'center'}}>{translations.ui.title}</h2>
+          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{translations.ui.title}</h2>
+          <p style={{ color: 'rgba(255,215,0,0.8)', fontStyle: 'italic', maxWidth: '80%', textAlign: 'center', marginBottom: '40px', fontSize: '1.1rem' }}>
+            {sessionTexts.greeting}
+          </p>
           <button className="start-button blinking-button" onClick={() => {
             initSpeech(language);
             startAmbientMusic();
@@ -363,10 +371,7 @@ function App() {
         {isMutedState ? '🔇' : '🔊'}
       </button>
 
-      <VortexCanvas vibe={vibe} />
-      
-      {/* Global Logo - Persistent unless in specific high-z-index phases */}
-      {phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
+      {/* Remoción de VortexCanvas y Logo duplicados para consolidarlos al inicio */}
 
       {/* Main Content Wrapper with profound fade transitions */}
       <div style={{ 
@@ -741,7 +746,6 @@ function App() {
 
       {phase === 'anchoring' && interpretation && (
         <div className="anchoring-content" style={{ animation: 'fadeIn 2s ease' }}>
-          <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', margin: '0 auto 20px auto', mixBlendMode: 'screen' }} />
           <h2 className="phase-title">{translations.ui.anchoring_title}</h2>
           <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
             {selectedCards.map((card, index) => {
@@ -780,7 +784,6 @@ function App() {
           <button className="start-button" onClick={() => window.location.reload()} style={{ marginTop: '40px' }}>{translations.ui.reset_ritual}</button>
         </div>
       )}
-      
       </div>
     </div>
   );
