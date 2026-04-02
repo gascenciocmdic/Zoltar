@@ -79,6 +79,7 @@ function App() {
   
   const [isMutedState, setIsMutedState] = useState(false);
   const [lastDebug, setLastDebug] = useState(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     initSpeech(language);
@@ -188,7 +189,10 @@ function App() {
       setLoading(false);
       setVibe('healing_blue');
       setCanProceed(false);
-      if (result._debug) setLastDebug(result._debug);
+      if (result.__IS_FALLBACK__) {
+        setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (AI failed or blocked)" });
+        setShowDebug(true);
+      }
       speakText(result.mensajeGuia, language, () => setCanProceed(true));
     } catch (error) {
       console.error("Introspection Error:", error);
@@ -224,7 +228,10 @@ function App() {
           decreto: result.decreto || translations.ui.default_decree,
           tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
         });
-        if (result._debug) setLastDebug(result._debug);
+        if (result.__IS_FALLBACK__) {
+          setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (Interpretation failed)" });
+          setShowDebug(true);
+        }
         setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
@@ -278,7 +285,10 @@ function App() {
             tarea_terrenal: finalSynthesis.tarea_terrenal || prev.tarea_terrenal || translations.ui.default_task
           }));
           const synthText = finalSynthesis.conclusionFinal || translations.ui.oracle_misfire;
-          if (finalSynthesis._debug) setLastDebug(finalSynthesis._debug);
+          if (finalSynthesis.__IS_FALLBACK__) {
+            setLastDebug(finalSynthesis._debug || { error: "FALLBACK TRIGGERED (Anchoring failed)" });
+            setShowDebug(true);
+          }
           setCanProceed(false);
           speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${synthText} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`, language, () => setCanProceed(true));
         } catch (error) {
@@ -345,7 +355,10 @@ function App() {
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
           }));
-          if (resp._debug) setLastDebug(resp._debug);
+          if (resp.__IS_FALLBACK__) {
+            setLastDebug(resp._debug || { error: "FALLBACK TRIGGERED (Deepening failed)" });
+            setShowDebug(true);
+          }
           setCanProceed(false);
           speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language, () => setCanProceed(true));
         } catch (e) {
@@ -851,29 +864,50 @@ function App() {
           )}
         </div>
       )}
-      {/* Debug Console - Floating at the Bottom */}
-      {lastDebug && (
+      {/* Global Debug Toggle Button */}
+      <button 
+        onClick={() => setShowDebug(!showDebug)}
+        style={{
+          position: 'fixed', bottom: '25px', right: '85px', zIndex: 9999,
+          background: showDebug ? 'rgba(255,0,0,0.4)' : 'rgba(255,215,0,0.1)', 
+          border: '1px solid #ffd700', borderRadius: '50px',
+          padding: '5px 15px', cursor: 'pointer', color: '#ffd700', fontSize: '0.7rem',
+          backdropFilter: 'blur(5px)'
+        }}
+      >
+        {showDebug ? 'CLOSE DEBUG' : 'SHOW DEBUG'}
+      </button>
+
+      {/* Debug Console - Floating at the TOP for maximum visibility */}
+      {showDebug && (
         <div style={{
-          position: 'fixed', bottom: '20px', left: '20px', right: '20px',
-          maxHeight: '200px', background: 'rgba(255, 0, 0, 0.1)', border: '1px solid rgba(255, 0, 0, 0.3)',
-          borderRadius: '10px', padding: '15px', color: '#ffaaaa', fontSize: '0.8rem',
-          zIndex: 10000, overflowY: 'auto', backdropFilter: 'blur(10px)', textAlign: 'left',
-          fontFamily: 'monospace', boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+          position: 'fixed', top: '10px', left: '10px', right: '10px',
+          maxHeight: '400px', background: 'rgba(50, 0, 0, 0.95)', border: '2px solid red',
+          borderRadius: '10px', padding: '20px', color: '#ffaaaa', fontSize: '0.9rem',
+          zIndex: 99999, overflowY: 'auto', backdropFilter: 'blur(20px)', textAlign: 'left',
+          fontFamily: 'monospace', boxShadow: '0 0 50px rgba(255,0,0,0.3)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-            <strong style={{ color: '#ffdddd' }}>DEBUG CONSOLE (API ERROR)</strong>
-            <button onClick={() => setLastDebug(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>✖</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderBottom: '1px solid #660000', pb: '10px' }}>
+            <strong style={{ color: '#fff', fontSize: '1rem' }}>🚨 ORACLE DIAGNOSTIC CONSOLE</strong>
+            <button onClick={() => setShowDebug(false)} style={{ color: 'white', background: 'red', border: 'none', px: '10px', cursor: 'pointer' }}>CLOSE X</button>
           </div>
-          <div>Err: {lastDebug.error}</div>
-          {lastDebug.api_failure && <div style={{ color: '#ff6666' }}>API_FAILURE: Remote model failed or blocked content.</div>}
-          {lastDebug.raw && (
-            <div style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '5px' }}>
-              Raw AI Response:
-              <div style={{ background: 'black', padding: '10px', marginTop: '5px', borderRadius: '5px', color: '#00ff00' }}>
-                {lastDebug.raw}
-              </div>
-            </div>
+          <div style={{ marginBottom: '10px' }}>
+            <strong>Status:</strong> {lastDebug ? 'Fallback Active' : 'No recent errors'}
+          </div>
+          {lastDebug && (
+            <>
+              <div style={{ color: '#ff6666', mb: '10px' }}><strong>Error Message:</strong> {lastDebug.error}</div>
+              {lastDebug.raw && (
+                <div style={{ marginTop: '15px' }}>
+                  <strong>RAW RESPONSE FROM AI:</strong>
+                  <div style={{ background: '#111', padding: '15px', marginTop: '10px', borderRadius: '5px', color: '#00ff00', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>
+                    {lastDebug.raw}
+                  </div>
+                </div>
+              )}
+            </>
           )}
+          {!lastDebug && <div>Esperando respuesta del Oráculo...</div>}
         </div>
       )}
       </div>
