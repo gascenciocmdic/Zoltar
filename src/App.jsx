@@ -166,6 +166,12 @@ function App() {
     } catch (error) {
       console.error("Introspection Error:", error);
       setIntrospectionMessage(translations.ui.oracle_misfire);
+      setInterpretation({
+        narrativaAncestral: [translations.ui.oracle_misfire],
+        conclusionFinal: translations.ui.oracle_misfire,
+        decreto: translations.ui.default_decree,
+        tarea_terrenal: translations.ui.default_task
+      });
       setPhase('introspection');
       setLoading(false);
       setVibe('healing_blue');
@@ -194,8 +200,8 @@ function App() {
         setInterpretation({
           narrativaAncestral: [translations.ui.oracle_misfire, translations.ui.oracle_misfire, translations.ui.oracle_misfire],
           conclusionFinal: translations.ui.oracle_misfire,
-          decreto: "Sigo mi luz.",
-          tarea_terrenal: "Confía en lo revelado.",
+          decreto: translations.ui.default_decree,
+          tarea_terrenal: translations.ui.default_task,
           vibe: 'healing_blue'
         });
         setLoading(false);
@@ -236,7 +242,12 @@ function App() {
           speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal} ${translations.ui.healing_decree}: ${finalSynthesis.decreto}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal}`, language);
         } catch (error) {
           console.error("Anchoring failed:", error);
-          setInterpretation(prev => ({ ...prev, conclusionFinal: translations.ui.oracle_misfire }));
+          setInterpretation(prev => ({ 
+            ...prev, 
+            conclusionFinal: translations.ui.oracle_misfire,
+            decreto: translations.ui.default_decree,
+            tarea_terrenal: translations.ui.default_task
+          }));
         }
       }, 1500);
     }
