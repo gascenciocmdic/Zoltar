@@ -204,7 +204,11 @@ function App() {
       try {
         const userContext = { name: userName, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
         const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
-        setInterpretation(result);
+        setInterpretation({
+          ...result,
+          decreto: result.decreto || translations.ui.default_decree,
+          tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
+        });
         setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
@@ -250,8 +254,14 @@ function App() {
         try {
           // Anchoring now waits for clarifications too
           const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language);
-          setInterpretation(prev => ({ ...prev, ...finalSynthesis }));
-          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal} ${translations.ui.healing_decree}: ${finalSynthesis.decreto}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal}`, language);
+          setInterpretation(prev => ({ 
+            ...prev, 
+            ...finalSynthesis,
+            decreto: finalSynthesis.decreto || prev.decreto || translations.ui.default_decree,
+            tarea_terrenal: finalSynthesis.tarea_terrenal || prev.tarea_terrenal || translations.ui.default_task
+          }));
+          const synthText = finalSynthesis.conclusionFinal || translations.ui.oracle_misfire;
+          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${synthText} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`, language);
         } catch (error) {
           console.error("Anchoring failed:", error);
           setInterpretation(prev => ({ 
