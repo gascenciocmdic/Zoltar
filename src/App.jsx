@@ -74,6 +74,7 @@ function App() {
   const [dichotomousChoice, setDichotomousChoice] = useState('');
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
+  const [revelationReady, setRevelationReady] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
 
@@ -92,7 +93,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (phase === 'revelation' && !loading) {
+    if (phase === 'revelation' && !loading && revelationReady) {
       if (cardsFlippedCount < 3) {
         const timer = setTimeout(() => {
           setCardsFlippedCount(prev => prev + 1);
@@ -102,7 +103,18 @@ function App() {
         setAutoRevealStarted(true); // marks the end of the reveal sequence
       }
     }
-  }, [phase, loading, cardsFlippedCount, autoRevealStarted]);
+  }, [phase, loading, cardsFlippedCount, autoRevealStarted, revelationReady]);
+
+  useEffect(() => {
+    if (phase === 'revelation' && !loading) {
+      const timer = setTimeout(() => {
+        setRevelationReady(true);
+      }, Math.floor(Math.random() * 2000) + 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setRevelationReady(false);
+    }
+  }, [phase, loading]);
 
   const handleStart = () => {
     setIsFading(true);
