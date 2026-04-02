@@ -65,49 +65,58 @@ export default async function handler(req, res) {
 async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
   const { name, reason } = userContext;
   const prompt = `
-    Instrucciones Paralelas: Eres "El Guía".
-    El consultante ${name || 'una alma viajera'} ha llegado a ti con la siguiente inquietud: "${reason}".
+    Eres "El Guía" del Oráculo de Vidas Pasadas.
+    El consultante ${name || 'una alma viajera'} pregunta: "${reason}".
     Ha seleccionado estas 3 cartas:
     ${cards.map((c, i) => `${i+1}. ${c.name}: ${c.info}`).join('\n')}
 
-    Genera un ÚNICO MENSAJE (1 o 2 párrafos máximo). Sedúceme, sé misterioso. 
-    Llama su atención mencionando sutilmente la energía de las cartas y hazle UNA pregunta final muy profunda para que revele información íntima.
+    Genera un mensaje misterioso y breve (1 párrafo). 
+    Menciona cómo estas cartas vibran con su inquietud específica. 
+    Termina con UNA pregunta final muy profunda que lo obligue a confesar algo íntimo sobre su sentir actual.
 
-    IMPORTANTE: Responde ESTRICTAMENTE en el idioma: ${language}.
+    Idioma: ${language}
     Responde ÚNICAMENTE con un objeto JSON:
     { "mensajeGuia": "..." }
   `;
 
   const result = await model.generateContent(prompt);
-  return cleanAndParse(result.response.text(), { mensajeGuia: "Tus cartas vibran con una frecuencia inusual. Antes de revelarlo todo... ¿qué es lo que tu corazón teme soltar realmente?" });
+  const text = result.response.text();
+  return cleanAndParse(text, { mensajeGuia: "Tus cartas vibran con una frecuencia inusual. Antes de revelarlo todo... ¿qué es lo que tu corazón teme soltar realmente?" });
 }
 
 async function handleInterpretation(model, { cards, reason, userContext, language = 'es' }) {
   const { name, preference, introspectionAnswer } = userContext;
   const toneInstruction = preference === 'direct' 
-    ? "Sé directo, profundo y claro."
-    : "Sé extremadamente elocuente, usa metáforas seductoras.";
+    ? "Sé directo, profundo y claro. Sin rodeos."
+    : "Usa metáforas poéticas y seductoras, pero mantente enfocado en la respuesta.";
 
   const prompt = `
-    Eres "El Guía". Interpreta las cartas basándote en su significado técnico.
-    Datos: Nombre: ${name}, Inquietud: "${reason}", Confesión: "${introspectionAnswer}"
-    Cartas: ${cards.map((c, i) => `${i+1}. ${c.name}: ${c.info}`).join('\n')}
+    Eres "El Guía". Interpreta estas cartas para ${name}.
+    Contexto: Inquietud: "${reason}", Sentir Íntimo: "${introspectionAnswer}".
+    Cartas:
+    ${cards.map((c, i) => `${i+1}. ${c.name}: ${c.info}`).join('\n')}
 
-    Genera una lectura MUY EXTENSA (3 párrafos por carta).
+    INSTRUCCIONES:
+    1. Relaciona CADA carta de forma EXCLUSIVA con la inquietud y el sentir del usuario. 
+    2. Evita interpretaciones genéricas. 
+    3. Máximo 1 o 2 párrafos concisos por carta. 
+    4. El "decreto" y "tarea_terrenal" deben ser acciones prácticas y frases cortas.
+
+    Idioma: ${language}
     Responde ÚNICAMENTE con un objeto JSON:
     {
-      "narrativaAncestral": ["...", "...", "..."],
-      "conclusionFinal": "...",
-      "decreto": "...",
-      "tarea_terrenal": "...",
+      "narrativaAncestral": ["Interpretación carta 1", "Interpretación carta 2", "Interpretación carta 3"],
+      "conclusionFinal": "Resumen final corto",
+      "decreto": "Frase de poder corta",
+      "tarea_terrenal": "Acción física breve",
       "vibe": "healing_blue"
     }
     ${toneInstruction}
-    Idioma: ${language}
   `;
 
   const result = await model.generateContent(prompt);
-  return cleanAndParse(result.response.text(), { 
+  const text = result.response.text();
+  return cleanAndParse(text, { 
     narrativaAncestral: ["El pasado se siente denso...", "Hay ecos de gloria y pérdida...", "La sanación requiere paciencia..."],
     conclusionFinal: "Tus vidas pasadas te observan con amor. El camino se aclara.",
     decreto: "Suelto lo que ya no me pertenece.",
@@ -117,26 +126,42 @@ async function handleInterpretation(model, { cards, reason, userContext, languag
 }
 
 async function handleAnchoring(model, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
-  const cardsContext = selectedCards.map(c => `[${c.name}]: ${c.meaning}`).join('\n');
+  const cardsInfo = selectedCards.map(c => `[${c.name}]: ${c.info}`).join(', ');
+  const clarInfo = Object.entries(clarifications).map(([id, data]) => `Duda sobre carta ${id}: ${data.question} -> Clarificado por ${data.extraCard?.name}: ${data.extraResponse}`).join('\n');
+
   const prompt = `
-    Entregar la 'Gran Síntesis' Final para ${userName}.
-    Responde ESTRICTAMENTE en el idioma: ${language}.
+    Como "El Guía", entrega la 'Gran Síntesis' Final para ${userName}.
+    Resumen de Sesión:
+    - Inquietud Inicial: "${visitReason}"
+    - Cartas Elegidas: ${cardsInfo}
+    - Clarificaciones Realizadas: ${clarInfo || 'Ninguna'}
+
+    TAREA: Crea una conclusión final COHERENTE, PROFUNDA y CONCISA (máximo 2 párrafos). 
+    Une todos los puntos de la sesión para darle al usuario una dirección clara sobre su inquietud original.
+
+    Idioma: ${language}
     Responde estrictamente en formato JSON: { "conclusionFinal": "..." }
   `;
 
   const result = await model.generateContent(prompt);
-  return cleanAndParse(result.response.text(), { conclusionFinal: "La sincronía es perfecta. Tu viaje apenas comienza." });
+  const text = result.response.text();
+  return cleanAndParse(text, { conclusionFinal: "La sincronía es perfecta. Tu viaje apenas comienza." });
 }
 
 async function handleDeepening(model, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
   const prompt = `
-    Eres el Guía. El viajero "${context.userName}" pregunta: "${userQuestion}".
-    Carta clarificadora: "${extraCard.name}: ${extraCard.info}".
-    Entrega un "Susurro de Clarificación" poético y extenso (3 párrafos).
-    Responde ESTRICTAMENTE en el idioma: ${language}.
+    Eres El Guía. El viajero "${context.userName}" tiene una duda específica: "${userQuestion}".
+    Esta duda surge tras leer sobre la carta "${originalCard.name}".
+    La carta clarificadora es: "${extraCard.name}: ${extraCard.info}".
+
+    TAREA: Explica de forma concisa (1 o 2 párrafos) cómo la carta clarificadora resuelve exactamente la duda sobre la "${originalCard.name}" y cómo se aplica a la vida del usuario.
+    Sé poético pero muy AL GRANO.
+
+    Idioma: ${language}
     Responde en JSON: { "deepeningResponse": "..." }
   `;
 
   const result = await model.generateContent(prompt);
-  return cleanAndParse(result.response.text(), { deepeningResponse: "misfire" });
+  const text = result.response.text();
+  return cleanAndParse(text, { deepeningResponse: "misfire" });
 }
