@@ -164,8 +164,9 @@ function App() {
       setVibe('healing_blue');
       speakText(translations.ui.magnetic_resonance.replace('{name}', userName), language);
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+      console.error("Introspection Error:", error);
+      setIntrospectionMessage(translations.ui.oracle_misfire);
+      setPhase('introspection');
       setLoading(false);
       setVibe('healing_blue');
     }
@@ -190,7 +191,13 @@ function App() {
         setLoading(false);
       } catch (error) {
         console.error("Error al interpretar:", error);
-        alert(error.message);
+        setInterpretation({
+          narrativaAncestral: [translations.ui.oracle_misfire, translations.ui.oracle_misfire, translations.ui.oracle_misfire],
+          conclusionFinal: translations.ui.oracle_misfire,
+          decreto: "Sigo mi luz.",
+          tarea_terrenal: "Confía en lo revelado.",
+          vibe: 'healing_blue'
+        });
         setLoading(false);
       }
     }, 5000); 
@@ -304,19 +311,19 @@ function App() {
       {phase === 'languageSelection' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(15px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 999999
         }}>
           <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '40px', mixBlendMode: 'screen' }} />
           <h2 style={{color: '#ffd700', letterSpacing: '4px', marginBottom: '50px', textTransform: 'uppercase', fontSize: '1.5rem', textAlign: 'center'}}>Select your language / Selecciona tu idioma</h2>
           <div className="language-buttons">
-            <button className="language-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); }}>
+            <button className="language-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); startAmbientMusic(); }}>
               <span className="flag-icon">🇬🇧</span> English
             </button>
-            <button className="language-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); }}>
+            <button className="language-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); startAmbientMusic(); }}>
               <span className="flag-icon">🇪🇸</span> Español
             </button>
-            <button className="language-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); }}>
+            <button className="language-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); startAmbientMusic(); }}>
               <span className="flag-icon">🇧🇷</span> Português
             </button>
           </div>
@@ -326,7 +333,7 @@ function App() {
       {phase === 'portalEntrance' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
           <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
@@ -358,8 +365,8 @@ function App() {
 
       <VortexCanvas vibe={vibe} />
       
-      {/* Global Overlay Logo via CSS mix-blend-mode */}
-      <div className="global-logo" />
+      {/* Global Logo - Persistent unless in specific high-z-index phases */}
+      {phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
 
       {/* Main Content Wrapper with profound fade transitions */}
       <div style={{ 
@@ -733,17 +740,21 @@ function App() {
       )}
 
       {phase === 'anchoring' && interpretation && (
-        <div className="anchoring-content">
-          <h2 className="phase-title">{translations.ui.great_synthesis_title}</h2>
+        <div className="anchoring-content" style={{ animation: 'fadeIn 2s ease' }}>
+          <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', margin: '0 auto 20px auto', mixBlendMode: 'screen' }} />
+          <h2 className="phase-title">{translations.ui.anchoring_title}</h2>
           <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
             {selectedCards.map((card, index) => {
                const clar = clarifications[card.id];
+               const cardI18n = translations.cards[card.id] || card;
+               const translatedCard = { ...card, ...cardI18n };
+               
                return (
                 <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px', position: 'relative' }}>
-                  <Card card={card} isSelected={false} isFaceUp={true} />
+                  <Card card={translatedCard} isSelected={false} isFaceUp={true} />
                   {clar?.extraCard && (
                     <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', transform: 'rotate(10deg)', zIndex: 5 }}>
-                      <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
+                      <Card card={{...clar.extraCard, ...(translations.cards[clar.extraCard.id] || clar.extraCard)}} isSelected={false} isFaceUp={true} />
                     </div>
                   )}
                 </div>

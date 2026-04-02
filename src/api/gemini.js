@@ -1,5 +1,14 @@
+async function safeJson(response, fallbackMsg) {
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("JSON Parse Error:", e, "Original text:", text);
+    throw new Error(`${fallbackMsg} (Respuesta no válida del servidor)`);
+  }
+}
+
 export async function generateIntrospection(cards, apiKey, userContext = {}, language = 'es') {
-  // El parámetro apiKey se mantiene por compatibilidad de firma, pero se ignora a favor de la clave del servidor
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -10,11 +19,11 @@ export async function generateIntrospection(cards, apiKey, userContext = {}, lan
   });
   
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorData = await safeJson(response, 'Error en el Oráculo');
     throw new Error(errorData.error || 'Error en el Oráculo');
   }
   
-  return await response.json();
+  return await safeJson(response, 'Error de formato en el Oráculo');
 }
 
 export const generateDeepening = async (originalCard, extraCard, userQuestion, previousReading, context, apiKey, language = 'es') => {
@@ -28,17 +37,11 @@ export const generateDeepening = async (originalCard, extraCard, userQuestion, p
   });
 
   if (!response.ok) {
-    let errorMsg = 'Error al profundizar';
-    try {
-      const errorData = await response.json();
-      errorMsg = errorData.error || errorMsg;
-    } catch(err) {
-      errorMsg = `HTTP ${response.status} (Posible Timeout de servidor)`;
-    }
-    throw new Error(errorMsg);
+    const errorData = await safeJson(response, 'Error al profundizar');
+    throw new Error(errorData.error || 'Error al profundizar');
   }
 
-  const data = await response.json();
+  const data = await safeJson(response, 'Error de formato al profundizar');
   return data.deepeningResponse;
 };
 
@@ -53,11 +56,11 @@ export const generateAnchoring = async (selectedCards, visitReason, dichotomy, u
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorData = await safeJson(response, 'Error en el Anclaje');
     throw new Error(errorData.error || 'Error en el Anclaje');
   }
 
-  return await response.json();
+  return await safeJson(response, 'Error de formato en el Anclaje');
 };
 
 export async function interpretCards(cards, soulFeeling, apiKey, userContext = {}, language = 'es') {
@@ -71,9 +74,9 @@ export async function interpretCards(cards, soulFeeling, apiKey, userContext = {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorData = await safeJson(response, 'Error en la Interpretación');
     throw new Error(errorData.error || 'Error en la Interpretación');
   }
 
-  return await response.json();
+  return await safeJson(response, 'Error de formato en la Interpretación');
 }
