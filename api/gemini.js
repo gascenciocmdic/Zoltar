@@ -9,15 +9,15 @@ const safetySettings = [
 
 // Helper to clean and parse JSON from Gemini's response
 function cleanAndParse(text, fallback) {
+  let sanitized = "";
   try {
     const match = text.match(/\{[\s\S]*\}/);
     const cleanJson = match ? match[0] : text;
-    // Remove potential control characters that break JSON.parse
-    const sanitized = cleanJson.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+    sanitized = cleanJson.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
     return JSON.parse(sanitized);
   } catch (e) {
     console.error("Failed to parse Gemini JSON:", e, "Original text:", text);
-    return fallback;
+    return { ...fallback, _debug: { error: e.message, raw: text, sanitized: sanitized.slice(0, 200) + "..." } };
   }
 }
 
@@ -101,7 +101,7 @@ async function handleIntrospection(model, { cards, userContext, language = 'es' 
     return cleanAndParse(text, fallback);
   } catch (e) {
     console.error("Introspection Error:", e);
-    return fallback;
+    return { ...fallback, _debug: { error: e.message, api_failure: true } };
   }
 }
 
@@ -155,7 +155,7 @@ async function handleInterpretation(model, { cards, reason, introspectionAnswer,
     return cleanAndParse(text, fallback);
   } catch (e) {
     console.error("Interpretation Error:", e);
-    return fallback;
+    return { ...fallback, _debug: { error: e.message, api_failure: true } };
   }
 }
 
@@ -183,7 +183,7 @@ async function handleAnchoring(model, { cards, reason, choice, name, clarificati
     return cleanAndParse(text, fallback);
   } catch (e) {
     console.error("Anchoring Error:", e);
-    return fallback;
+    return { ...fallback, _debug: { error: e.message, api_failure: true } };
   }
 }
 
@@ -206,6 +206,6 @@ async function handleDeepening(model, { originalCard, extraCard, userQuestion, p
     return cleanAndParse(text, fallback);
   } catch (e) {
     console.error("Deepening Error:", e);
-    return fallback;
+    return { ...fallback, _debug: { error: e.message, api_failure: true } };
   }
 }
