@@ -11,20 +11,13 @@ function cleanAndParse(text, fallback) {
   let sanitized = "";
   try {
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("No JSON block found");
+    if (!match) throw new Error("No JSON found");
     const cleanJson = match[0];
-    
-    // Convert literal control chars (newlines, tabs) inside string literals into spaces/escapes
-    sanitized = cleanJson
-      .replace(/\r?\n/g, " ") 
-      .replace(/\t/g, " ")
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); 
-      
+    sanitized = cleanJson.replace(/\r?\n/g, " ").replace(/\t/g, " ").replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); 
     const parsed = JSON.parse(sanitized);
     return { ...parsed, __IS_FALLBACK__: false };
   } catch (e) {
-    console.error("Critical Parse Error:", e.message);
-    return { ...fallback, __IS_FALLBACK__: true, _debug: { error: "JSON_PARSE_ERROR: " + e.message, raw: text, sanitized: sanitized.slice(0, 500) + "..." } };
+    return { ...fallback, __IS_FALLBACK__: true, _debug: { error: "JSON_PARSE_ERROR: " + e.message, raw: text } };
   }
 }
 
@@ -32,11 +25,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { action, payload } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Gemini API Key is not configured.' });
+  if (!apiKey) return res.status(500).json({ error: 'Gemini API Key is missing.' });
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Using gemini-1.5-flash-latest to avoid 404 on v1beta endpoint
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest", safetySettings });
+  // Switching to v1 (stable) to avoid 404 on v1beta in some environments
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
 
   try {
     let result;
@@ -53,7 +46,7 @@ export default async function handler(req, res) {
       __IS_FALLBACK__: true,
       _debug: { error: error.message, api_failure: true },
       mensajeGuia: "El éter está agitado. Respira profundo...",
-      narrativaAncestral: ["El susurro es difuso...", "La visión se nubla...", "Confía en tu intuición..."],
+      narrativaAncestral: ["El pasado se siente denso...", "La visión se nubla...", "Confía en tu intuición..."],
       conclusionFinal: "La visión se fragmenta.",
       decreto: "Confío en mi proceso.",
       tarea_terrenal: "Respira profundo.",
@@ -63,9 +56,9 @@ export default async function handler(req, res) {
 }
 
 async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
-  const { name, reason } = userContext || { name: 'Viajero Astral', reason: '' };
-  const prompt = `Saluda a ${name}. Inquietud: "${reason}". Cartas: ${cards.map(c => c.name).join(', ')}. JSON: { "mensajeGuia": "..." }. No uses saltos de línea literales. Idioma: ${language}`;
-  const fallback = { mensajeGuia: "Tus cartas vibran con una frecuencia inusual..." };
+  const { name, reason } = userContext || {};
+  const prompt = `Saluda a ${name}. Contexto: ${reason}. Cartas: ${cards.map(c => c.name).join(', ')}. JSON: { "mensajeGuia" }. Idioma: ${language}`;
+  const fallback = { mensajeGuia: "Los ecos resuenan..." };
   try {
     const result = await model.generateContent(prompt);
     return cleanAndParse(result.response.text(), fallback);
@@ -73,17 +66,13 @@ async function handleIntrospection(model, { cards, userContext, language = 'es' 
 }
 
 async function handleInterpretation(model, { cards, reason, introspectionAnswer, userContext, language }) {
-  const { name } = userContext || { name: 'Viajero Astral' };
-  const prompt = `Revelación para ${name}. Inquietud: "${reason}". Sentir: "${introspectionAnswer}". Cartas: ${cards.map(c => c.name).join(', ')}. JSON: { "narrativaAncestral": ["...", "...", "..."], "conclusionFinal": "...", "decreto": "...", "tarea_terrenal": "...", "vibe": "..." }. Idioma: ${language}`;
+  const { name } = userContext || {};
+  const prompt = `Revelación para ${name}. Inquietud: ${reason}. Sentir: ${introspectionAnswer}. Cartas: ${cards.map(c => c.name).join(', ')}. JSON místico con narrativaAncestral (3 párrafos), conclusionFinal, decreto, tarea_terrenal. Idioma: ${language}`;
   const fallback = { 
-    narrativaAncestral: [
-      "El pasado se siente denso y lleno de secretos antiguos. Los ecos de tus encarnaciones previas vibran en esta carta.",
-      "Hay ecos de gloria y pérdida resonando a través de los siglos.",
-      "La sanación requiere paciencia y una conexión sincera con tu linaje ancestral."
-    ],
+    narrativaAncestral: ["El pasado se siente denso...", "Hay ecos de gloria...", "La sanación requiere paciencia..."],
     conclusionFinal: "Tus vidas pasadas te observan con amor.",
     decreto: "Suelto lo que ya no me pertenece.",
-    tarea_terrenal: "Enciende una vela y medita.",
+    tarea_terrenal: "Enciende una vela.",
     vibe: "healing_blue"
   };
   try {
