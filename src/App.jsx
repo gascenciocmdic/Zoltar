@@ -228,7 +228,8 @@ function App() {
           setInterpretation(prev => ({ ...prev, ...finalSynthesis }));
           speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal} ${translations.ui.healing_decree}: ${finalSynthesis.decreto}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal}`, language);
         } catch (error) {
-          console.error(error);
+          console.error("Anchoring failed:", error);
+          setInterpretation(prev => ({ ...prev, conclusionFinal: translations.ui.oracle_misfire }));
         }
       }, 1500);
     }
@@ -278,16 +279,21 @@ function App() {
             : '';
           
           const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
+          
+          const finalResponse = resp === "misfire" ? translations.ui.oracle_misfire : resp;
+
           setClarifications(prev => ({
             ...prev,
-            [cardId]: { ...prev[cardId], extraResponse: resp, step: 'done' }
+            [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
           }));
-          speakText(`${translations.ui.deepen_subtitle}. ${resp}`, language);
+          speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
         } catch (e) {
+          console.error("Deepening failed:", e);
           setClarifications(prev => ({
             ...prev,
-            [cardId]: { ...prev[cardId], extraResponse: `La clarificación fue interrumpida por las mareas del tiempo. (Error Técnico: ${e.message})`, step: 'done' }
+            [cardId]: { ...prev[cardId], extraResponse: translations.ui.oracle_misfire, step: 'done' }
           }));
+          speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
         }
       }
     }, 1500);
