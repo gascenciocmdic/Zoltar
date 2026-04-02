@@ -110,7 +110,7 @@ function App() {
     setTimeout(() => {
       setThresholdStep(1);
       setIsFading(false);
-    }, 1500); 
+    }, Math.floor(Math.random() * 2000) + 3000); 
   };
 
   const handleNextThreshold = () => {
@@ -138,7 +138,7 @@ function App() {
         speakText(translations.ui.call_p1.replace(/"/g, ''), language);
       }
       setIsFading(false);
-    }, 1500); 
+    }, Math.floor(Math.random() * 2000) + 3000); 
   };
 
   const handleSelectCard = (card) => {
@@ -206,7 +206,7 @@ function App() {
         });
         setLoading(false);
       }
-    }, 5000); 
+    }, Math.floor(Math.random() * 2000) + 3000); 
   };
 
   const handleNextStage = () => {
@@ -229,7 +229,7 @@ function App() {
           if (nextStage === 3) prefix = translations.ui.healing_advice + ". ";
           speakText(prefix + textToRead, language);
         }
-      }, 1500);
+      }, Math.floor(Math.random() * 2000) + 3000);
     } else {
       setIsFading(true);
       setTimeout(async () => {
@@ -249,7 +249,7 @@ function App() {
             tarea_terrenal: translations.ui.default_task
           }));
         }
-      }, 1500);
+      }, Math.floor(Math.random() * 2000) + 3000);
     }
   };
 
@@ -271,7 +271,7 @@ function App() {
         [cardId]: { ...prev[cardId], question: questionText, step: 'selectCard' }
       }));
       setIsFading(false);
-    }, 1000);
+    }, Math.floor(Math.random() * 2000) + 3000);
   };
 
   const submitDeepenCardSelect = async (cardId, extraCard) => {
@@ -299,7 +299,7 @@ function App() {
           const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
           
           const finalResponse = resp === "misfire" ? translations.ui.oracle_misfire : resp;
-
+ 
           setClarifications(prev => ({
             ...prev,
             [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
@@ -314,7 +314,7 @@ function App() {
           speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
         }
       }
-    }, 1500);
+    }, Math.floor(Math.random() * 2000) + 3000);
   };
 
   return (
@@ -360,10 +360,14 @@ function App() {
           <button className="start-button blinking-button" onClick={() => {
             initSpeech(language);
             startAmbientMusic();
-            setPhase('threshold');
+            setIsFading(true);
             setTimeout(() => {
-              speakText(sessionTexts.greeting, language);
-            }, 600);
+              setPhase('threshold');
+              setIsFading(false);
+              setTimeout(() => {
+                speakText(sessionTexts.greeting, language);
+              }, 600);
+            }, Math.floor(Math.random() * 2000) + 3000);
           }}>{translations.ui.enter_portal}</button>
         </div>
       )}
