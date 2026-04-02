@@ -365,3 +365,96 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   0% { transform: scaleY(1) rotate(-5deg); }
   100% { transform: scaleY(0.3) rotate(5deg); }
 }
+/* Language Selection Styles */
+.language-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 280px;
+}
+
+.language-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: white;
+  padding: 15px 30px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.language-button:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.flag-icon {
+  font-size: 1.4rem;
+}
+
+/* Flashing Cursor for Textarea */
+.flashing-cursor {
+  position: relative;
+}
+
+.flashing-cursor::after {
+  content: '|';
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  color: #ffd700;
+  font-weight: bold;
+  animation: blink 1s step-end infinite;
+}
+
+/* Special Pulse for active input */
+.soul-input.flashing-cursor:focus {
+  box-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
+}
+
+/* Selected Card Glow */
+.selected-card-glow {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6) !important;
+  transform: scale(1.05) !important;
+  z-index: 20;
+}
+
+/* Final Synthesis Grid for clarity */
+.anchoring-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.anchor-block {
+  padding: 20px;
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 15px;
+  text-align: center;
+}
+
+.anchor-block h3 {
+  color: #ffd700;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 600px) {
+  .anchoring-grid {
+    grid-template-columns: 1fr;
+  }
+}

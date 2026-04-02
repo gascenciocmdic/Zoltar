@@ -294,10 +294,16 @@ function App() {
         }}>
           <div style={{ width: '220px', height: '120px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '40px', mixBlendMode: 'screen' }} />
           <h2 style={{color: '#ffd700', letterSpacing: '4px', marginBottom: '50px', textTransform: 'uppercase', fontSize: '1.5rem', textAlign: 'center'}}>Select your language / Selecciona tu idioma</h2>
-          <div style={{ display: 'grid', gap: '20px', width: '280px' }}>
-            <button className="start-button blinking-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); }}>English</button>
-            <button className="start-button blinking-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); }}>Español</button>
-            <button className="start-button blinking-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); }}>Português</button>
+          <div className="language-buttons">
+            <button className="language-button" onClick={() => { setLanguage('en'); setPhase('portalEntrance'); }}>
+              <span className="flag-icon">🇬🇧</span> English
+            </button>
+            <button className="language-button" onClick={() => { setLanguage('es'); setPhase('portalEntrance'); }}>
+              <span className="flag-icon">🇪🇸</span> Español
+            </button>
+            <button className="language-button" onClick={() => { setLanguage('pt'); setPhase('portalEntrance'); }}>
+              <span className="flag-icon">🇧🇷</span> Português
+            </button>
           </div>
         </div>
       )}
@@ -546,7 +552,7 @@ function App() {
                 )}
                 
                 <textarea 
-                  className="soul-input" 
+                  className="soul-input flashing-cursor" 
                   style={{ height: '120px', resize: 'none', maxWidth: '600px', margin: '0 auto', display: 'block' }}
                   placeholder={translations.ui.revelation_confession}
                   id="deepAnswer"
@@ -586,20 +592,32 @@ function App() {
                       const spreadX = Math.sin(seed) * 40;
                       const spreadY = Math.cos(seed) * 30;
                       const rotation = Math.sin(seed * 2) * 18;
-                      
+                      const isTentativelySelected = clarifications[clarifyingCardId]?.tentativeCard?.id === c.id;
+
                       return (
                         <Card 
                           key={c.id} 
                           card={c} 
-                          isSelected={false}
-                          onSelect={() => submitDeepenCardSelect(parseInt(clarifyingCardId), c)}
+                          isSelected={isTentativelySelected}
+                          onSelect={() => setClarifications(prev => ({
+                            ...prev,
+                            [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
+                          }))}
                           style={{
                             '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
                           }}
+                          className={isTentativelySelected ? 'selected-card-glow' : ''}
                         />
                       );
                     })}
                   </div>
+                  {clarifications[clarifyingCardId]?.tentativeCard && (
+                    <div style={{ marginTop: '40px' }}>
+                       <button className="start-button blinking-button" onClick={() => submitDeepenCardSelect(parseInt(clarifyingCardId), clarifications[clarifyingCardId].tentativeCard)}>
+                        {translations.ui.continue}
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             }
@@ -697,24 +715,43 @@ function App() {
       )}
 
       {phase === 'anchoring' && interpretation && (
-        <div className="anchoring-content threshold-content">
+        <div className="anchoring-content">
           <h2 className="phase-title">{translations.ui.great_synthesis_title}</h2>
+          <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
+            {selectedCards.map((card, index) => {
+               const clar = clarifications[card.id];
+               return (
+                <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px', position: 'relative' }}>
+                  <Card card={card} isSelected={false} isFaceUp={true} />
+                  {clar?.extraCard && (
+                    <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', transform: 'rotate(10deg)', zIndex: 5 }}>
+                      <Card card={clar.extraCard} isSelected={false} isFaceUp={true} />
+                    </div>
+                  )}
+                </div>
+               );
+            })}
+          </div>
+
           <div className="narrative-container">
              <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#ffd700' }}>
                 <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>{interpretation.conclusionFinal}</p>
-                <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(255,215,0,0.05)', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.2)' }}>
-                  <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
-                  <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>"{interpretation.decreto}"</p>
-                </div>
-                <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(192,132,252,0.05)', borderRadius: '10px', border: '1px solid rgba(192,132,252,0.2)' }}>
-                  <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
-                  <p>{interpretation.tarea_terrenal}</p>
+                <div className="anchoring-grid">
+                  <div className="anchor-block">
+                    <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
+                    <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>"{interpretation.decreto}"</p>
+                  </div>
+                  <div className="anchor-block" style={{ background: 'rgba(192,132,252,0.05)', border: '1px solid rgba(192,132,252,0.2)' }}>
+                    <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
+                    <p>{interpretation.tarea_terrenal}</p>
+                  </div>
                 </div>
              </div>
           </div>
           <button className="start-button" onClick={() => window.location.reload()} style={{ marginTop: '40px' }}>{translations.ui.reset_ritual}</button>
         </div>
       )}
+      
       </div>
     </div>
   );
