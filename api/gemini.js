@@ -11,13 +11,22 @@ function cleanAndParse(text, fallback) {
   let sanitized = "";
   try {
     const match = text.match(/\{[\s\S]*\}/);
-    const cleanJson = match ? match[0] : text;
-    sanitized = cleanJson.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+    if (!match) throw new Error("No JSON block found");
+    const cleanJson = match[0];
+    
+    // Convert literal control chars (newlines, tabs) inside string literals into spaces/escapes
+    // This is a safety measure to prevent JSON.parse from failing on "Bad control character in string"
+    // Also remove other invisible control chars
+    sanitized = cleanJson
+      .replace(/\r?\n/g, " ") // Convert literal newlines to spaces to maintain JSON structure
+      .replace(/\t/g, " ")     // Convert tabs to spaces
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); // Kill remaining non-printables
+      
     const parsed = JSON.parse(sanitized);
     return { ...parsed, __IS_FALLBACK__: false };
   } catch (e) {
-    console.error("Failed to parse Gemini JSON:", e, "Original text:", text);
-    return { ...fallback, __IS_FALLBACK__: true, _debug: { error: e.message, raw: text, sanitized: sanitized.slice(0, 300) + "..." } };
+    console.error("Critical Parse Error:", e.message, "At position:", e.at || "n/a");
+    return { ...fallback, __IS_FALLBACK__: true, _debug: { error: "JSON_PARSE_ERROR: " + e.message, raw: text, sanitized: sanitized.slice(0, 500) + "..." } };
   }
 }
 
@@ -55,8 +64,15 @@ export default async function handler(req, res) {
 }
 
 async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
-  const { name, reason } = userContext || {};
-  const prompt = `Eres El Guía. Consultante: ${name}. Inquietud: ${reason}. Cartas: ${cards.map(c => c.name).join(', ')}. Genera un JSON: { "mensajeGuia": "..." }. Idioma: ${language}`;
+  const { name, reason } = userContext || { name: 'Viajero Astral', reason: '' };
+  const prompt = `
+    Eres "El Guía". Saluda a ${name}. Considera su inquietud: "${reason}".
+    Él ha elegido: ${cards.map(c => c.name).join(', ')}.
+    Genera un mensaje místico de un párrafo que le prepare para la profundidad.
+    
+    REGLA: Devuelve EXCLUSIVAMENTE un JSON: { "mensajeGuia": "..." }.
+    IMPORTANTE: No uses saltos de línea literales dentro del JSON. Idioma: ${language}
+  `;
   const fallback = { mensajeGuia: "Tus cartas vibran con una frecuencia inusual..." };
   try {
     const result = await model.generateContent(prompt);
@@ -65,8 +81,17 @@ async function handleIntrospection(model, { cards, userContext, language = 'es' 
 }
 
 async function handleInterpretation(model, { cards, reason, introspectionAnswer, userContext, language }) {
-  const { name } = userContext || {};
-  const prompt = `Eres El Guía. Usuario: ${name}. Inquietud: ${reason}. Sentir: ${introspectionAnswer}. Cartas: ${cards.map(c => c.name).join(', ')}. Genera JSON con narrativaAncestral (3 párrafos), conclusionFinal, decreto, tarea_terrenal. Idioma: ${language}`;
+  const { name } = userContext || { name: 'Viajero Astral' };
+  const prompt = `
+    Como "El Guía", entrega la revelación a ${name}.
+    Contexto: Inquietud: "${reason}", Sentir Íntimo: "${introspectionAnswer}".
+    Cartas: ${cards.map(c => c.name).join(', ')}.
+    
+    TAREA: Genera una lectura personalizada con narrativaAncestral (3 párrafos detallados), conclusionFinal, decreto, tarea_terrenal.
+    ID: ${language}. Formato JSON Estricto: { "narrativaAncestral": ["...", "...", "..."], "conclusionFinal": "...", "decreto": "...", "tarea_terrenal": "...", "vibe": "..." }
+    
+    IMPORTANTE: El JSON debe ser una única línea o usar '\\n' escapado para saltos. No incluyas caracteres ocultos.
+  `;
   const fallback = { 
     narrativaAncestral: [
       "El pasado se siente denso y lleno de secretos antiguos. Los ecos de tus encarnaciones previas vibran en esta carta, señalando que tu camino actual está profundamente ligado a una herida o un don que aún no logras reconocer completamente.",
