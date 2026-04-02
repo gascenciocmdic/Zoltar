@@ -129,7 +129,43 @@ export const I18N = {
       42: { name: "Votos", info: "Promesas del pasado (castidad, pobreza) no canceladas que bloquean tu progreso." },
       43: { name: "Guerras y Batallas", info: "Participación en guerras antiguas determinó tu personalidad o rechazo al conflicto." },
       44: { name: "Sabiduría", info: "Lecciones espirituales acumuladas que buscan salir a la luz para guiar a otros." }
-    }
+    },
+    ask_reasons: [
+      "Lo que inquieta tu paz...",
+      "¿Qué sombra cruza tu camino hoy?",
+      "¿Qué busca tu alma revelar?",
+      "Dime, {name}... ¿cuál es la duda que late en tu pecho?",
+      "¿Qué herida del tiempo deseas sanar?",
+      "¿Cuál es el nudo en tu historia que hoy venimos a desatar?",
+      "Habla con honestidad... ¿qué es aquello que no te deja dormir?",
+      "El portal está abierto para tu inquietud. ¿Qué deseas entregarle?",
+      "¿Qué eco de tu presente resuena con más fuerza en tu alma?",
+      "Dime, viajero... ¿qué verdad estás buscando hoy?"
+    ],
+    ask_dichotomies: [
+      "¿Prefieres la Verdad Directa o un Susurro Metafórico?",
+      "¿Deseas claridad cruda o el lenguaje del misterio?",
+      "¿Cómo debe hablarte el Oráculo: con fuerza o con sutileza?",
+      "Elige tu senda: la luz que ciega o la penumbra que revela.",
+      "¿Buscas una respuesta que golpee o una que te acaricie el alma?",
+      "Dime... ¿estás listo para la verdad sin velos o prefieres la danza de las metáforas?",
+      "¿Qué vibración prefieres para este encuentro: directriz o poética?",
+      "El Guía puede ser un martillo o una pluma. ¿Qué necesitas hoy?",
+      "¿Tu alma busca el impacto de la realidad o el susurro de la alegoría?",
+      "Elige la forma de la revelación..."
+    ],
+    ask_questions: [
+      "Concéntrate... el momento de elegir ha llegado.",
+      "Las cartas te llaman. Escucha su vibración...",
+      "Siente la energía fluyendo... selecciona las tres llaves de tu pasado.",
+      "El destino está en tus manos. Elige con el corazón.",
+      "Observa el mazo... tres cartas vibran para ti. ¿Puedes verlas?",
+      "No elijas con la mente, deja que tus dedos encuentren su camino.",
+      "El Oráculo te espera tras estas cartas. Elige tres.",
+      "Tres puertas al pasado. Ábrelas ahora.",
+      "Tu energía ya ha elegido. Solo confirma tu selección.",
+      "Que el azar ancestral guíe tu mano hacia las tres elegidas."
+    ]
   },
   en: {
     ui: {
@@ -261,7 +297,43 @@ export const I18N = {
       42: { name: "Vows", info: "Uncancelled past promises (chastity, poverty) that block your progress." },
       43: { name: "Wars and Battles", info: "Participation in ancient wars determined your personality or rejection of conflict." },
       44: { name: "Wisdom", info: "Accumulated spiritual lessons that seek to come to light to guide others." }
-    }
+    },
+    ask_reasons: [
+      "What disturbs your peace...",
+      "What shadow crosses your path today?",
+      "What does your soul seek to reveal?",
+      "Tell me, {name}... what is the doubt that beats in your chest?",
+      "What wound of time do you wish to heal?",
+      "What is the knot in your story that we come to untie today?",
+      "Speak honestly... what is it that keeps you awake?",
+      "The portal is open for your concern. What do you wish to deliver to it?",
+      "What echo of your present resonates most strongly in your soul?",
+      "Tell me, traveler... what truth are you seeking today?"
+    ],
+    ask_dichotomies: [
+      "Do you prefer Direct Truth or a Metaphoric Whisper?",
+      "Do you desire raw clarity or the language of mystery?",
+      "How should the Oracle speak to you: with strength or with subtlety?",
+      "Choose your path: the light that blinds or the shadow that reveals.",
+      "Do you seek an answer that hits or one that caresses your soul?",
+      "Tell me... are you ready for the truth without veils or do you prefer the dance of metaphors?",
+      "What vibration do you prefer for this encounter: directive or poetic?",
+      "The Guide can be a hammer or a feather. What do you need today?",
+      "Does your soul seek the impact of reality or the whisper of allegory?",
+      "Choose the form of revelation..."
+    ],
+    ask_questions: [
+      "Concentrate... the moment to choose has arrived.",
+      "The cards are calling you. Listen to their vibration...",
+      "Feel the energy flowing... select the three keys to your past.",
+      "Destiny is in your hands. Choose with your heart.",
+      "Observe the deck... three cards vibrate for you. can you see them?",
+      "Do not choose with your mind, let your fingers find their way.",
+      "The Oracle awaits you behind these cards. Choose three.",
+      "Three doors to the past. Open them now.",
+      "Your energy has already chosen. Just confirm your selection.",
+      "Let ancestral chance guide your hand to the chosen three."
+    ]
   },
   pt: {
     ui: {
@@ -393,6 +465,42 @@ export const I18N = {
       42: { name: "Votos", info: "Promessas do passado (castidade, pobreza) não canceladas que bloqueiam seu progresso." },
       43: { name: "Guerras e Batalhas", info: "Participação em guerras antigas determinou sua personalidade ou rejeição ao conflito." },
       44: { name: "Sabedoria", info: "Lições espirituais acumuladas que buscam vir à tona para guiar outros." }
-    }
+    },
+    ask_reasons: [
+      "O que inquieta sua paz...",
+      "Que sombra cruza seu caminho hoje?",
+      "O que sua alma busca revelar?",
+      "Diga-me, {name}... qual é a dúvida que bate em seu peito?",
+      "Que ferida do tempo você deseja curar?",
+      "Qual é o nó em sua história que viemos desatar hoje?",
+      "Fale com honestidade... o que é aquilo que não te deixa dormir?",
+      "O portal está aberto para sua inquietude. O que você deseja entregar a ele?",
+      "Que eco do seu presente ressoa com mais força em sua alma?",
+      "Diga-me, viajante... que verdade você está buscando hoje?"
+    ],
+    ask_dichotomies: [
+      "Você prefere a Verdade Direta ou um Sussurro Metafórico?",
+      "Você deseja clareza crua ou a linguagem do mistério?",
+      "Como o Oráculo deve falar com você: com força ou com sutileza?",
+      "Escolha sua senda: a luz que cega ou a penumbra que revela.",
+      "Você busca uma resposta que atinja ou uma que acaricie sua alma?",
+      "Diga-me... você está pronto para a verdade sem véus ou prefere a dança das metáforas?",
+      "Qual vibração você prefere para este encontro: diretriz ou poética?",
+      "O Guia pode ser um martelo ou uma pena. O que você precisa hoje?",
+      "Sua alma busca o impacto da realidade ou o sussurro da alegoria?",
+      "Escolha a forma da revelação..."
+    ],
+    ask_questions: [
+      "Concentre-se... o momento de escolher chegou.",
+      "As cartas te chamam. Ouça sua vibração...",
+      "Sinta a energia fluindo... selecione as três chaves do seu passado.",
+      "O destino está em suas mãos. Escolha com o coração.",
+      "Observe o baralho... três cartas vibram para você. Você consegue vê-las?",
+      "Não escolha com a mente, deixe seus dedos encontrarem o caminho.",
+      "O Oráculo te espera atrás destas cartas. Escolha três.",
+      "Três portas para o passado. Abra-as agora.",
+      "Sua energia já escolheu. Apenas confirme sua seleção.",
+      "Que o acaso ancestral guie sua mão para as três escolhidas."
+    ]
   }
 };

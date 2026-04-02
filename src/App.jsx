@@ -16,7 +16,10 @@ function App() {
   const [textIndices, setTextIndices] = useState({
     greeting: 0,
     askName: 0,
-    waitMsg: 0
+    waitMsg: 0,
+    askReason: 0,
+    askDichotomy: 0,
+    askQuestion: 0
   });
 
   const translations = useMemo(() => I18N[language] || I18N.es, [language]);
@@ -26,7 +29,10 @@ function App() {
     return {
       greeting: pool.greetings[textIndices.greeting % pool.greetings.length] || pool.greetings[0],
       askName: pool.ask_names[textIndices.askName % pool.ask_names.length] || pool.ask_names[0],
-      waitMsg: pool.wait_messages[textIndices.waitMsg % pool.wait_messages.length] || pool.wait_messages[0]
+      waitMsg: pool.wait_messages[textIndices.waitMsg % pool.wait_messages.length] || pool.wait_messages[0],
+      askReason: pool.ask_reasons[textIndices.askReason % pool.ask_reasons.length] || pool.ask_reasons[0],
+      askDichotomy: pool.ask_dichotomies[textIndices.askDichotomy % pool.ask_dichotomies.length] || pool.ask_dichotomies[0],
+      askQuestion: pool.ask_questions[textIndices.askQuestion % pool.ask_questions.length] || pool.ask_questions[0]
     };
   }, [language, textIndices]);
 
@@ -37,7 +43,10 @@ function App() {
       setTextIndices({
         greeting: Math.floor(Math.random() * pool.greetings.length),
         askName: Math.floor(Math.random() * pool.ask_names.length),
-        waitMsg: Math.floor(Math.random() * pool.wait_messages.length)
+        waitMsg: Math.floor(Math.random() * pool.wait_messages.length),
+        askReason: Math.floor(Math.random() * pool.ask_reasons.length),
+        askDichotomy: Math.floor(Math.random() * pool.ask_dichotomies.length),
+        askQuestion: Math.floor(Math.random() * pool.ask_questions.length)
       });
     }
   }, [language, phase]);
@@ -112,11 +121,11 @@ function App() {
     
     // Narradores
     if (thresholdStep === 1) {
-      speakText((translations.ui.what_inquires_you.replace('{name}', userName) || `Dime, ${userName}... ¿qué susurros han traído tus pasos hacia mí hoy?`), language);
+      speakText(sessionTexts.askReason.replace('{name}', userName), language);
     } else if (thresholdStep === 2) {
-      speakText(translations.ui.metaphoric_whisper, language);
+      speakText(sessionTexts.askDichotomy, language);
     } else if (thresholdStep === 3) {
-      speakText(translations.ui.choose_cards, language);
+      speakText(sessionTexts.askQuestion, language);
     }
 
     setTimeout(() => {
