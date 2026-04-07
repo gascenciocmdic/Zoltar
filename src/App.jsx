@@ -209,6 +209,7 @@ function App() {
     }
   };
 
+
   const handleStartRevelation = async ({ introspectionAnswer = '' } = {}) => {
     setLoading(true);
     setVibe('karmic_red'); 
