@@ -465,8 +465,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .action-button-reveal {
-  animation: buttonFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards, relaxPulse 3s infinite ease-in-out;
   opacity: 0;
+  animation: buttonFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.action-button-reveal:not(:disabled) {
+  animation: buttonFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards, relaxPulse 3s 1.2s infinite ease-in-out;
 }
 
 @keyframes buttonFadeIn {

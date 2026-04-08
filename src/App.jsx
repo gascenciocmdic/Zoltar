@@ -272,36 +272,35 @@ function App() {
         }
       }, Math.floor(Math.random() * 2000) + 3000);
     } else {
-      setIsFading(true);
-      setTimeout(async () => {
-        setPhase('anchoring');
-        setIsFading(false);
-        try {
-          // Anchoring now waits for clarifications too
-          const finalSynthesis = await generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language);
-          setInterpretation(prev => ({ 
-            ...prev, 
+      // Ir al anclaje sin delay — el texto aparece con animación CSS
+      setPhase('anchoring');
+      setIsFading(false);
+      generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language)
+        .then(finalSynthesis => {
+          setInterpretation(prev => ({
+            ...prev,
             ...finalSynthesis,
             decreto: finalSynthesis.decreto || prev.decreto || translations.ui.default_decree,
             tarea_terrenal: finalSynthesis.tarea_terrenal || prev.tarea_terrenal || translations.ui.default_task
           }));
-          const synthText = finalSynthesis.conclusionFinal || translations.ui.oracle_misfire;
           if (finalSynthesis.__IS_FALLBACK__) {
             setLastDebug(finalSynthesis._debug || { error: "FALLBACK TRIGGERED (Anchoring failed)" });
             setShowDebug(true);
           }
-          setCanProceed(false);
-          speakText(`${translations.ui.great_synthesis.replace('{name}', userName)} ${synthText} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`, language, () => setCanProceed(true));
-        } catch (error) {
+          speakText(
+            `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`,
+            language
+          );
+        })
+        .catch(error => {
           console.error("Anchoring failed:", error);
-          setInterpretation(prev => ({ 
-            ...prev, 
+          setInterpretation(prev => ({
+            ...prev,
             conclusionFinal: translations.ui.oracle_misfire,
             decreto: translations.ui.default_decree,
             tarea_terrenal: translations.ui.default_task
           }));
-        }
-      }, Math.floor(Math.random() * 2000) + 3000);
+        });
     }
   };
 
@@ -806,7 +805,7 @@ function App() {
                         onClick={handleNextStage} 
                         style={{ marginTop: '30px' }}
                       >
-                        {revealedStage < 3 ? translations.ui.continue : translations.ui.finalize_ritual}
+                        {revealedStage < 3 ? translations.ui.continue : translations.ui.go_to_synthesis}
                       </button>
                     )}
                   </>
@@ -840,29 +839,31 @@ function App() {
           </div>
 
           <div className="narrative-container">
-             <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#ffd700' }}>
-                <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>{interpretation.conclusionFinal}</p>
+             <div className="brain-bubble narrative" style={{ borderLeftColor: '#ffd700', animation: 'fadeIn 2s ease' }}>
+                <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
+                  <span className="reveal-text">{interpretation.conclusionFinal}</span>
+                </p>
                 <div className="anchoring-grid">
                   <div className="anchor-block">
                     <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
-                    <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>"{interpretation.decreto}"</p>
+                    <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>
+                      <span className="reveal-text" style={{ animationDelay: '1s' }}>"{interpretation.decreto}"</span>
+                    </p>
                   </div>
                   <div className="anchor-block" style={{ background: 'rgba(192,132,252,0.05)', border: '1px solid rgba(192,132,252,0.2)' }}>
                     <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
-                    <p>{interpretation.tarea_terrenal}</p>
+                    <p><span className="reveal-text" style={{ animationDelay: '2s' }}>{interpretation.tarea_terrenal}</span></p>
                   </div>
                 </div>
              </div>
           </div>
-          {canProceed && (
-            <button 
-              className="start-button blinking-button action-button-reveal" 
-              onClick={() => window.location.reload()} 
-              style={{ marginTop: '40px' }}
-            >
-              {translations.ui.new_consultation}
-            </button>
-          )}
+          <button 
+            className="start-button blinking-button action-button-reveal" 
+            onClick={() => window.location.reload()} 
+            style={{ marginTop: '40px' }}
+          >
+            {translations.ui.new_consultation}
+          </button>
         </div>
       )}
       {/* Global Debug Toggle Button */}
