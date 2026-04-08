@@ -1,11 +1,19 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-];
+const MODEL = "gemini-2.5-flash";
+
+async function generateJSON(ai, prompt) {
+  const response = await ai.models.generateContent({
+    model: MODEL,
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+    },
+  });
+  const text = response.text;
+  const match = text.match(/{[\s\S]*}/);
+  return JSON.parse(match ? match[0] : text);
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -13,19 +21,14 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Gemini API Key missing.' });
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
-    safetySettings,
-    generationConfig: { responseMimeType: "application/json" }
-  });
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
     switch (action) {
-      case 'introspection': return res.status(200).json(await handleIntrospection(model, payload));
-      case 'interpretation': return res.status(200).json(await handleInterpretation(model, payload));
-      case 'anchoring': return res.status(200).json(await handleAnchoring(model, payload));
-      case 'deepening': return res.status(200).json(await handleDeepening(model, payload));
+      case 'introspection': return res.status(200).json(await handleIntrospection(ai, payload));
+      case 'interpretation': return res.status(200).json(await handleInterpretation(ai, payload));
+      case 'anchoring': return res.status(200).json(await handleAnchoring(ai, payload));
+      case 'deepening': return res.status(200).json(await handleDeepening(ai, payload));
       default: return res.status(400).json({ error: 'Invalid action' });
     }
   } catch (error) {
@@ -33,7 +36,7 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleIntrospection(model, { cards, userContext, language = 'es' }) {
+async function handleIntrospection(ai, { cards, userContext, language = 'es' }) {
   const { name, reason } = userContext || {};
   const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
   const prompt = `Eres Zoltar, un oráculo ancestral y guía espiritual profundo. El consultante se llama ${name || 'alma'} y su inquietud es: "${reason || 'búsqueda espiritual'}". Las cartas que ha elegido son: ${cardNames}.
@@ -45,16 +48,13 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional, en este formato exac
   "mensajeGuia": "[tu mensaje de introspección aquí]"
 }`;
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const match = text.match(/{[\s\S]*}/);
-    return JSON.parse(match ? match[0] : text);
+    return await generateJSON(ai, prompt);
   } catch (e) {
     return { mensajeGuia: language === 'en' ? `${name || 'Soul'}, breathe deeply. The cards you have chosen carry ancient wisdom. Open your heart and let the Oracle reveal what your spirit already knows.` : `${name || 'Alma'}, respira profundo. Las cartas que has elegido llevan sabiduría ancestral. Abre tu corazón y permite que el Oráculo revele lo que tu espíritu ya sabe.`, __IS_FALLBACK__: true, _debug: { error: e.message } };
   }
 }
 
-async function handleInterpretation(model, { cards, reason, userContext, language = 'es' }) {
+async function handleInterpretation(ai, { cards, reason, userContext, language = 'es' }) {
   // introspectionAnswer lives inside userContext, not at the payload root
   const { name, introspectionAnswer, preference } = userContext || {};
   const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
@@ -81,10 +81,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido, si
   "tarea_terrenal": "[Una acción concreta y significativa que el consultante puede hacer esta semana]"
 }`;
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const match = text.match(/{[\s\S]*}/);
-    return JSON.parse(match ? match[0] : text);
+    return await generateJSON(ai, prompt);
   } catch (e) {
     const fallbackMsg = language === 'en' ? `The Oracle contemplates your path in silence. The cards ${cardNames} speak of a profound journey of transformation that only your soul can fully understand.` : `El Oráculo contempla tu camino en silencio. Las cartas ${cardNames} hablan de un profundo viaje de transformación que solo tu alma puede comprender plenamente.`;
     return {
@@ -98,7 +95,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido, si
   }
 }
 
-async function handleAnchoring(model, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
+async function handleAnchoring(ai, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
   const cardNames = Array.isArray(selectedCards) ? selectedCards.map(c => c.name).join(', ') : 'las cartas elegidas';
   const clarificationsText = clarifications && Object.keys(clarifications).length > 0
     ? `El consultante también profundizó en algunas cartas con preguntas adicionales: ${JSON.stringify(clarifications)}.`
@@ -117,10 +114,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido:
   "tarea_terrenal": "[Acción concreta y significativa para esta semana]"
 }`;
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const match = text.match(/{[\s\S]*}/);
-    return JSON.parse(match ? match[0] : text);
+    return await generateJSON(ai, prompt);
   } catch (e) {
     return {
       conclusionFinal: language === 'en' ? `${userName || 'Soul'}, the Oracle has witnessed your journey with deep compassion. The wisdom of your cards illuminates a path of healing and transformation. Trust the process unfolding within you.` : `${userName || 'Alma'}, el Oráculo ha contemplado tu camino con profunda compasión. La sabiduría de tus cartas ilumina un sendero de sanación y transformación. Confía en el proceso que se despliega dentro de ti.`,
@@ -132,7 +126,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido:
   }
 }
 
-async function handleDeepening(model, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
+async function handleDeepening(ai, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
   const userName = context?.userName || 'alma';
   const prompt = `Eres Zoltar, oráculo ancestral. ${userName} tiene una pregunta específica sobre su carta "${originalCard?.name || 'desconocida'}": "${userQuestion}". Ha elegido la carta adicional "${extraCard?.name || 'desconocida'}" para profundizar. El mensaje anterior de esta carta fue: "${previousReading || ''}".
 
@@ -141,10 +135,7 @@ Genera una respuesta profunda, empática y esclarecedora que integre ambas carta
 Responde ÚNICAMENTE con JSON válido:
 {"deepeningResponse": "[Respuesta profunda de 3-4 oraciones que integre las dos cartas y responda la pregunta]"}`;
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const match = text.match(/{[\s\S]*}/);
-    return JSON.parse(match ? match[0] : text);
+    return await generateJSON(ai, prompt);
   } catch (e) {
     return { deepeningResponse: language === 'en' ? `The Oracle contemplates your question in sacred silence. The union of ${originalCard?.name} and ${extraCard?.name} reveals a path of deep understanding that will manifest in its own divine timing.` : `El Oráculo contempla tu pregunta en sagrado silencio. La unión de ${originalCard?.name} y ${extraCard?.name} revela un camino de comprensión profunda que se manifestará en su propio tiempo divino.`, __IS_FALLBACK__: true, _debug: { error: e.message } };
   }
