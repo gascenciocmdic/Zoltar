@@ -480,34 +480,63 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .anchor-block {
-  padding: 25px 20px;
-  border-radius: 12px;
+  padding: 30px 20px;
+  border-radius: 16px;
   text-align: center;
   position: relative;
   overflow: hidden;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
+  z-index: 1; /* Para aislar la marca de agua */
 }
 
+/* Marca de agua (Watermark) con el logo de Zoltar */
+.anchor-block::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('/zoltar-logo.jpg');
+  background-size: 250%; /* Zoom para enfocar el rostro/orbe y ocultar las letras */
+  background-position: center 20%; 
+  opacity: 0.08; /* Muy sutil */
+  z-index: -1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Decreto: Gradiente dorado suave */
 .decree-box {
-  background: linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(20,22,28,0.5) 100%);
-  border: 1px solid rgba(255,215,0,0.3);
-  box-shadow: inset 0 0 30px rgba(255,215,0,0.05), 0 5px 15px rgba(0,0,0,0.5);
+  background-color: rgba(15, 17, 22, 0.85);
+  background-image: radial-gradient(circle at top left, rgba(255,215,0,0.12), transparent 70%);
+  border: 1px solid rgba(255,215,0,0.25);
+  box-shadow: inset 0 0 40px rgba(255,215,0,0.03), 0 8px 25px rgba(0,0,0,0.7);
+}
+
+.decree-box::before {
+  filter: sepia(100%) hue-rotate(5deg) saturate(300%);
+  opacity: 0.07;
 }
 
 .decree-box:hover {
   transform: translateY(-2px);
-  box-shadow: inset 0 0 40px rgba(255,215,0,0.1), 0 8px 25px rgba(255,215,0,0.15);
+  box-shadow: inset 0 0 50px rgba(255,215,0,0.06), 0 12px 35px rgba(0,0,0,0.8);
 }
 
+/* Tarea Terrenal: Gradiente amatista suave */
 .task-box {
-  background: linear-gradient(180deg, rgba(192,132,252,0.08) 0%, rgba(20,22,28,0.5) 100%);
-  border: 1px solid rgba(192,132,252,0.3);
-  box-shadow: inset 0 0 30px rgba(192,132,252,0.05), 0 5px 15px rgba(0,0,0,0.5);
+  background-color: rgba(15, 17, 22, 0.85);
+  background-image: radial-gradient(circle at bottom right, rgba(192,132,252,0.12), transparent 70%);
+  border: 1px solid rgba(192,132,252,0.25);
+  box-shadow: inset 0 0 40px rgba(192,132,252,0.03), 0 8px 25px rgba(0,0,0,0.7);
+}
+
+.task-box::before {
+  filter: sepia(100%) hue-rotate(240deg) saturate(300%);
+  opacity: 0.1; /* Un poco más de opacidad porque el morado es más oscuro */
 }
 
 .task-box:hover {
   transform: translateY(-2px);
-  box-shadow: inset 0 0 40px rgba(192,132,252,0.1), 0 8px 25px rgba(192,132,252,0.15);
+  box-shadow: inset 0 0 50px rgba(192,132,252,0.06), 0 12px 35px rgba(0,0,0,0.8);
 }
 
 .mystic-title {
