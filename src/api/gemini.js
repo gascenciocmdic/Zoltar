@@ -1,4 +1,4 @@
-async function fetchWithTimeout(action, payload, timeout = 15000) {
+async function fetchWithTimeout(action, payload, timeout = 60000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
