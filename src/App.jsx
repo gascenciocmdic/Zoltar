@@ -369,12 +369,8 @@ function App() {
           setLastDebug(resp._debug || { error: "FALLBACK TRIGGERED (Deepening failed)" });
           setShowDebug(true);
         }
-        // Voice reads: first the original card reading, then the deepening whisper
-        const cardReadingIndex = selectedCards.findIndex(c => c.id === cardId);
-        const originalReading = interpretation?.narrativaAncestral
-          ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[cardReadingIndex] : interpretation.narrativaAncestral)
-          : '';
-        speakText(`${originalReading}... ${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
+        // Voice reads: only the deepening whisper
+        speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
       } catch (e) {
         console.error("Deepening failed:", e);
         setDeepeningActive(null);
@@ -810,19 +806,11 @@ function App() {
                                  </div>
                                ) : clarifications[selectedCards[revealedStage-1].id].step === 'done' ? (
                                  <div style={{ animation: 'fadeIn 1.5s ease' }}>
-                                   {/* Original card reading re-shown after deepening */}
-                                   <div className="brain-bubble narrative" style={{ marginBottom: '16px', borderLeft: '3px solid rgba(255,215,0,0.4)' }}>
-                                     <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
-                                       <span className="reveal-text">{Array.isArray(interpretation.narrativaAncestral) 
-                                         ? interpretation.narrativaAncestral[revealedStage - 1]
-                                         : interpretation.narrativaAncestral}</span>
-                                     </p>
-                                   </div>
                                    {/* Deepening whisper */}
-                                   <div className="brain-bubble narrative" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.25)' }}>
-                                      <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>{translations.ui.deepen_subtitle}</p>
+                                   <div className="brain-bubble narrative" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(20,22,28,0) 100%)', border: '1px solid rgba(255,215,0,0.25)', borderLeft: '3px solid #ffd700', boxShadow: 'inset 0 0 20px rgba(255,215,0,0.05)' }}>
+                                      <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>✦ {translations.ui.deepen_subtitle} ✦</p>
                                       <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
-                                        <span className="reveal-text" style={{ animationDelay: '0.8s' }}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</span>
+                                        <span className="reveal-text" style={{ animationDelay: '0.2s' }}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</span>
                                       </p>
                                    </div>
                                  </div>
@@ -888,15 +876,19 @@ function App() {
                       <span className="reveal-text">{interpretation.conclusionFinal}</span>
                     </p>
                     <div className="anchoring-grid">
-                      <div className="anchor-block">
-                        <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
-                        <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>
+                      <div className="anchor-block decree-box">
+                        <div className="mystic-ornament-top"></div>
+                        <p className="mystic-title">{translations.ui.healing_decree}</p>
+                        <p style={{ fontSize: '1.25rem', letterSpacing: '0.5px', color: '#fff', textShadow: '0 0 10px rgba(255,215,0,0.3)' }}>
                           <span className="reveal-text" style={{ animationDelay: '1.5s' }}>&#8220;{interpretation.decreto}&#8221;</span>
                         </p>
+                        <div className="mystic-ornament-bottom"></div>
                       </div>
-                      <div className="anchor-block" style={{ background: 'rgba(192,132,252,0.05)', border: '1px solid rgba(192,132,252,0.2)' }}>
-                        <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
-                        <p><span className="reveal-text" style={{ animationDelay: '3s' }}>{interpretation.tarea_terrenal}</span></p>
+                      <div className="anchor-block task-box">
+                        <div className="mystic-ornament-top"></div>
+                        <p className="mystic-title">{translations.ui.earthly_task}</p>
+                        <p style={{ color: '#eaeaea', lineHeight: '1.6' }}><span className="reveal-text" style={{ animationDelay: '3s' }}>{interpretation.tarea_terrenal}</span></p>
+                        <div className="mystic-ornament-bottom"></div>
                       </div>
                     </div>
                  </div>

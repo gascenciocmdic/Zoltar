@@ -480,20 +480,60 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .anchor-block {
-  padding: 20px;
-  background: rgba(255, 215, 0, 0.05);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 15px;
+  padding: 25px 20px;
+  border-radius: 12px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-.anchor-block h3 {
-  color: #ffd700;
-  font-size: 1rem;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.decree-box {
+  background: linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(20,22,28,0.5) 100%);
+  border: 1px solid rgba(255,215,0,0.3);
+  box-shadow: inset 0 0 30px rgba(255,215,0,0.05), 0 5px 15px rgba(0,0,0,0.5);
 }
+
+.decree-box:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 40px rgba(255,215,0,0.1), 0 8px 25px rgba(255,215,0,0.15);
+}
+
+.task-box {
+  background: linear-gradient(180deg, rgba(192,132,252,0.08) 0%, rgba(20,22,28,0.5) 100%);
+  border: 1px solid rgba(192,132,252,0.3);
+  box-shadow: inset 0 0 30px rgba(192,132,252,0.05), 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.task-box:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 40px rgba(192,132,252,0.1), 0 8px 25px rgba(192,132,252,0.15);
+}
+
+.mystic-title {
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.95rem;
+}
+
+.decree-box .mystic-title { color: #ffd700; }
+.task-box .mystic-title { color: #c084fc; }
+
+.mystic-ornament-top, .mystic-ornament-bottom {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: rgba(255,255,255,0.2);
+}
+
+.mystic-ornament-top { top: 8px; }
+.mystic-ornament-bottom { bottom: 8px; }
+.decree-box .mystic-ornament-top, .decree-box .mystic-ornament-bottom { background: rgba(255,215,0,0.3); }
+.task-box .mystic-ornament-top, .task-box .mystic-ornament-bottom { background: rgba(192,132,252,0.3); }
 
 .action-button-reveal {
   opacity: 0;
