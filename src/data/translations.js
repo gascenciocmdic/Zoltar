@@ -51,7 +51,8 @@ export const I18N = {
       reset_ritual: "Nueva Consulta Astral",
       oracle_misfire: "Los hilos de esta visión son frágiles y se han desvanecido en el éter. El Oráculo guarda silencio sobre esta duda por ahora, invitándote a confiar en lo ya revelado.",
       default_decree: "Sigo mi luz interna.",
-      default_task: "Confía en lo que tu alma ya sabe."
+      default_task: "Confía en lo que tu alma ya sabe.",
+      oracle_thinking: "Las energías de tus vidas pasadas están encontrando la respuesta..."
     },
     greetings: [
       "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
@@ -222,7 +223,8 @@ export const I18N = {
       reset_ritual: "New Astral Consultation",
       oracle_misfire: "The threads of this vision are fragile and have faded into the ether. The Oracle remains silent on this doubt for now, inviting you to trust in what has already been revealed.",
       default_decree: "I follow my inner light.",
-      default_task: "Trust in what your soul already knows."
+      default_task: "Trust in what your soul already knows.",
+      oracle_thinking: "The energies of your past lives are finding the answer..."
     },
     greetings: [
       "I am The Guide, your bridge between who you were and who you are. I have walked a thousand lives to find you at this precise moment. Will you allow me to accompany you on this journey back to your own light?",
@@ -393,7 +395,8 @@ export const I18N = {
       reset_ritual: "Nova Consulta Astral",
       oracle_misfire: "Os fios desta visão são frágeis e desapareceram no éter. O Oráculo permanece em silêncio sobre esta dúvida por ora, convidando você a confiar no que já foi revelado.",
       default_decree: "Sigo minha luz interior.",
-      default_task: "Confie no que sua alma já sabe."
+      default_task: "Confie no que sua alma já sabe.",
+      oracle_thinking: "As energias das suas vidas passadas estão encontrando a resposta..."
     },
     greetings: [
       "Eu sou O Guia, sua ponte entre quem você foi e quem você é. Eu caminhei mil vidas para te encontrar neste momento preciso. Você me permite acompanhá-lo nesta jornada de retorno à sua própria luz?",

@@ -76,6 +76,8 @@ function App() {
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
   const [revelationReady, setRevelationReady] = useState(false);
   const [canProceed, setCanProceed] = useState(false);
+  const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
+  const [anchoringLoading, setAnchoringLoading] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
   const [lastDebug, setLastDebug] = useState(null);
@@ -274,6 +276,7 @@ function App() {
     } else {
       // Ir al anclaje sin delay — el texto aparece con animación CSS
       setPhase('anchoring');
+      setAnchoringLoading(true);
       setIsFading(false);
       generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language)
         .then(finalSynthesis => {
@@ -287,13 +290,18 @@ function App() {
             setLastDebug(finalSynthesis._debug || { error: "FALLBACK TRIGGERED (Anchoring failed)" });
             setShowDebug(true);
           }
-          speakText(
-            `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`,
-            language
-          );
+          // Small pause so the transition from loading to content feels ceremonial
+          setTimeout(() => {
+            setAnchoringLoading(false);
+            speakText(
+              `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`,
+              language
+            );
+          }, 500);
         })
         .catch(error => {
           console.error("Anchoring failed:", error);
+          setAnchoringLoading(false);
           setInterpretation(prev => ({
             ...prev,
             conclusionFinal: translations.ui.oracle_misfire,
@@ -326,51 +334,57 @@ function App() {
   };
 
   const submitDeepenCardSelect = async (cardId, extraCard) => {
-    setIsFading(true);
-    speakText(translations.ui.deepen_loading, language);
-    // Move to loading
+    // Step 1: Show oracle-thinking overlay immediately (clear screen, show blinking message)
+    setDeepeningActive(cardId);
     setClarifications(prev => ({
       ...prev,
       [cardId]: { ...prev[cardId], extraCard, step: 'loading' }
     }));
-    
-    // Simulate profound pause then restore to revelation view
-    setTimeout(async () => {
-      setIsFading(false);
-      // Now call gemini
-      const originalCard = selectedCards.find(c => c.id === cardId);
-      const clarState = clarifications[cardId];
-      if (originalCard && clarState) {
-        try {
-          const readingIndex = selectedCards.findIndex(c => c.id === cardId);
-          const previousReadingText = interpretation?.narrativaAncestral 
-            ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : interpretation.narrativaAncestral)
-            : '';
-          
-          const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
-          
-          const finalResponse = resp === "misfire" ? translations.ui.oracle_misfire : resp;
- 
-          setClarifications(prev => ({
-            ...prev,
-            [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
-          }));
-          if (resp.__IS_FALLBACK__) {
-            setLastDebug(resp._debug || { error: "FALLBACK TRIGGERED (Deepening failed)" });
-            setShowDebug(true);
-          }
-          setCanProceed(false);
-          speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language, () => setCanProceed(true));
-        } catch (e) {
-          console.error("Deepening failed:", e);
-          setClarifications(prev => ({
-            ...prev,
-            [cardId]: { ...prev[cardId], extraResponse: translations.ui.oracle_misfire, step: 'done' }
-          }));
-          speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
+    speakText(translations.ui.deepen_loading, language);
+
+    // Wait 4-5 seconds (ceremonial pause), then call API
+    const ceremonyDelay = Math.floor(Math.random() * 1000) + 4000;
+    await new Promise(resolve => setTimeout(resolve, ceremonyDelay));
+
+    const originalCard = selectedCards.find(c => c.id === cardId);
+    const clarState = clarifications[cardId];
+    if (originalCard && clarState) {
+      try {
+        const readingIndex = selectedCards.findIndex(c => c.id === cardId);
+        const previousReadingText = interpretation?.narrativaAncestral 
+          ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : interpretation.narrativaAncestral)
+          : '';
+        
+        const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
+        
+        const finalResponse = resp === "misfire" ? translations.ui.oracle_misfire : resp;
+
+        // Step 2: Hide overlay, show result with fade-in animation
+        setDeepeningActive(null);
+        setClarifications(prev => ({
+          ...prev,
+          [cardId]: { ...prev[cardId], extraResponse: finalResponse, step: 'done' }
+        }));
+        if (resp.__IS_FALLBACK__) {
+          setLastDebug(resp._debug || { error: "FALLBACK TRIGGERED (Deepening failed)" });
+          setShowDebug(true);
         }
+        // Voice reads: first the original card reading, then the deepening whisper
+        const cardReadingIndex = selectedCards.findIndex(c => c.id === cardId);
+        const originalReading = interpretation?.narrativaAncestral
+          ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[cardReadingIndex] : interpretation.narrativaAncestral)
+          : '';
+        speakText(`${originalReading}... ${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
+      } catch (e) {
+        console.error("Deepening failed:", e);
+        setDeepeningActive(null);
+        setClarifications(prev => ({
+          ...prev,
+          [cardId]: { ...prev[cardId], extraResponse: translations.ui.oracle_misfire, step: 'done' }
+        }));
+        speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
       }
-    }, Math.floor(Math.random() * 2000) + 3000);
+    }
   };
 
   return (
@@ -672,7 +686,14 @@ function App() {
         <div className="revelation-content">
           <h2 className="phase-title">{translations.ui.revelation_title}</h2>
           
-          {(() => {
+          {/* === ORACLE THINKING OVERLAY for Deepening === */}
+          {deepeningActive ? (
+            <div className="oracle-thinking-overlay" style={{ animation: 'fadeIn 1s ease' }}>
+              <p className="oracle-thinking-text">
+                {translations.ui.oracle_thinking}
+              </p>
+            </div>
+          ) : (() => {
             const clarifyingCardId = Object.keys(clarifications).find(id => clarifications[id]?.step === 'selectCard');
             
             if (clarifyingCardId) {
@@ -788,9 +809,22 @@ function App() {
                                     <p style={{ fontSize: '0.7rem', color: '#ffd700' }}>{translations.ui.press_enter}</p>
                                  </div>
                                ) : clarifications[selectedCards[revealedStage-1].id].step === 'done' ? (
-                                 <div className="brain-bubble narrative fade-in-text" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)'}}>
-                                    <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem'}}>{translations.ui.deepen_subtitle}</p>
-                                    <p style={{ fontSize: '0.95rem', fontStyle: 'italic'}}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</p>
+                                 <div style={{ animation: 'fadeIn 1.5s ease' }}>
+                                   {/* Original card reading re-shown after deepening */}
+                                   <div className="brain-bubble narrative" style={{ marginBottom: '16px', borderLeft: '3px solid rgba(255,215,0,0.4)' }}>
+                                     <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
+                                       <span className="reveal-text">{Array.isArray(interpretation.narrativaAncestral) 
+                                         ? interpretation.narrativaAncestral[revealedStage - 1]
+                                         : interpretation.narrativaAncestral}</span>
+                                     </p>
+                                   </div>
+                                   {/* Deepening whisper */}
+                                   <div className="brain-bubble narrative" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.25)' }}>
+                                      <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>{translations.ui.deepen_subtitle}</p>
+                                      <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
+                                        <span className="reveal-text" style={{ animationDelay: '0.8s' }}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</span>
+                                      </p>
+                                   </div>
                                  </div>
                                ) : null}
                             </div>
@@ -816,54 +850,66 @@ function App() {
         </div>
       )}
 
-      {phase === 'anchoring' && interpretation && (
+      {phase === 'anchoring' && (
         <div className="anchoring-content" style={{ animation: 'fadeIn 2s ease' }}>
           <h2 className="phase-title">{translations.ui.anchoring_title}</h2>
-          <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
-            {selectedCards.map((card, index) => {
-               const clar = clarifications[card.id];
-               const cardI18n = translations.cards[card.id] || card;
-               const translatedCard = { ...card, ...cardI18n };
-               
-               return (
-                <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px', position: 'relative' }}>
-                  <Card card={translatedCard} isSelected={false} isFaceUp={true} />
-                  {clar?.extraCard && (
-                    <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', transform: 'rotate(10deg)', zIndex: 5 }}>
-                      <Card card={{...clar.extraCard, ...(translations.cards[clar.extraCard.id] || clar.extraCard)}} isSelected={false} isFaceUp={true} />
-                    </div>
-                  )}
-                </div>
-               );
-            })}
-          </div>
 
-          <div className="narrative-container">
-             <div className="brain-bubble narrative" style={{ borderLeftColor: '#ffd700', animation: 'fadeIn 2s ease' }}>
-                <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
-                  <span className="reveal-text">{interpretation.conclusionFinal}</span>
-                </p>
-                <div className="anchoring-grid">
-                  <div className="anchor-block">
-                    <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
-                    <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>
-                      <span className="reveal-text" style={{ animationDelay: '1s' }}>"{interpretation.decreto}"</span>
+          {/* === ORACLE THINKING OVERLAY for Final Synthesis === */}
+          {anchoringLoading ? (
+            <div className="oracle-thinking-overlay" style={{ animation: 'fadeIn 1.2s ease', margin: '40px 0' }}>
+              <p className="oracle-thinking-text">
+                {translations.ui.oracle_thinking}
+              </p>
+            </div>
+          ) : interpretation && (
+            <>
+              <div className="selected-cards-display" style={{ marginBottom: '40px', marginTop: '20px' }}>
+                {selectedCards.map((card, index) => {
+                   const clar = clarifications[card.id];
+                   const cardI18n = translations.cards[card.id] || card;
+                   const translatedCard = { ...card, ...cardI18n };
+                   
+                   return (
+                    <div key={index} className="revelation-card-block" style={{ padding: '15px', maxWidth: '160px', position: 'relative' }}>
+                      <Card card={translatedCard} isSelected={false} isFaceUp={true} />
+                      {clar?.extraCard && (
+                        <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', transform: 'rotate(10deg)', zIndex: 5 }}>
+                          <Card card={{...clar.extraCard, ...(translations.cards[clar.extraCard.id] || clar.extraCard)}} isSelected={false} isFaceUp={true} />
+                        </div>
+                      )}
+                    </div>
+                   );
+                })}
+              </div>
+
+              <div className="narrative-container">
+                 <div className="brain-bubble narrative" style={{ borderLeftColor: '#ffd700', animation: 'fadeIn 2.5s ease' }}>
+                    <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
+                      <span className="reveal-text">{interpretation.conclusionFinal}</span>
                     </p>
-                  </div>
-                  <div className="anchor-block" style={{ background: 'rgba(192,132,252,0.05)', border: '1px solid rgba(192,132,252,0.2)' }}>
-                    <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
-                    <p><span className="reveal-text" style={{ animationDelay: '2s' }}>{interpretation.tarea_terrenal}</span></p>
-                  </div>
-                </div>
-             </div>
-          </div>
-          <button 
-            className="start-button blinking-button action-button-reveal" 
-            onClick={() => window.location.reload()} 
-            style={{ marginTop: '40px' }}
-          >
-            {translations.ui.new_consultation}
-          </button>
+                    <div className="anchoring-grid">
+                      <div className="anchor-block">
+                        <p style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.healing_decree}</p>
+                        <p style={{ fontSize: '1.2rem', letterSpacing: '0.5px' }}>
+                          <span className="reveal-text" style={{ animationDelay: '1.5s' }}>&#8220;{interpretation.decreto}&#8221;</span>
+                        </p>
+                      </div>
+                      <div className="anchor-block" style={{ background: 'rgba(192,132,252,0.05)', border: '1px solid rgba(192,132,252,0.2)' }}>
+                        <p style={{ color: '#c084fc', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>{translations.ui.earthly_task}</p>
+                        <p><span className="reveal-text" style={{ animationDelay: '3s' }}>{interpretation.tarea_terrenal}</span></p>
+                      </div>
+                    </div>
+                 </div>
+              </div>
+              <button 
+                className="start-button blinking-button action-button-reveal" 
+                onClick={() => window.location.reload()} 
+                style={{ marginTop: '40px' }}
+              >
+                {translations.ui.new_consultation}
+              </button>
+            </>
+          )}
         </div>
       )}
       {/* Global Debug Toggle Button */}
