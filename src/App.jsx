@@ -788,9 +788,11 @@ function App() {
                             {/* Deepen logic per card */}
                             <div className="deepen-box">
                                {!clarifications[selectedCards[revealedStage-1].id] ? (
-                                 <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
-                                    {translations.ui.deepen}
-                                 </button>
+                                 canProceed && (
+                                   <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
+                                      {translations.ui.deepen_action || translations.ui.deepen}
+                                   </button>
+                                 )
                                ) : clarifications[selectedCards[revealedStage-1].id].step === 'question' ? (
                                  <div className="fade-in-text">
                                     <input 
@@ -827,7 +829,9 @@ function App() {
                         onClick={handleNextStage} 
                         style={{ marginTop: '30px' }}
                       >
-                        {revealedStage < 3 ? translations.ui.continue : translations.ui.go_to_synthesis}
+                        {revealedStage < 3 
+                          ? (translations.ui.continue_revelation || translations.ui.continue) 
+                          : translations.ui.go_to_synthesis}
                       </button>
                     )}
                   </>
