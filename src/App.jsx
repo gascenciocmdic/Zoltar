@@ -29,9 +29,10 @@ function App() {
     const pool = I18N[language] || I18N.es;
     return {
       greeting: pool.greetings[textIndices.greeting % pool.greetings.length] || pool.greetings[0],
-      askName: pool.ask_names[textIndices.askName % pool.ask_names.length] || pool.ask_names[0],
+      askName: pool.sessionTexts?.askName || pool.ask_names[textIndices.askName % pool.ask_names.length] || pool.ask_names[0],
+      askBirthDate: pool.sessionTexts?.askBirthDate || "{name}, fecha...",
       waitMsg: pool.wait_messages[textIndices.waitMsg % pool.wait_messages.length] || pool.wait_messages[0],
-      askReason: pool.ask_reasons[textIndices.askReason % pool.ask_reasons.length] || pool.ask_reasons[0],
+      askReason: pool.sessionTexts?.askReason || pool.ask_reasons[textIndices.askReason % pool.ask_reasons.length] || pool.ask_reasons[0],
       askDichotomy: pool.ask_dichotomies[textIndices.askDichotomy % pool.ask_dichotomies.length] || pool.ask_dichotomies[0],
       askQuestion: pool.ask_questions[textIndices.askQuestion % pool.ask_questions.length] || pool.ask_questions[0]
     };
