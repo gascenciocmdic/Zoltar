@@ -8,6 +8,7 @@ import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopA
 import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
+import ConstellationCanvas from './components/ConstellationCanvas';
 
 function App() {
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
@@ -70,6 +71,7 @@ function App() {
   const [revealedStage, setRevealedStage] = useState(0); // 0: overview, 1: card1, 2: card2, 3: card3
   const [thresholdStep, setThresholdStep] = useState(0); // 0: intro, 1: name, 2: reason, 3: dichotomy, 4: question
   const [userName, setUserName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [visitReason, setVisitReason] = useState('');
   const [dichotomousChoice, setDichotomousChoice] = useState('');
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
@@ -148,15 +150,17 @@ function App() {
     // Narradores
     setCanProceed(false);
     if (thresholdStep === 1) {
-      speakText(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
+      speakText(sessionTexts.askBirthDate.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 2) {
-      speakText(sessionTexts.askDichotomy, language, () => setCanProceed(true));
+      speakText(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 3) {
+      speakText(sessionTexts.askDichotomy, language, () => setCanProceed(true));
+    } else if (thresholdStep === 4) {
       speakText(sessionTexts.askQuestion, language);
     }
 
     setTimeout(() => {
-      if (thresholdStep < 4) {
+      if (thresholdStep < 5) {
         setThresholdStep(thresholdStep + 1);
       } else {
         setPhase('synchrony');
@@ -179,35 +183,30 @@ function App() {
     }
   };
 
-  const handleGoToIntrospection = async () => {
+  const handleGoToAstralAlignment = async () => {
     setLoading(true);
     setVibe('karmic_red'); 
     speakText(sessionTexts.waitMsg, language);
     try {
-      const userContext = { name: userName, reason: visitReason };
-      const result = await generateIntrospection(selectedCards, null, userContext, language);
-      setIntrospectionMessage(result.mensajeGuia);
-      setPhase('introspection');
-      setLoading(false);
-      setVibe('healing_blue');
-      setCanProceed(false);
-      if (result.__IS_FALLBACK__) {
-        setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (AI failed or blocked)" });
-        setShowDebug(true);
-      }
-      speakText(result.mensajeGuia, language, () => setCanProceed(true));
+       const userContext = { name: userName, birthDate: birthDate, reason: visitReason };
+       const result = await generateIntrospection(selectedCards, null, userContext, language);
+       setIntrospectionMessage(result.mensajeAstral || result.mensajeGuia); // Backward compatible
+       setInterpretation(prev => ({...prev, constelacion: result.nombreConstelacion }));
+       setPhase('astral_alignment');
+       setLoading(false);
+       setVibe('healing_blue');
+       setCanProceed(false);
+       if (result.__IS_FALLBACK__) {
+         setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (Astral failed)" });
+         setShowDebug(true);
+       }
+       speakText(result.mensajeAstral || result.mensajeGuia, language, () => setCanProceed(true));
     } catch (error) {
-      console.error("Introspection Error:", error);
-      setIntrospectionMessage(translations.ui.oracle_misfire);
-      setInterpretation({
-        narrativaAncestral: [translations.ui.oracle_misfire],
-        conclusionFinal: translations.ui.oracle_misfire,
-        decreto: translations.ui.default_decree,
-        tarea_terrenal: translations.ui.default_task
-      });
-      setPhase('introspection');
-      setLoading(false);
-      setVibe('healing_blue');
+       console.error("Astral Error:", error);
+       setIntrospectionMessage(translations.ui.oracle_misfire);
+       setPhase('astral_alignment');
+       setLoading(false);
+       setVibe('healing_blue');
     }
   };
 
@@ -224,7 +223,8 @@ function App() {
       setAutoRevealStarted(false);
       
       try {
-        const userContext = { name: userName, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
+        // Enforce full context inclusion
+        const userContext = { name: userName, birthDate: birthDate, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
         const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
         setInterpretation({
           ...result,
@@ -497,13 +497,27 @@ function App() {
             </>
           )}
 
+          {thresholdStep === 1 && (
+            <>
+              <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askBirthDate.replace('{name}', userName)}"`} speed={45} /></p>
+              <input 
+                type="text" 
+                className="soul-input" 
+                placeholder={translations.ui.birthdate_placeholder}
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
+              <button className="start-button" onClick={handleNextThreshold}>{translations.ui.continue}</button>
+            </>
+          )}
+
           {thresholdStep === 2 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askReason.replace('{name}', userName)}"`} speed={45} /></p>
               <input 
                 type="text" 
                 className="soul-input" 
-                placeholder={translations.ui.revelation_confession}
+                placeholder={translations.ui.what_inquires_you}
                 value={visitReason}
                 onChange={(e) => setVisitReason(e.target.value)}
               />
@@ -619,7 +633,7 @@ function App() {
             
             {selectedCards.length === 3 && (
               <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
-                <button className="start-button blinking-button" onClick={() => setPhase('introspection')} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
+                <button className="start-button blinking-button" onClick={handleGoToAstralAlignment} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
                   {translations.ui.continue}
                 </button>
               </div>
@@ -628,9 +642,13 @@ function App() {
         </div>
       )}
 
-      {phase === 'introspection' && (
-        <div className="introspection-content threshold-content">
-          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>{translations.ui.introspection_title}</h2>
+      {phase === 'astral_alignment' && (
+        <div className="astral-content threshold-content">
+          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>{interpretation?.constelacion || "El Esfínter Cósmico"}</h2>
+          
+          <div className="constellation-wrapper">
+             <ConstellationCanvas seed={interpretation?.constelacion || userName} />
+          </div>
           
           {loading ? (
             <div style={{ marginTop: '20px' }}>
@@ -641,38 +659,23 @@ function App() {
             </div>
           ) : (
             <>
-              <p className="welcome-text" style={{ fontSize: '1rem', fontStyle: 'italic' }}>
-                <span className="reveal-text">{translations.ui.magnetic_resonance.replace('{name}', userName)}</span>
-              </p>
-              
               <div style={{ textAlign: 'center', marginBottom: '30px', marginTop: '20px' }}>
                 {introspectionMessage && (
                   <div className="narrative-container" style={{ margin: '0 auto 20px auto', maxWidth: '600px' }}>
-                    <div className="brain-bubble narrative fade-in-text" style={{ borderLeftColor: '#c084fc' }}>
+                    <div className="brain-bubble narrative fade-in-text astral-bubble" style={{ borderLeftColor: '#c084fc' }}>
                       <p style={{ fontStyle: 'italic', lineHeight: '1.6', color: '#e5e4e7', margin: 0 }}>
                         <span className="reveal-text">{introspectionMessage}</span>
                       </p>
                     </div>
                   </div>
                 )}
-                
-                <div className="cursor-container" style={{ margin: '0 auto' }}>
-                  <textarea 
-                    className="soul-input" 
-                    style={{ height: '120px', resize: 'none', width: '100%', display: 'block' }}
-                    placeholder={translations.ui.revelation_confession}
-                    id="deepAnswer"
-                  />
-                  <div className="blinking-caret" />
-                </div>
               </div>
  
-              <button className="start-button blinking-button" onClick={() => {
-                const answer = document.getElementById('deepAnswer')?.value || '';
-                handleStartRevelation({ introspectionAnswer: answer });
-              }}>
-                {translations.ui.submit_to_oracle}
-              </button>
+              {canProceed && (
+                <button className="start-button blinking-button fade-in-text" onClick={() => handleStartRevelation()} style={{ marginTop: '20px' }}>
+                  {translations.ui.continue_to_revelation}
+                </button>
+              )}
             </>
           )}
         </div>

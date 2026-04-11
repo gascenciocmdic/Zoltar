@@ -26,7 +26,7 @@ export const I18N = {
       anchoring_title: "El Anclaje Místico",
       healing_decree: "Decreto de Sanación",
       earthly_task: "Tarea Terrenal",
-      new_consultation: "Nueva Consulta",
+      new_consultation: "Nueva Consulta Astral",
       deepen_question: "¿Quieres profundizar esta respuesta?",
       deepen_prompt: "¿Qué detalle exactamente deseas clarificar al Oráculo?",
       deepen_placeholder: "Tu pregunta profunda aquí...",
@@ -52,7 +52,14 @@ export const I18N = {
       oracle_misfire: "Los hilos de esta visión son frágiles y se han desvanecido en el éter. El Oráculo guarda silencio sobre esta duda por ahora, invitándote a confiar en lo ya revelado.",
       default_decree: "Sigo mi luz interna.",
       default_task: "Confía en lo que tu alma ya sabe.",
-      oracle_thinking: "Las energías de tus vidas pasadas están encontrando la respuesta..."
+      oracle_thinking: "Las energías de tus vidas pasadas están encontrando la respuesta...",
+      welcome: "Bienvenido, buscador.",
+      enter: "Entrar al Portal"
+    },
+    sessionTexts: {
+      askName: "¿Qué nombre resuena en tu alma en esta vida?",
+      askBirthDate: "{name}, para conectar con tu bóveda celeste, confíame el día y mes de tu nacimiento...",
+      askReason: "{name}, ¿qué inquietud profunda perturba tu paz interior hoy?"
     },
     greetings: [
       "Soy El Guía, tu puente entre lo que fuiste y lo que eres. He caminado mil vidas para encontrarte en este preciso instante. ¿Me permites acompañarte en este viaje de retorno hacia tu propia luz?",
@@ -180,7 +187,9 @@ export const I18N = {
       allow: "Allow",
       what_is_oracle: "What is the Past Lives Oracle?",
       continue: "Continue",
+      continue_to_revelation: "Begin Revelation",
       your_name_placeholder: "Your name...",
+      birthdate_placeholder: "Day and month (e.g., October 15)...",
       what_inquires_you: "What disturbs your peace...",
       direct_truth: "Direct Truth",
       metaphoric_whisper: "Metaphoric Whisper",
@@ -198,7 +207,7 @@ export const I18N = {
       anchoring_title: "The Mystic Anchoring",
       healing_decree: "Healing Decree",
       earthly_task: "Earthly Task",
-      new_consultation: "New Consultation",
+      new_consultation: "New Astral Consultation",
       deepen_question: "Do you wish to deepen this answer?",
       deepen_prompt: "What exact detail do you wish to clarify to the Oracle?",
       deepen_placeholder: "Your deep question here...",
@@ -226,7 +235,14 @@ export const I18N = {
       oracle_misfire: "The threads of this vision are fragile and have faded into the ether. The Oracle remains silent on this doubt for now, inviting you to trust in what has already been revealed.",
       default_decree: "I follow my inner light.",
       default_task: "Trust in what your soul already knows.",
-      oracle_thinking: "The energies of your past lives are finding the answer..."
+      oracle_thinking: "The energies of your past lives are finding the answer...",
+      welcome: "Welcome, seeker.",
+      enter: "Enter the Portal"
+    },
+    sessionTexts: {
+      askName: "What name resonates in your soul in this life?",
+      askBirthDate: "{name}, to connect with your celestial vault, confide in me the day and month of your birth...",
+      askReason: "{name}, what deep concern disturbs your inner peace today?"
     },
     greetings: [
       "I am The Guide, your bridge between who you were and who you are. I have walked a thousand lives to find you at this precise moment. Will you allow me to accompany you on this journey back to your own light?",
@@ -354,7 +370,9 @@ export const I18N = {
       allow: "Permitir",
       what_is_oracle: "O que é o Oráculo de Vidas Passadas?",
       continue: "Continuar",
+      continue_to_revelation: "Começar Revelação",
       your_name_placeholder: "Seu nome...",
+      birthdate_placeholder: "Dia e mês (ex: 15 de outubro)...",
       what_inquires_you: "O que inquieta sua paz...",
       direct_truth: "Verdade Direta",
       metaphoric_whisper: "Sussurro Metafórico",
@@ -372,7 +390,7 @@ export const I18N = {
       anchoring_title: "A Ancoragem Mística",
       healing_decree: "Decreto de Cura",
       earthly_task: "Tarefa Terrena",
-      new_consultation: "Nova Consulta",
+      new_consultation: "Nova Consulta Astral",
       deepen_question: "Deseja aprofundar esta resposta?",
       deepen_prompt: "Que detalhe exatamente você deseja esclarecer ao Oráculo?",
       deepen_placeholder: "Sua pergunta profunda aqui...",
@@ -400,7 +418,14 @@ export const I18N = {
       oracle_misfire: "Os fios desta visão são frágeis e desapareceram no éter. O Oráculo permanece em silêncio sobre esta dúvida por ora, convidando você a confiar no que já foi revelado.",
       default_decree: "Sigo minha luz interior.",
       default_task: "Confie no que sua alma já sabe.",
-      oracle_thinking: "As energias das suas vidas passadas estão encontrando a resposta..."
+      oracle_thinking: "As energias das suas vidas passadas estão encontrando a resposta...",
+      welcome: "Bem-vindo, buscador.",
+      enter: "Entrar no Portal"
+    },
+    sessionTexts: {
+      askName: "Qual nome ressoa em sua alma nesta vida?",
+      askBirthDate: "{name}, para conectar com sua abóbada celeste, confie-me o dia e mês do seu nascimento...",
+      askReason: "{name}, que inquietação profunda perturba sua paz interior hoje?"
     },
     greetings: [
       "Eu sou O Guia, sua ponte entre quem você foi e quem você é. Eu caminhei mil vidas para te encontrar neste momento preciso. Você me permite acompanhá-lo nesta jornada de retorno à sua própria luz?",
