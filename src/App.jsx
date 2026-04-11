@@ -143,7 +143,8 @@ function App() {
 
   const handleNextThreshold = () => {
     if (thresholdStep === 1 && !userName) return alert(translations.ui.your_name_placeholder);
-    if (thresholdStep === 2 && !visitReason) return alert(translations.ui.what_inquires_you);
+    if (thresholdStep === 2 && !birthDate) return alert(translations.ui.birthdate_placeholder);
+    if (thresholdStep === 3 && !visitReason) return alert(translations.ui.what_inquires_you);
     
     setIsFading(true);
     
@@ -497,7 +498,7 @@ function App() {
             </>
           )}
 
-          {thresholdStep === 1 && (
+          {thresholdStep === 2 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askBirthDate.replace('{name}', userName)}"`} speed={45} /></p>
               <input 
@@ -511,7 +512,7 @@ function App() {
             </>
           )}
 
-          {thresholdStep === 2 && (
+          {thresholdStep === 3 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askReason.replace('{name}', userName)}"`} speed={45} /></p>
               <input 
@@ -525,7 +526,7 @@ function App() {
             </>
           )}
 
-          {thresholdStep === 3 && (
+          {thresholdStep === 4 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askDichotomy}"`} speed={45} /></p>
               <div className="dichotomy-buttons">
@@ -536,7 +537,7 @@ function App() {
             </>
           )}
 
-          {thresholdStep === 4 && (
+          {thresholdStep === 5 && (
             <>
               <p className="welcome-text">
                 <TypewriterText text={`"${sessionTexts.askQuestion}"`} speed={45} />
