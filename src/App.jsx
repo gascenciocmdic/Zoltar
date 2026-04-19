@@ -165,6 +165,9 @@ function App() {
       setPaymentIsVerifying(true);
       setShowPaymentSuccess(true);
 
+      // Timer de seguridad: cierra el spinner en 6s pase lo que pase
+      setTimeout(() => setPaymentIsVerifying(false), 6000);
+
       // Restaurar estado de consulta guardado antes del pago
       try {
         const snapshot = sessionStorage.getItem('zoltar_purchase_snapshot');
@@ -248,6 +251,9 @@ function App() {
       if (verified) {
         window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
       }
+    }).catch((err) => {
+      console.warn('[Auth] getSession error:', err);
+      // El timer de seguridad ya se encargará de cerrar el spinner
     });
 
     return () => subscription.unsubscribe();
