@@ -151,31 +151,68 @@ function App() {
 
   // ── Auth: inicializar sesión, URL params, listener ───────
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params    = new URLSearchParams(window.location.search);
     const ref       = params.get('ref');
     const verified  = params.get('verified');
     const payment   = params.get('payment');
-    const credits_n = params.get('credits');
+    const creditsPurchased = parseInt(params.get('credits') || '0', 10);
 
     if (ref) setUrlRef(ref);
 
-    if (!supabase) return;
+    // ── 1. Detectar retorno de Stripe INMEDIATAMENTE (sin esperar sesión) ──
+    if (payment === 'success') {
+      setPaymentCredits(creditsPurchased);
+      setPaymentIsVerifying(true);
+      setShowPaymentSuccess(true);
 
+      // Restaurar estado de consulta guardado antes del pago
+      try {
+        const snapshot = sessionStorage.getItem('zoltar_purchase_snapshot');
+        if (snapshot) {
+          const s = JSON.parse(snapshot);
+          if (s.language)              setLanguage(s.language);
+          if (s.phase)                 setPhase(s.phase);
+          if (s.userName)              setUserName(s.userName);
+          if (s.birthDate)             setBirthDate(s.birthDate);
+          if (s.visitReason)           setVisitReason(s.visitReason);
+          if (s.dichotomousChoice)     setDichotomousChoice(s.dichotomousChoice);
+          if (s.thresholdStep)         setThresholdStep(s.thresholdStep);
+          if (s.selectedCards?.length) setSelectedCards(s.selectedCards);
+          if (s.interpretation)        setInterpretation(s.interpretation);
+          if (s.introspectionMessage)  setIntrospectionMessage(s.introspectionMessage);
+          if (s.clarifications)        setClarifications(s.clarifications);
+          if (s.revealedStage)         setRevealedStage(s.revealedStage);
+          if (s.consultCount)          setConsultCount(s.consultCount);
+          sessionStorage.removeItem('zoltar_purchase_snapshot');
+        }
+      } catch(e) { console.warn('State restore error:', e); }
+
+      // Limpiar URL
+      window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
+    }
+
+    if (!supabase) {
+      // Sin Supabase: resolver modal de inmediato si venía de pago
+      if (payment === 'success') setPaymentIsVerifying(false);
+      return;
+    }
+
+    // ── 2. Helpers de sesión ──────────────────────────────────
     const loadProfile = async (session) => {
       const bal = await fetchBalance(session);
       setCredits(bal);
       const { data: profile } = await supabase
         .from('profiles').select('referral_code').eq('id', session.user.id).single();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
+      return bal;
     };
 
+    // ── 3. Listener de cambios de auth ────────────────────────
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setAuthSession(session);
       setAuthUser(session?.user || null);
       if (session) {
-        if (event === 'SIGNED_IN') {
-          await initializeProfile(session, ref || '');
-        }
+        if (event === 'SIGNED_IN') await initializeProfile(session, ref || '');
         await loadProfile(session);
       } else {
         setCredits(null);
@@ -183,62 +220,39 @@ function App() {
       }
     });
 
+    // ── 4. Sesión inicial + polling de créditos post-pago ─────
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
         setAuthSession(session);
         setAuthUser(session.user);
         if (verified === '1') await initializeProfile(session, ref || '');
-        await loadProfile(session);
-      }
-      if (payment === 'success' && session) {
-        const purchasedCredits = parseInt(new URLSearchParams(window.location.search).get('credits') || '0', 10);
-        setPaymentCredits(purchasedCredits);
-        setPaymentIsVerifying(true);
-        setShowPaymentSuccess(true);
+        const baseBalance = await loadProfile(session);
 
-        // Restaurar estado de consulta guardado antes del pago
-        try {
-          const snapshot = sessionStorage.getItem('zoltar_purchase_snapshot');
-          if (snapshot) {
-            const s = JSON.parse(snapshot);
-            if (s.language)            setLanguage(s.language);
-            if (s.phase)               setPhase(s.phase);
-            if (s.userName)            setUserName(s.userName);
-            if (s.birthDate)           setBirthDate(s.birthDate);
-            if (s.visitReason)         setVisitReason(s.visitReason);
-            if (s.dichotomousChoice)   setDichotomousChoice(s.dichotomousChoice);
-            if (s.thresholdStep)       setThresholdStep(s.thresholdStep);
-            if (s.selectedCards?.length) setSelectedCards(s.selectedCards);
-            if (s.interpretation)      setInterpretation(s.interpretation);
-            if (s.introspectionMessage) setIntrospectionMessage(s.introspectionMessage);
-            if (s.clarifications)      setClarifications(s.clarifications);
-            if (s.revealedStage)       setRevealedStage(s.revealedStage);
-            if (s.consultCount)        setConsultCount(s.consultCount);
-            sessionStorage.removeItem('zoltar_purchase_snapshot');
-          }
-        } catch(e) { console.warn('State restore error:', e); }
-
-        // Polling: espera hasta 30s a que el webhook de Stripe acredite los créditos
-        const baseBalance = await fetchBalance(session);
-        let attempts = 0;
-        const poll = async () => {
-          attempts++;
-          const bal = await fetchBalance(session);
-          if (bal !== null && bal !== baseBalance) {
-            setCredits(bal);
-            setPaymentIsVerifying(false); // muestra modal de éxito con saldo real
-          } else if (attempts < 10) {
-            setTimeout(poll, 3000);
-          } else {
-            const finalBal = await fetchBalance(session);
-            setCredits(finalBal);
-            setPaymentIsVerifying(false);
-          }
-        };
-        setTimeout(poll, 2000);
+        if (payment === 'success') {
+          // Polling hasta detectar que el webhook acreditó los créditos
+          let attempts = 0;
+          const poll = async () => {
+            attempts++;
+            const bal = await fetchBalance(session);
+            if (bal !== null && bal !== baseBalance) {
+              setCredits(bal);
+              setPaymentIsVerifying(false);
+            } else if (attempts < 10) {
+              setTimeout(poll, 3000);
+            } else {
+              const finalBal = await fetchBalance(session);
+              if (finalBal !== null) setCredits(finalBal);
+              setPaymentIsVerifying(false);
+            }
+          };
+          setTimeout(poll, 2000);
+        }
+      } else if (payment === 'success') {
+        // Sin sesión restaurada: mostrar éxito igual (sin saldo actualizado)
+        setPaymentIsVerifying(false);
       }
-      // Limpiar params de URL
-      if (payment || verified) {
+
+      if (verified) {
         window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
       }
     });
