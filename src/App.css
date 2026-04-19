@@ -602,3 +602,312 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 .astral-bubble {
   border-left-width: 4px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MONETIZACIÓN — Auth, Credits, Purchase, Referral
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Overlay compartido ─────────────────────────────────── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99990;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+/* ── Modal base ─────────────────────────────────────────── */
+.auth-modal {
+  position: relative;
+  background: linear-gradient(145deg, #0d0d1a, #14142b);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 0 60px rgba(100, 0, 200, 0.3), 0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: fadeIn 0.4s ease;
+  text-align: center;
+}
+
+.auth-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.auth-close:hover { color: #fff; }
+
+.auth-icon {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+.auth-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin: 0 0 8px;
+  letter-spacing: 1px;
+}
+.auth-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+.auth-note {
+  font-size: 0.8rem;
+  color: #a78bfa;
+  margin: -8px 0 16px;
+}
+
+/* ── Tabs ───────────────────────────────────────────────── */
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.auth-tab.active {
+  background: rgba(255,215,0,0.15);
+  color: #ffd700;
+  font-weight: 600;
+}
+
+/* ── Inputs ─────────────────────────────────────────────── */
+.auth-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.auth-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.auth-input:focus { border-color: rgba(255,215,0,0.6); }
+.auth-input::placeholder { color: rgba(255,255,255,0.3); }
+.auth-input-small { font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; }
+
+/* ── Buttons ────────────────────────────────────────────── */
+.auth-btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.auth-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+.auth-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-btn-secondary {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+.auth-btn-secondary:hover { border-color: rgba(255,215,0,0.4); color: #ffd700; }
+
+.auth-error {
+  color: #f87171;
+  font-size: 0.82rem;
+  margin: -4px 0 10px;
+  background: rgba(255,0,0,0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.auth-terms {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.3);
+  margin-top: 12px;
+  line-height: 1.4;
+}
+
+/* ── Credit Widget (pill flotante) ──────────────────────── */
+.credit-widget {
+  position: fixed;
+  top: 25px;
+  right: 90px;
+  z-index: 9998;
+}
+.credit-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,22,28,0.85);
+  border: 1px solid rgba(255,215,0,0.35);
+  border-radius: 25px;
+  padding: 8px 14px;
+  color: #ffd700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 15px rgba(0,0,0,0.6);
+}
+.credit-pill:hover { border-color: rgba(255,215,0,0.7); transform: translateY(-1px); }
+.credit-pill-low { border-color: rgba(255,100,100,0.6); animation: pulse 2s infinite; }
+.credit-gem { font-size: 0.9rem; }
+.credit-count { min-width: 24px; text-align: center; }
+
+/* ── Credit Dropdown ────────────────────────────────────── */
+.credit-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: linear-gradient(145deg, #0d0d1a, #14142b);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  animation: fadeIn 0.2s ease;
+  text-align: left;
+}
+.credit-dd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.credit-dd-email { font-size: 0.75rem; color: rgba(255,255,255,0.5); overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+.credit-dd-close { background: transparent; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.85rem; }
+.credit-dd-balance { display: flex; align-items: baseline; gap: 6px; margin-bottom: 14px; padding: 12px; background: rgba(255,215,0,0.07); border-radius: 10px; }
+.credit-dd-gem { font-size: 1.2rem; }
+.credit-dd-num { font-size: 1.8rem; font-weight: 700; color: #ffd700; }
+.credit-dd-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+.credit-dd-costs { margin-bottom: 12px; }
+.credit-cost-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: rgba(255,255,255,0.5); padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.credit-dd-warning { font-size: 0.8rem; color: #f87171; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px; margin-bottom: 10px; text-align: center; }
+.credit-dd-buy { width: 100%; padding: 10px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-bottom: 8px; transition: opacity 0.2s; }
+.credit-dd-buy:hover { opacity: 0.85; }
+.credit-dd-logout { width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.4); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+.credit-dd-logout:hover { color: #f87171; border-color: rgba(255,100,100,0.3); }
+
+/* ── Purchase Modal ─────────────────────────────────────── */
+.purchase-modal {
+  position: relative;
+  background: linear-gradient(145deg, #0d0d1a, #14142b);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 20px;
+  padding: 36px 28px 28px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 0 60px rgba(100,0,200,0.3), 0 20px 60px rgba(0,0,0,0.8);
+  animation: fadeIn 0.4s ease;
+  text-align: center;
+}
+.purchase-reason {
+  font-size: 0.85rem;
+  color: #f87171;
+  background: rgba(255,0,0,0.1);
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin: -8px 0 18px;
+}
+.purchase-packages {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 18px 0 8px;
+}
+.purchase-card {
+  flex: 1;
+  min-width: 140px;
+  max-width: 165px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 18px 12px;
+  position: relative;
+  transition: all 0.2s;
+}
+.purchase-card:hover { border-color: rgba(255,215,0,0.4); transform: translateY(-2px); }
+.purchase-card-popular {
+  border-color: rgba(255,215,0,0.5);
+  background: rgba(255,215,0,0.05);
+}
+.purchase-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #7c3aed; color: #fff; font-size: 0.68rem; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.purchase-card-name { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 8px; }
+.purchase-card-credits { font-size: 1.5rem; font-weight: 800; color: #ffd700; margin-bottom: 4px; }
+.purchase-card-subs { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+.purchase-card-price { font-size: 1.1rem; font-weight: 700; color: #a78bfa; margin-bottom: 14px; }
+.purchase-btn { width: 100%; padding: 9px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 9px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
+.purchase-btn:hover:not(:disabled) { opacity: 0.85; }
+.purchase-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Referral Widget ────────────────────────────────────── */
+.referral-code-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,215,0,0.07);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin: 16px 0 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.referral-code-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+.referral-code-value { font-size: 2rem; font-weight: 800; color: #ffd700; letter-spacing: 6px; margin-top: 4px; }
+
+.referral-url-box {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 8px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+.referral-url-text { font-size: 0.72rem; color: rgba(255,255,255,0.4); word-break: break-all; }
+
+.referral-rewards { margin-top: 18px; width: 100%; }
+.referral-reward-row { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.referral-reward-row span:first-child { color: #ffd700; font-weight: 700; min-width: 60px; }
+.referral-reward-row span:last-child { color: rgba(255,255,255,0.6); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,100,100,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(255,100,100,0); }
+}

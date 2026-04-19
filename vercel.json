@@ -2,6 +2,15 @@
   "functions": {
     "api/gemini.js": {
       "maxDuration": 60
+    },
+    "api/credits.js": {
+      "maxDuration": 10
+    },
+    "api/checkout.js": {
+      "maxDuration": 10
+    },
+    "api/stripe-webhook.js": {
+      "maxDuration": 10
     }
   }
 }

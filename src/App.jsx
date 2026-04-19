@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
@@ -9,6 +9,12 @@ import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
 import ConstellationCanvas from './components/ConstellationCanvas';
+import { supabase } from './lib/supabase';
+import { fetchBalance, deductCredits, CREDIT_COSTS } from './lib/credits';
+import AuthModal from './components/AuthModal';
+import CreditWidget from './components/CreditWidget';
+import PurchaseModal from './components/PurchaseModal';
+import ReferralWidget from './components/ReferralWidget';
 
 function App() {
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
@@ -86,6 +92,21 @@ function App() {
   const [lastDebug, setLastDebug] = useState(null);
   const [showDebug, setShowDebug] = useState(false);
 
+  // ── Auth & Credits ─────────────────────────────────────
+  const [authUser,          setAuthUser]          = useState(null);
+  const [authSession,       setAuthSession]       = useState(null);
+  const [credits,           setCredits]           = useState(null);
+  const [referralCode,      setReferralCode]      = useState(null);
+  const [urlRef,            setUrlRef]            = useState(null);
+  const [consultCount,      setConsultCount]      = useState(0);
+
+  // ── Modal visibility ───────────────────────────────────
+  const [showAuthModal,      setShowAuthModal]      = useState(false);
+  const [showPurchaseModal,  setShowPurchaseModal]  = useState(false);
+  const [showReferralWidget, setShowReferralWidget] = useState(false);
+  const [purchaseReason,     setPurchaseReason]     = useState('');
+  const [pendingAction,      setPendingAction]      = useState(null);
+
   useEffect(() => {
     initSpeech(language);
     return () => { stopSpeech(); stopAmbient(); };
@@ -123,6 +144,193 @@ function App() {
       setRevelationReady(false);
     }
   }, [phase, loading]);
+
+  // ── Auth: inicializar sesión, URL params, listener ───────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref       = params.get('ref');
+    const verified  = params.get('verified');
+    const payment   = params.get('payment');
+    const credits_n = params.get('credits');
+
+    if (ref) setUrlRef(ref);
+
+    if (!supabase) return;
+
+    const loadProfile = async (session) => {
+      const bal = await fetchBalance(session);
+      setCredits(bal);
+      const { data: profile } = await supabase
+        .from('profiles').select('referral_code').eq('id', session.user.id).single();
+      if (profile?.referral_code) setReferralCode(profile.referral_code);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setAuthSession(session);
+      setAuthUser(session?.user || null);
+      if (session) {
+        if (event === 'SIGNED_IN') {
+          await initializeProfile(session, ref || '');
+        }
+        await loadProfile(session);
+      } else {
+        setCredits(null);
+        setReferralCode(null);
+      }
+    });
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        setAuthSession(session);
+        setAuthUser(session.user);
+        if (verified === '1') await initializeProfile(session, ref || '');
+        await loadProfile(session);
+      }
+      if (payment === 'success' && session) {
+        // Actualizar créditos tras pago exitoso
+        setTimeout(async () => {
+          const bal = await fetchBalance(session);
+          setCredits(bal);
+        }, 2000);
+      }
+      // Limpiar params de URL
+      if (payment || verified) {
+        window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const initializeProfile = async (session, refCode = '') => {
+    try {
+      await fetch('/api/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'initialize', referralCode: refCode }),
+      });
+    } catch (e) { console.error('initializeProfile error:', e); }
+  };
+
+  const handlePostAuth = useCallback(async (session) => {
+    setAuthSession(session);
+    setAuthUser(session.user);
+    if (supabase) {
+      await initializeProfile(session, urlRef || '');
+      const bal = await fetchBalance(session);
+      setCredits(bal);
+      const { data: profile } = await supabase
+        .from('profiles').select('referral_code').eq('id', session.user.id).single();
+      if (profile?.referral_code) setReferralCode(profile.referral_code);
+    }
+    // Ejecutar acción pendiente
+    if (pendingAction?.type === 'start_consultation') {
+      setPendingAction(null);
+      // Pequeño delay para que el estado se propague
+      setTimeout(() => _doEnterPortal(), 300);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction, urlRef]);
+
+  // Lógica interna de entrada al portal (sin gate)
+  const _doEnterPortal = useCallback(() => {
+    initSpeech(language);
+    startAmbientMusic();
+    setIsFading(true);
+    setTimeout(() => {
+      setPhase('threshold');
+      setIsFading(false);
+      setTimeout(() => {
+        setCanProceed(false);
+        speakText(sessionTexts.greeting, language, () => setCanProceed(true));
+      }, 600);
+    }, Math.floor(Math.random() * 2000) + 3000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, sessionTexts]);
+
+  // Entrada al portal con gate de auth + créditos
+  const handleEnterPortalGated = useCallback(async () => {
+    if (!supabase) { _doEnterPortal(); return; }  // sin Supabase configurado: libre
+
+    if (!authSession) {
+      setPendingAction({ type: 'start_consultation' });
+      setShowAuthModal(true);
+      return;
+    }
+
+    const cost = consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation;
+    const currentCredits = credits ?? 0;
+    if (currentCredits < cost) {
+      const nombre = consultCount === 0 ? 'iniciar una consulta' : 're-consultar';
+      setPurchaseReason(`Necesitas ${cost} créditos para ${nombre}. Tienes ${currentCredits}.`);
+      setShowPurchaseModal(true);
+      return;
+    }
+
+    const reason = consultCount === 0 ? 'consultation' : 'reconsultation';
+    const result = await deductCredits(authSession, reason);
+    if (!result.ok) {
+      if (result.error === 'insufficient_credits') {
+        setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
+        setShowPurchaseModal(true);
+      }
+      return;
+    }
+    setCredits(result.credits);
+    setConsultCount(prev => prev + 1);
+    _doEnterPortal();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authSession, credits, consultCount, _doEnterPortal]);
+
+  // Re-consulta desde fase de anclaje (estado ya existente, costo reducido)
+  const handleReConsultation = useCallback(async () => {
+    if (!authSession || !supabase) {
+      window.location.reload();
+      return;
+    }
+
+    const cost = CREDIT_COSTS.reconsultation;
+    const currentCredits = credits ?? 0;
+    if (currentCredits < cost) {
+      setPurchaseReason(`Necesitas ${cost} créditos para re-consultar. Tienes ${currentCredits}.`);
+      setShowPurchaseModal(true);
+      return;
+    }
+
+    const result = await deductCredits(authSession, 'reconsultation');
+    if (!result.ok) {
+      if (result.error === 'insufficient_credits') {
+        setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
+        setShowPurchaseModal(true);
+      }
+      return;
+    }
+    setCredits(result.credits);
+    setConsultCount(prev => prev + 1);
+
+    // Resetear estado de consulta
+    setSelectedCards([]);
+    setInterpretation(null);
+    setIntrospectionMessage('');
+    setVisitReason('');
+    setDichotomousChoice('');
+    setClarifications({});
+    setRevealedStage(0);
+    setCardsFlippedCount(0);
+    setAutoRevealStarted(false);
+    setRevelationReady(false);
+    setThresholdStep(1);
+    setPhase('threshold');
+    setVibe('healing_blue');
+    const deck = [...cardsData];
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    setShuffledDeck(deck);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authSession, credits]);
 
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
@@ -315,7 +523,30 @@ function App() {
   };
 
   // -------------- DEEPENING FLOW HANDLERS --------------
-  const initDeepening = (cardId) => {
+  const initDeepening = async (cardId) => {
+    if (supabase) {
+      if (!authSession) {
+        setPendingAction({ type: 'deepening', cardId });
+        setShowAuthModal(true);
+        return;
+      }
+      const cost = CREDIT_COSTS.deepening;
+      const currentCredits = credits ?? 0;
+      if (currentCredits < cost) {
+        setPurchaseReason(`Necesitas ${cost} créditos para profundizar esta carta. Tienes ${currentCredits}.`);
+        setShowPurchaseModal(true);
+        return;
+      }
+      const result = await deductCredits(authSession, 'deepening');
+      if (!result.ok) {
+        if (result.error === 'insufficient_credits') {
+          setPurchaseReason(`Créditos insuficientes para profundizar.`);
+          setShowPurchaseModal(true);
+        }
+        return;
+      }
+      setCredits(result.credits);
+    }
     setClarifications(prev => ({
       ...prev,
       [cardId]: { step: 'question', question: '', extraCard: null, extraResponse: '' }
@@ -420,25 +651,15 @@ function App() {
             <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
           </p>
           {canProceed && (
-            <button className="start-button blinking-button action-button-reveal" onClick={() => {
-              initSpeech(language);
-              startAmbientMusic();
-              setIsFading(true);
-              setTimeout(() => {
-                setPhase('threshold');
-                setIsFading(false);
-                setTimeout(() => {
-                  setCanProceed(false);
-                  speakText(sessionTexts.greeting, language, () => setCanProceed(true));
-                }, 600);
-              }, Math.floor(Math.random() * 2000) + 3000);
-            }}>{translations.ui.enter_portal}</button>
+            <button className="start-button blinking-button action-button-reveal" onClick={handleEnterPortalGated}>
+              {translations.ui.enter_portal}
+            </button>
           )}
         </div>
       ) : null}
 
       {/* Botón Silenciar Global */}
-      <button 
+      <button
         onClick={() => setIsMutedState(toggleMute())}
         title={isMutedState ? translations.ui.unmute : translations.ui.mute}
         style={{
@@ -450,6 +671,18 @@ function App() {
       >
         {isMutedState ? '🔇' : '🔊'}
       </button>
+
+      {/* Widget de créditos */}
+      <CreditWidget
+        user={authUser}
+        credits={credits}
+        onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
+        onShare={() => setShowReferralWidget(true)}
+        onLogout={async () => {
+          await supabase?.auth.signOut();
+          setAuthUser(null); setAuthSession(null); setCredits(null); setReferralCode(null);
+        }}
+      />
 
       {/* Main Content Wrapper with profound fade transitions */}
       <div style={{ 
@@ -902,17 +1135,48 @@ function App() {
                     </div>
                  </div>
               </div>
-              <button 
-                className="start-button blinking-button action-button-reveal" 
-                onClick={() => window.location.reload()} 
-                style={{ marginTop: '40px' }}
-              >
-                {translations.ui.new_consultation}
-              </button>
+              <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <button
+                  className="start-button blinking-button action-button-reveal"
+                  onClick={handleReConsultation}
+                >
+                  {translations.ui.new_consultation}
+                  {authSession && <span style={{ fontSize: '0.7rem', opacity: 0.7, marginLeft: '8px' }}>(-20 💎)</span>}
+                </button>
+                {authSession && referralCode && (
+                  <button
+                    style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.4)', borderRadius: '25px', padding: '8px 20px', color: '#ffd700', cursor: 'pointer', fontSize: '0.85rem' }}
+                    onClick={() => setShowReferralWidget(true)}
+                  >
+                    🌟 Invitar amigos y ganar créditos
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
       )}
+      {/* ── Modales de monetización ─────────────────────────── */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => { setShowAuthModal(false); setPendingAction(null); }}
+        onAuth={handlePostAuth}
+        referralCode={urlRef}
+        language={language}
+      />
+      <PurchaseModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+        session={authSession}
+        reason={purchaseReason}
+      />
+      {showReferralWidget && referralCode && (
+        <ReferralWidget
+          referralCode={referralCode}
+          onClose={() => setShowReferralWidget(false)}
+        />
+      )}
+
       {/* Global Debug Toggle Button */}
       <button 
         onClick={() => setShowDebug(!showDebug)}
