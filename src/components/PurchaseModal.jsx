@@ -5,12 +5,13 @@ import { PACKAGES } from '../lib/credits';
  * Modal de compra de créditos vía Stripe.
  *
  * Props:
- *   isOpen    boolean
- *   onClose   () => void
- *   session   Supabase session object
- *   reason    string | null   ← mensaje opcional del por qué se abrió
+ *   isOpen          boolean
+ *   onClose         () => void
+ *   session         Supabase session object
+ *   reason          string | null   ← mensaje opcional del por qué se abrió
+ *   onSaveState     () => void      ← guardar estado de la app antes de redirigir
  */
-export default function PurchaseModal({ isOpen, onClose, session, reason }) {
+export default function PurchaseModal({ isOpen, onClose, session, reason, onSaveState }) {
   const [loading, setLoading] = useState(null);  // packageId cargando
   const [error,   setError]   = useState('');
 
@@ -33,6 +34,9 @@ export default function PurchaseModal({ isOpen, onClose, session, reason }) {
 
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'Error al crear sesión de pago');
+
+      // Guardar estado de la app antes de salir
+      if (onSaveState) onSaveState();
 
       // Redirigir a Stripe Checkout
       window.location.href = data.url;

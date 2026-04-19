@@ -54,7 +54,13 @@ export const I18N = {
       default_task: "Confía en lo que tu alma ya sabe.",
       oracle_thinking: "Las energías de tus vidas pasadas están encontrando la respuesta...",
       welcome: "Bienvenido, buscador.",
-      enter: "Entrar al Portal"
+      enter: "Entrar al Portal",
+      payment_success_title: "¡Compra exitosa!",
+      payment_success_body: "Se han acreditado {credits} créditos a tu cuenta.",
+      payment_success_balance: "Saldo actual",
+      payment_success_btn: "Continuar con mi consulta",
+      payment_verifying: "Verificando tu pago...",
+      payment_email_subject: "¡Tus créditos Zoltar han llegado!",
     },
     sessionTexts: {
       askName: "¿Qué nombre resuena en tu alma en esta vida?",
@@ -237,7 +243,13 @@ export const I18N = {
       default_task: "Trust in what your soul already knows.",
       oracle_thinking: "The energies of your past lives are finding the answer...",
       welcome: "Welcome, seeker.",
-      enter: "Enter the Portal"
+      enter: "Enter the Portal",
+      payment_success_title: "Purchase successful!",
+      payment_success_body: "{credits} credits have been added to your account.",
+      payment_success_balance: "Current balance",
+      payment_success_btn: "Continue with my reading",
+      payment_verifying: "Verifying your payment...",
+      payment_email_subject: "Your Zoltar credits have arrived!",
     },
     sessionTexts: {
       askName: "What name resonates in your soul in this life?",
@@ -420,7 +432,13 @@ export const I18N = {
       default_task: "Confie no que sua alma já sabe.",
       oracle_thinking: "As energias das suas vidas passadas estão encontrando a resposta...",
       welcome: "Bem-vindo, buscador.",
-      enter: "Entrar no Portal"
+      enter: "Entrar no Portal",
+      payment_success_title: "Compra bem-sucedida!",
+      payment_success_body: "{credits} créditos foram adicionados à sua conta.",
+      payment_success_balance: "Saldo atual",
+      payment_success_btn: "Continuar minha consulta",
+      payment_verifying: "Verificando seu pagamento...",
+      payment_email_subject: "Seus créditos Zoltar chegaram!",
     },
     sessionTexts: {
       askName: "Qual nome ressoa em sua alma nesta vida?",

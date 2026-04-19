@@ -911,3 +911,13 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,100,100,0.4); }
   50% { box-shadow: 0 0 0 6px rgba(255,100,100,0); }
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}

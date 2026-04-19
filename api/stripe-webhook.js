@@ -88,6 +88,44 @@ export default async function handler(req, res) {
     });
 
     console.log(`[Webhook] +${credits} créditos acreditados a ${userId}. Total: ${newCredits}`);
+
+    // Enviar email de confirmación (requiere RESEND_API_KEY en Vercel)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const userEmail = session.customer_email;
+        if (userEmail) {
+          const packageNames = { iniciado: 'Iniciado', explorador: 'Explorador', oraculo: 'Oráculo' };
+          const pkgName = packageNames[packageId] || packageId;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: process.env.RESEND_FROM_EMAIL || 'Zoltar Oráculo <noreply@zoltar.app>',
+              to: userEmail,
+              subject: '✨ ¡Tus créditos Zoltar han llegado!',
+              html: `
+                <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0d0d1a;color:#fff;padding:32px;border-radius:16px;">
+                  <h1 style="color:#ffd700;font-size:1.6rem;margin-bottom:8px;">✨ ¡Compra exitosa!</h1>
+                  <p style="color:rgba(255,255,255,0.7);">Se han acreditado <strong style="color:#ffd700;">${credits} 💎 créditos</strong> a tu cuenta del Oráculo de Vidas Pasadas.</p>
+                  <div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:16px;margin:20px 0;text-align:center;">
+                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;">Paquete ${pkgName}</p>
+                    <p style="font-size:2.5rem;font-weight:800;color:#ffd700;margin:0;">${credits} 💎</p>
+                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin:4px 0 0;">Saldo total: ${newCredits} créditos</p>
+                  </div>
+                  <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Regresa al Oráculo y continúa tu viaje astral. Los créditos no tienen fecha de vencimiento.</p>
+                  <a href="${process.env.APP_URL || 'https://zoltar-two.vercel.app'}" style="display:inline-block;margin-top:16px;padding:12px 28px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">Ir al Oráculo →</a>
+                </div>
+              `,
+            }),
+          });
+        }
+      } catch(emailErr) {
+        console.error('[Webhook] Email error (non-fatal):', emailErr.message);
+      }
+    }
   }
 
   return res.status(200).json({ received: true });
