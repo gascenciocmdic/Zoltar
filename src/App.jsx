@@ -229,27 +229,20 @@ function App() {
         const baseBalance = await loadProfile(session);
 
         if (payment === 'success') {
-          // Polling hasta detectar que el webhook acreditó los créditos
-          let attempts = 0;
-          const poll = async () => {
-            attempts++;
-            const bal = await fetchBalance(session);
-            if (bal !== null && bal !== baseBalance) {
-              setCredits(bal);
-              setPaymentIsVerifying(false);
-            } else if (attempts < 10) {
-              setTimeout(poll, 3000);
-            } else {
-              const finalBal = await fetchBalance(session);
-              if (finalBal !== null) setCredits(finalBal);
-              setPaymentIsVerifying(false);
-            }
+          // Espera 4s (webhook suele llegar en 1-3s), refresca saldo y cierra spinner
+          const refreshAndClose = async (delay) => {
+            await new Promise(r => setTimeout(r, delay));
+            try {
+              const bal = await fetchBalance(session);
+              if (bal !== null) setCredits(bal);
+            } catch(e) { /* no-op */ }
+            setPaymentIsVerifying(false);
           };
-          setTimeout(poll, 2000);
+          refreshAndClose(4000);
         }
       } else if (payment === 'success') {
-        // Sin sesión restaurada: mostrar éxito igual (sin saldo actualizado)
-        setPaymentIsVerifying(false);
+        // Sin sesión: cerrar spinner después de 4s igual
+        setTimeout(() => setPaymentIsVerifying(false), 4000);
       }
 
       if (verified) {
