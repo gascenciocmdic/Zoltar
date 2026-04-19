@@ -88,8 +88,16 @@ export default async function handler(req, res) {
         .eq('id', user.id)
         .single();
 
-      if (existing?.signup_bonus_given) {
+      // Cuenta de prueba: siempre reiniciar créditos
+      const TEST_ACCOUNT = 'ascencio.gustavo@gmail.com';
+      if (existing?.signup_bonus_given && user.email !== TEST_ACCOUNT) {
         return res.status(200).json({ credits: existing.credits, already_initialized: true });
+      }
+      if (existing?.signup_bonus_given && user.email === TEST_ACCOUNT) {
+        const resetCredits = SIGNUP_BONUS;
+        await sb.from('profiles').update({ credits: resetCredits }).eq('id', user.id);
+        await sb.from('credit_ledger').insert({ user_id: user.id, amount: resetCredits, reason: 'signup_bonus', meta: { test_reset: true } });
+        return res.status(200).json({ credits: resetCredits, test_reset: true });
       }
 
       // Buscar referidor si viene código
