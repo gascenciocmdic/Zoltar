@@ -105,6 +105,8 @@ function App() {
   const [showPurchaseModal,  setShowPurchaseModal]  = useState(false);
   const [showReferralWidget, setShowReferralWidget] = useState(false);
   const [purchaseReason,     setPurchaseReason]     = useState('');
+  const [paymentBanner,      setPaymentBanner]      = useState(null); // null | 'verifying' | 'success' | 'failed'
+  const [paymentCredits,     setPaymentCredits]     = useState(0);
   const [pendingAction,      setPendingAction]      = useState(null);
 
   useEffect(() => {
@@ -187,11 +189,31 @@ function App() {
         await loadProfile(session);
       }
       if (payment === 'success' && session) {
-        // Actualizar créditos tras pago exitoso
-        setTimeout(async () => {
+        const purchasedCredits = parseInt(new URLSearchParams(window.location.search).get('credits') || '0', 10);
+        setPaymentCredits(purchasedCredits);
+        setPaymentBanner('verifying');
+
+        // Polling: espera hasta 30s para que el webhook de Stripe acredite los créditos
+        const baseBalance = await fetchBalance(session);
+        let attempts = 0;
+        const poll = async () => {
+          attempts++;
           const bal = await fetchBalance(session);
-          setCredits(bal);
-        }, 2000);
+          if (bal !== null && bal !== baseBalance) {
+            setCredits(bal);
+            setPaymentBanner('success');
+            setTimeout(() => setPaymentBanner(null), 6000);
+          } else if (attempts < 8) {
+            setTimeout(poll, 3000);
+          } else {
+            // Webhook tardó demasiado — igual refrescar saldo por si llegó
+            const finalBal = await fetchBalance(session);
+            setCredits(finalBal);
+            setPaymentBanner('failed');
+            setTimeout(() => setPaymentBanner(null), 8000);
+          }
+        };
+        setTimeout(poll, 2000);
       }
       // Limpiar params de URL
       if (payment || verified) {
@@ -671,6 +693,25 @@ function App() {
       >
         {isMutedState ? '🔇' : '🔊'}
       </button>
+
+      {/* Banner de estado de pago */}
+      {paymentBanner && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99997,
+          padding: '14px 24px', textAlign: 'center', fontSize: '0.95rem', fontWeight: 600,
+          backdropFilter: 'blur(10px)', animation: 'fadeIn 0.4s ease',
+          background: paymentBanner === 'success'
+            ? 'linear-gradient(90deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))'
+            : paymentBanner === 'failed'
+            ? 'linear-gradient(90deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95))'
+            : 'linear-gradient(90deg, rgba(124,58,237,0.95), rgba(79,70,229,0.95))',
+          color: '#fff',
+        }}>
+          {paymentBanner === 'verifying' && `⏳ Verificando tu pago... acreditando ${paymentCredits} 💎`}
+          {paymentBanner === 'success'   && `✅ ¡Pago exitoso! +${paymentCredits} 💎 créditos acreditados`}
+          {paymentBanner === 'failed'    && `⚠️ Pago recibido pero los créditos están tardando. Recarga la página en 1 minuto.`}
+        </div>
+      )}
 
       {/* Widget de créditos */}
       <CreditWidget
