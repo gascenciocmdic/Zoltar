@@ -762,8 +762,19 @@ function App() {
         onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
         onShare={() => setShowReferralWidget(true)}
         onLogout={async () => {
-          await supabase?.auth.signOut();
+          try { await supabase?.auth.signOut(); } catch(e) { /* ignorar error */ }
           setAuthUser(null); setAuthSession(null); setCredits(null); setReferralCode(null);
+          // Reiniciar app al estado inicial
+          setPhase('languageSelection');
+          setLanguage('');
+          setSelectedCards([]);
+          setInterpretation(null);
+          setVisitReason('');
+          setUserName('');
+          setBirthDate('');
+          setDichotomousChoice('');
+          setThresholdStep(0);
+          setConsultCount(0);
         }}
       />
 
