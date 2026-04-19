@@ -46,6 +46,9 @@ export default async function handler(req, res) {
   const pkg = PACKAGES[packageId];
   if (!pkg) return res.status(400).json({ error: 'Paquete inválido' });
 
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(503).json({ error: 'Pagos no configurados aún. Contacta al administrador.' });
+  }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
   const appUrl = process.env.APP_URL || 'https://zoltar-two.vercel.app';
