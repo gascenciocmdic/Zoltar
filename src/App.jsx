@@ -752,7 +752,13 @@ function App() {
         newBalance={credits}
         isVerifying={paymentIsVerifying}
         language={language || 'es'}
-        onContinue={() => setShowPaymentSuccess(false)}
+        onContinue={async () => {
+          setShowPaymentSuccess(false);
+          if (authSession) {
+            const bal = await fetchBalance(authSession);
+            if (bal !== null) setCredits(bal);
+          }
+        }}
       />
 
       {/* Widget de créditos */}
@@ -763,18 +769,7 @@ function App() {
         onShare={() => setShowReferralWidget(true)}
         onLogout={async () => {
           try { await supabase?.auth.signOut(); } catch(e) { /* ignorar error */ }
-          setAuthUser(null); setAuthSession(null); setCredits(null); setReferralCode(null);
-          // Reiniciar app al estado inicial
-          setPhase('languageSelection');
-          setLanguage('');
-          setSelectedCards([]);
-          setInterpretation(null);
-          setVisitReason('');
-          setUserName('');
-          setBirthDate('');
-          setDichotomousChoice('');
-          setThresholdStep(0);
-          setConsultCount(0);
+          window.location.reload();
         }}
       />
 
