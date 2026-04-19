@@ -27,10 +27,11 @@ const ConstellationCanvas = ({ seed }) => {
       return h;
     };
     
-    let currentSeed = stringToSeed(seed || "Cosmos");
+    // Asegurar semilla positiva para evitar radios negativos en arc()
+    let currentSeed = Math.abs(stringToSeed(seed || "Cosmos")) || 1;
     const r = () => {
-      currentSeed = (currentSeed * 16807) % 2147483647;
-      return (currentSeed - 1) / 2147483646;
+      currentSeed = (Math.abs(currentSeed) * 16807) % 2147483647 || 1;
+      return currentSeed / 2147483647; // siempre [0, 1)
     };
 
     const numStars = 20 + Math.floor(r() * 10);
@@ -94,7 +95,7 @@ const ConstellationCanvas = ({ seed }) => {
       stars.forEach(star => {
         const twinkle = 0.5 + (Math.sin(time * 2 + star.pulseOffset) * 0.5);
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, Math.max(0.1, star.size), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
         ctx.shadowBlur = 10 * twinkle;
         ctx.shadowColor = "rgba(192, 132, 252, 0.8)";
