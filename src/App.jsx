@@ -11,6 +11,7 @@ import Dragonfly from './components/Dragonfly';
 import ConstellationCanvas from './components/ConstellationCanvas';
 import { supabase } from './lib/supabase';
 import { fetchBalance, deductCredits, CREDIT_COSTS } from './lib/credits';
+import { generateBirthNarrative } from './lib/astrology';
 import AuthModal from './components/AuthModal';
 import CreditWidget from './components/CreditWidget';
 import PurchaseModal from './components/PurchaseModal';
@@ -79,7 +80,8 @@ function App() {
   const [revealedStage, setRevealedStage] = useState(0); // 0: overview, 1: card1, 2: card2, 3: card3
   const [thresholdStep, setThresholdStep] = useState(0); // 0: intro, 1: name, 2: reason, 3: dichotomy, 4: question
   const [userName, setUserName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
+  const [birthDate, setBirthDate] = useState({ day: '', month: '', year: '' });
+  const [birthNarrative, setBirthNarrative] = useState(null);
   const [visitReason, setVisitReason] = useState('');
   const [dichotomousChoice, setDichotomousChoice] = useState('');
   const [cardsFlippedCount, setCardsFlippedCount] = useState(0);
@@ -172,6 +174,7 @@ function App() {
         if (s.phase)                 setPhase(s.phase);
         if (s.userName)              setUserName(s.userName);
         if (s.birthDate)             setBirthDate(s.birthDate);
+        if (s.birthNarrative)        setBirthNarrative(s.birthNarrative);
         if (s.visitReason)           setVisitReason(s.visitReason);
         if (s.dichotomousChoice)     setDichotomousChoice(s.dichotomousChoice);
         if (s.thresholdStep)         setThresholdStep(s.thresholdStep);
@@ -378,6 +381,8 @@ function App() {
     setIntrospectionMessage('');
     setVisitReason('');
     setDichotomousChoice('');
+    setBirthDate({ day: '', month: '', year: '' });
+    setBirthNarrative(null);
     setClarifications({});
     setRevealedStage(0);
     setCardsFlippedCount(0);
@@ -399,7 +404,7 @@ function App() {
   const saveStateForPurchase = useCallback(() => {
     try {
       const snapshot = {
-        phase, language, selectedCards, userName, birthDate,
+        phase, language, selectedCards, userName, birthDate, birthNarrative,
         visitReason, dichotomousChoice, thresholdStep,
         interpretation, introspectionMessage, clarifications,
         revealedStage, consultCount, autoRevealStarted,
@@ -409,7 +414,7 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, language, selectedCards, userName, birthDate, visitReason,
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
-      clarifications, revealedStage, consultCount, autoRevealStarted]);
+      clarifications, revealedStage, consultCount, autoRevealStarted, birthNarrative]);
 
   const flashCredit = (amount) => {
     setCreditFlash({ amount, id: Date.now() });
@@ -460,7 +465,16 @@ function App() {
 
   const handleNextThreshold = () => {
     if (thresholdStep === 1 && !userName) return alert(translations.ui.your_name_placeholder);
-    if (thresholdStep === 2 && !birthDate) return alert(translations.ui.birthdate_placeholder);
+    if (thresholdStep === 2) {
+      const { day, month, year } = birthDate;
+      if (!day || !month || !year) return alert(translations.ui.birthdate_placeholder || 'Ingresa tu fecha de nacimiento completa');
+      const d = Number(day), m = Number(month), y = Number(year);
+      if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > new Date().getFullYear())
+        return alert('Fecha inválida. Verifica día (1-31), mes (1-12) y año.');
+      // Generar narrativa astrológica una sola vez
+      const narrative = generateBirthNarrative(d, m, y, language);
+      setBirthNarrative(narrative);
+    }
     if (thresholdStep === 3 && !visitReason) return alert(translations.ui.what_inquires_you);
     
     setIsFading(true);
@@ -506,7 +520,8 @@ function App() {
     setVibe('karmic_red'); 
     speakText(sessionTexts.waitMsg, language);
     try {
-       const userContext = { name: userName, birthDate: birthDate, reason: visitReason };
+       const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
+       const userContext = { name: userName, birthDate: bdStr, reason: visitReason };
        const result = await generateIntrospection(selectedCards, null, userContext, language);
        setIntrospectionMessage(result.mensajeAstral || result.mensajeGuia); // Backward compatible
        setInterpretation(prev => ({...prev, constelacion: result.nombreConstelacion }));
@@ -542,7 +557,8 @@ function App() {
       
       try {
         // Enforce full context inclusion
-        const userContext = { name: userName, birthDate: birthDate, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
+        const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
+        const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
         const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
         setInterpretation({
           ...result,
@@ -872,13 +888,32 @@ function App() {
           {thresholdStep === 2 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askBirthDate.replace('{name}', userName)}"`} speed={45} /></p>
-              <input 
-                type="text" 
-                className="soul-input" 
-                placeholder={translations.ui.birthdate_placeholder}
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-              />
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '16px 0' }}>
+                <input
+                  type="number" className="soul-input birthdate-field"
+                  placeholder={translations.ui.birthdate_day || 'DD'}
+                  min="1" max="31" maxLength={2}
+                  value={birthDate.day}
+                  onChange={(e) => setBirthDate(prev => ({ ...prev, day: e.target.value }))}
+                  style={{ width: '64px', textAlign: 'center' }}
+                />
+                <input
+                  type="number" className="soul-input birthdate-field"
+                  placeholder={translations.ui.birthdate_month || 'MM'}
+                  min="1" max="12" maxLength={2}
+                  value={birthDate.month}
+                  onChange={(e) => setBirthDate(prev => ({ ...prev, month: e.target.value }))}
+                  style={{ width: '64px', textAlign: 'center' }}
+                />
+                <input
+                  type="number" className="soul-input birthdate-field"
+                  placeholder={translations.ui.birthdate_year || 'AAAA'}
+                  min="1900" max={new Date().getFullYear()} maxLength={4}
+                  value={birthDate.year}
+                  onChange={(e) => setBirthDate(prev => ({ ...prev, year: e.target.value }))}
+                  style={{ width: '88px', textAlign: 'center' }}
+                />
+              </div>
               <button className="start-button" onClick={handleNextThreshold}>{translations.ui.continue}</button>
             </>
           )}
@@ -1016,12 +1051,28 @@ function App() {
 
       {phase === 'astral_alignment' && (
         <div className="astral-content threshold-content">
-          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>{interpretation?.constelacion || "El Esfínter Cósmico"}</h2>
-          
+          <h2 className="phase-title" style={{ fontSize: '1.5rem', color: '#c084fc' }}>
+            {birthNarrative ? `${birthNarrative.symbol} ${birthNarrative.sign}` : (interpretation?.constelacion || '✦')}
+          </h2>
+
           <div className="constellation-wrapper">
-             <ConstellationCanvas seed={interpretation?.constelacion || userName} />
+            <ConstellationCanvas seed={birthNarrative?.sign || interpretation?.constelacion || userName} />
           </div>
-          
+
+          {/* Narrativa astrológica basada en fecha de nacimiento */}
+          {birthNarrative && (
+            <div className="narrative-container" style={{ margin: '0 auto 10px auto', maxWidth: '620px' }}>
+              <div className="brain-bubble narrative fade-in-text astral-bubble" style={{ borderLeftColor: '#a78bfa', background: 'linear-gradient(135deg,rgba(124,58,237,0.08),rgba(20,22,28,0))' }}>
+                <p className="narrative-meta" style={{ color: '#c084fc', fontSize: '0.78rem', marginBottom: '8px', letterSpacing: '1px' }}>
+                  ✦ {birthNarrative.element} · {birthNarrative.ruler} ✦
+                </p>
+                <p style={{ fontStyle: 'italic', lineHeight: '1.7', color: '#e5e4e7', margin: 0, fontSize: '0.93rem' }}>
+                  <span className="reveal-text">{birthNarrative.narrative}</span>
+                </p>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div style={{ marginTop: '20px' }}>
               <p className="welcome-text" style={{ fontSize: '1.2rem', animation: 'slowFadePulse 4s infinite ease-in-out', textAlign: 'center' }}>
@@ -1031,7 +1082,7 @@ function App() {
             </div>
           ) : (
             <>
-              <div style={{ textAlign: 'center', marginBottom: '30px', marginTop: '20px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '30px', marginTop: '10px' }}>
                 {introspectionMessage && (
                   <div className="narrative-container" style={{ margin: '0 auto 20px auto', maxWidth: '600px' }}>
                     <div className="brain-bubble narrative fade-in-text astral-bubble" style={{ borderLeftColor: '#c084fc' }}>
@@ -1114,8 +1165,16 @@ function App() {
 
             return (
               <>
-                <div className="selected-cards-display" style={{ position: 'relative' }}>
-                  <Dragonfly visible={cardsFlippedCount < 3} />
+                {/* Las cartas solo se muestran a partir de revealedStage 1 (revelación individual) */}
+                {revealedStage === 0 && autoRevealStarted && (
+                  <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px', animation: 'slowFadePulse 3s infinite ease-in-out' }}>
+                    <p style={{ color: '#c084fc', fontSize: '1.1rem', letterSpacing: '2px', fontStyle: 'italic' }}>
+                      ✦ {translations.ui.cards_aligning || 'Las cartas se alinean con tu destino...'} ✦
+                    </p>
+                  </div>
+                )}
+                <div className="selected-cards-display" style={{ position: 'relative', display: revealedStage === 0 ? 'none' : undefined }}>
+                  <Dragonfly visible={cardsFlippedCount < 3 && revealedStage > 0} />
                   {selectedCards.map((card, index) => {
                     const clar = clarifications[card.id];
                     const cardI18n = translations.cards[card.id] || card;
