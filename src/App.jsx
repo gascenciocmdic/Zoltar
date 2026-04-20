@@ -180,8 +180,9 @@ function App() {
         if (s.clarifications)        setClarifications(s.clarifications);
         if (s.revealedStage)         setRevealedStage(s.revealedStage);
         if (s.consultCount)          setConsultCount(s.consultCount);
-        // Si el estado guardado es portalEntrance, el botón debe mostrarse de inmediato
-        if (s.phase === 'portalEntrance') setCanProceed(true);
+        if (s.autoRevealStarted)     setAutoRevealStarted(s.autoRevealStarted);
+        // Restaurar canProceed para fases que necesitan el botón inmediatamente
+        if (s.phase === 'portalEntrance' || s.phase === 'revelation') setCanProceed(true);
         sessionStorage.removeItem('zoltar_purchase_snapshot');
         return s;
       } catch(e) { console.warn('State restore error:', e); return null; }
@@ -409,14 +410,14 @@ function App() {
         phase, language, selectedCards, userName, birthDate,
         visitReason, dichotomousChoice, thresholdStep,
         interpretation, introspectionMessage, clarifications,
-        revealedStage, consultCount,
+        revealedStage, consultCount, autoRevealStarted,
       };
       sessionStorage.setItem('zoltar_purchase_snapshot', JSON.stringify(snapshot));
     } catch(e) { console.warn('State save error:', e); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, language, selectedCards, userName, birthDate, visitReason,
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
-      clarifications, revealedStage, consultCount]);
+      clarifications, revealedStage, consultCount, autoRevealStarted]);
 
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);

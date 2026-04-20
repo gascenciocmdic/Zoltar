@@ -21,6 +21,8 @@ export const I18N = {
       submit_to_oracle: "Entregar al Oráculo",
       revelation_title: "La Revelación",
       start_reading: "Comenzar Lectura",
+      continue_to_revelation: "Iniciar Revelación",
+      continue_revelation: "Continuar al siguiente misterio",
       continue_mystery: "Continuar al siguiente misterio",
       go_to_synthesis: "Ir a la Gran Síntesis",
       anchoring_title: "El Anclaje Místico",
