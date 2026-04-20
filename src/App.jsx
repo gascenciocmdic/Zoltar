@@ -160,6 +160,33 @@ function App() {
     if (ref) setUrlRef(ref);
 
     // ── 1. Detectar retorno de Stripe INMEDIATAMENTE (sin esperar sesión) ──
+
+    // Función reutilizable para restaurar estado guardado
+    const restoreSnapshot = () => {
+      try {
+        const snapshot = sessionStorage.getItem('zoltar_purchase_snapshot');
+        if (!snapshot) return null;
+        const s = JSON.parse(snapshot);
+        if (s.language)              setLanguage(s.language);
+        if (s.phase)                 setPhase(s.phase);
+        if (s.userName)              setUserName(s.userName);
+        if (s.birthDate)             setBirthDate(s.birthDate);
+        if (s.visitReason)           setVisitReason(s.visitReason);
+        if (s.dichotomousChoice)     setDichotomousChoice(s.dichotomousChoice);
+        if (s.thresholdStep)         setThresholdStep(s.thresholdStep);
+        if (s.selectedCards?.length) setSelectedCards(s.selectedCards);
+        if (s.interpretation)        setInterpretation(s.interpretation);
+        if (s.introspectionMessage)  setIntrospectionMessage(s.introspectionMessage);
+        if (s.clarifications)        setClarifications(s.clarifications);
+        if (s.revealedStage)         setRevealedStage(s.revealedStage);
+        if (s.consultCount)          setConsultCount(s.consultCount);
+        // Si el estado guardado es portalEntrance, el botón debe mostrarse de inmediato
+        if (s.phase === 'portalEntrance') setCanProceed(true);
+        sessionStorage.removeItem('zoltar_purchase_snapshot');
+        return s;
+      } catch(e) { console.warn('State restore error:', e); return null; }
+    };
+
     if (payment === 'success') {
       setPaymentCredits(creditsPurchased);
       setPaymentIsVerifying(true);
@@ -168,28 +195,14 @@ function App() {
       // Timer de seguridad: cierra el spinner en 6s pase lo que pase
       setTimeout(() => setPaymentIsVerifying(false), 6000);
 
-      // Restaurar estado de consulta guardado antes del pago
-      try {
-        const snapshot = sessionStorage.getItem('zoltar_purchase_snapshot');
-        if (snapshot) {
-          const s = JSON.parse(snapshot);
-          if (s.language)              setLanguage(s.language);
-          if (s.phase)                 setPhase(s.phase);
-          if (s.userName)              setUserName(s.userName);
-          if (s.birthDate)             setBirthDate(s.birthDate);
-          if (s.visitReason)           setVisitReason(s.visitReason);
-          if (s.dichotomousChoice)     setDichotomousChoice(s.dichotomousChoice);
-          if (s.thresholdStep)         setThresholdStep(s.thresholdStep);
-          if (s.selectedCards?.length) setSelectedCards(s.selectedCards);
-          if (s.interpretation)        setInterpretation(s.interpretation);
-          if (s.introspectionMessage)  setIntrospectionMessage(s.introspectionMessage);
-          if (s.clarifications)        setClarifications(s.clarifications);
-          if (s.revealedStage)         setRevealedStage(s.revealedStage);
-          if (s.consultCount)          setConsultCount(s.consultCount);
-          sessionStorage.removeItem('zoltar_purchase_snapshot');
-        }
-      } catch(e) { console.warn('State restore error:', e); }
+      restoreSnapshot();
 
+      // Limpiar URL
+      window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
+    }
+
+    if (payment === 'cancelled') {
+      restoreSnapshot();
       // Limpiar URL
       window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
     }
