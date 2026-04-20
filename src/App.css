@@ -803,6 +803,10 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   white-space: nowrap;
   letter-spacing: 1px;
 }
+.credit-flash-refund {
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74,222,128,0.8), 0 0 20px rgba(74,222,128,0.4);
+}
 .credit-pill {
   display: flex;
   align-items: center;

@@ -81,10 +81,10 @@ export default function CreditWidget({ user, credits, onBuy, onLogout, flash }) 
       {particles.map(p => (
         <div
           key={p.id}
-          className="credit-flash-particle"
+          className={p.amount > 0 ? 'credit-flash-particle credit-flash-refund' : 'credit-flash-particle'}
           style={{ position: 'fixed', top: '18px', right: '90px', zIndex: 99998, pointerEvents: 'none' }}
         >
-          <span>{p.amount} 💎</span>
+          <span>{p.amount > 0 ? `+${p.amount}` : p.amount} 💎</span>
         </div>
       ))}
 

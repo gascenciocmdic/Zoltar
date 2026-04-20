@@ -206,6 +206,27 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, credits: newCredits });
     }
 
+    // ── refund: devolver créditos (profundización no utilizada) ─
+    if (action === 'refund') {
+      const user = await getUser(req);
+      if (!user) return res.status(401).json({ error: 'No autenticado' });
+
+      const amount = parseInt(req.body.amount, 10);
+      if (!amount || amount <= 0) return res.status(400).json({ error: 'Monto inválido' });
+
+      const { data: profile, error: pe } = await sb
+        .from('profiles').select('credits').eq('id', user.id).single();
+      if (pe || !profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+      const newCredits = profile.credits + amount;
+      await sb.from('profiles').update({ credits: newCredits }).eq('id', user.id);
+      await sb.from('credit_ledger').insert({
+        user_id: user.id, amount, reason: reason || 'refund',
+      });
+
+      return res.status(200).json({ ok: true, credits: newCredits });
+    }
+
     return res.status(400).json({ error: 'Acción no reconocida' });
   }
 

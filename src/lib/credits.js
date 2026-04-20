@@ -61,6 +61,21 @@ export async function fetchBalance(session) {
   return data.credits ?? null;
 }
 
+/** Devuelve créditos (reembolso); retorna {ok, credits} */
+export async function refundCredits(session, amount, reason = 'refund') {
+  if (!session) return { ok: false, error: 'not_authenticated' };
+  const res = await fetch('/api/credits', {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      Authorization:   `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ action: 'refund', amount, reason }),
+  });
+  const data = await res.json();
+  return { ok: res.ok, ...data };
+}
+
 /** Deduce créditos para una acción; retorna {ok, credits} */
 export async function deductCredits(session, action) {
   if (!session) return { ok: false, error: 'not_authenticated' };

@@ -10,7 +10,7 @@ import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
 import ConstellationCanvas from './components/ConstellationCanvas';
 import { supabase } from './lib/supabase';
-import { fetchBalance, deductCredits, CREDIT_COSTS } from './lib/credits';
+import { fetchBalance, deductCredits, refundCredits, CREDIT_COSTS } from './lib/credits';
 import { generateBirthNarrative } from './lib/astrology';
 import AuthModal from './components/AuthModal';
 import CreditWidget from './components/CreditWidget';
@@ -292,7 +292,7 @@ function App() {
     setAuthSession(session);
     setAuthUser(session.user);
     if (supabase) {
-      await initializeProfile(session, urlRef || '', true);
+      await initializeProfile(session, urlRef || '', false); // login, no nuevo registro
       const bal = await fetchBalance(session);
       setCredits(bal);
       const { data: profile } = await supabase
@@ -585,7 +585,23 @@ function App() {
     }, Math.floor(Math.random() * 2000) + 3000); 
   };
 
-  const handleNextStage = () => {
+  const handleNextStage = async () => {
+    // Reembolsar 10 créditos si el usuario inició profundización pero avanza sin usarla
+    if (revealedStage > 0 && revealedStage <= 3 && authSession && supabase) {
+      const currentCardId = selectedCards[revealedStage - 1]?.id;
+      const clar = clarifications[currentCardId];
+      if (clar && clar.step === 'question') {
+        // La profundización fue iniciada (pagada) pero no completada — reembolsar
+        const refundResult = await refundCredits(authSession, CREDIT_COSTS.deepening, 'deepening_unused');
+        if (refundResult.ok) {
+          setCredits(refundResult.credits);
+          flashCredit(+CREDIT_COSTS.deepening);
+          // Limpiar la profundización abandonada
+          setClarifications(prev => { const next = { ...prev }; delete next[currentCardId]; return next; });
+        }
+      }
+    }
+
     if (revealedStage < 3) {
       setIsFading(true);
       setTimeout(() => {
@@ -1215,9 +1231,14 @@ function App() {
                             <div className="deepen-box">
                                {!clarifications[selectedCards[revealedStage-1].id] ? (
                                  canProceed && (
-                                   <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
-                                      {translations.ui.deepen_action || translations.ui.deepen}
-                                   </button>
+                                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                     <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
+                                       💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
+                                     </p>
+                                     <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
+                                       {translations.ui.deepen_action || translations.ui.deepen}
+                                     </button>
+                                   </div>
                                  )
                                ) : clarifications[selectedCards[revealedStage-1].id].step === 'question' ? (
                                  <div className="fade-in-text">
