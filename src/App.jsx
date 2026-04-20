@@ -1165,16 +1165,8 @@ function App() {
 
             return (
               <>
-                {/* Las cartas solo se muestran a partir de revealedStage 1 (revelación individual) */}
-                {revealedStage === 0 && autoRevealStarted && (
-                  <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px', animation: 'slowFadePulse 3s infinite ease-in-out' }}>
-                    <p style={{ color: '#c084fc', fontSize: '1.1rem', letterSpacing: '2px', fontStyle: 'italic' }}>
-                      ✦ {translations.ui.cards_aligning || 'Las cartas se alinean con tu destino...'} ✦
-                    </p>
-                  </div>
-                )}
-                <div className="selected-cards-display" style={{ position: 'relative', display: revealedStage === 0 ? 'none' : undefined }}>
-                  <Dragonfly visible={cardsFlippedCount < 3 && revealedStage > 0} />
+                <div className="selected-cards-display" style={{ position: 'relative' }}>
+                  <Dragonfly visible={cardsFlippedCount < 3} />
                   {selectedCards.map((card, index) => {
                     const clar = clarifications[card.id];
                     const cardI18n = translations.cards[card.id] || card;

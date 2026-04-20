@@ -69,7 +69,7 @@ export const I18N = {
     },
     sessionTexts: {
       askName: "¿Qué nombre resuena en tu alma en esta vida?",
-      askBirthDate: "{name}, para conectar con tu bóveda celeste, confíame el día y mes de tu nacimiento...",
+      askBirthDate: "{name}, para conectar con tu bóveda celeste, confíame el día, mes y año de tu nacimiento...",
       askReason: "{name}, ¿qué inquietud profunda perturba tu paz interior hoy?"
     },
     greetings: [
@@ -261,7 +261,7 @@ export const I18N = {
     },
     sessionTexts: {
       askName: "What name resonates in your soul in this life?",
-      askBirthDate: "{name}, to connect with your celestial vault, confide in me the day and month of your birth...",
+      askBirthDate: "{name}, to connect with your celestial vault, confide in me the day, month and year of your birth...",
       askReason: "{name}, what deep concern disturbs your inner peace today?"
     },
     greetings: [
@@ -453,7 +453,7 @@ export const I18N = {
     },
     sessionTexts: {
       askName: "Qual nome ressoa em sua alma nesta vida?",
-      askBirthDate: "{name}, para conectar com sua abóbada celeste, confie-me o dia e mês do seu nascimento...",
+      askBirthDate: "{name}, para conectar com sua abóbada celeste, confie-me o dia, mês e ano do seu nascimento...",
       askReason: "{name}, que inquietação profunda perturba sua paz interior hoje?"
     },
     greetings: [
