@@ -1,17 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-/**
- * Widget flotante de créditos — visible en todas las fases una vez autenticado.
- *
- * Props:
- *   user        object | null
- *   credits     number | null
- *   onBuy       () => void
- *   onLogout    () => void
- */
-export default function CreditWidget({ user, credits, onBuy, onLogout }) {
-  const [open, setOpen]           = useState(false);
+export default function CreditWidget({ user, credits, onBuy, onLogout, flash }) {
+  const [open, setOpen]             = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [particles, setParticles]   = useState([]);
+  const particleId = useRef(0);
+
+  // Disparar animación cuando llega un flash
+  useEffect(() => {
+    if (!flash) return;
+    const id = particleId.current++;
+    setParticles(prev => [...prev, { id, amount: flash.amount }]);
+    const timer = setTimeout(() => {
+      setParticles(prev => prev.filter(p => p.id !== id));
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, [flash]);
 
   if (!user) return null;
 
@@ -31,13 +35,11 @@ export default function CreditWidget({ user, credits, onBuy, onLogout }) {
     <>
       {/* Diálogo de confirmación de cierre de sesión */}
       {confirming && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 99999,
-            background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 99999,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
           <div style={{
             background: '#1a1a2e', border: '1px solid rgba(255,215,0,0.3)',
             borderRadius: '16px', padding: '32px 28px', maxWidth: '340px', width: '90%',
@@ -75,8 +77,19 @@ export default function CreditWidget({ user, credits, onBuy, onLogout }) {
         </div>
       )}
 
+      {/* Partículas de descuento flotantes */}
+      {particles.map(p => (
+        <div
+          key={p.id}
+          className="credit-flash-particle"
+          style={{ position: 'fixed', top: '18px', right: '90px', zIndex: 99998, pointerEvents: 'none' }}
+        >
+          <span>{p.amount} 💎</span>
+        </div>
+      ))}
+
       {/* Pill flotante */}
-      <div className="credit-widget">
+      <div className={`credit-widget ${particles.length > 0 ? 'credit-widget-shake' : ''}`}>
         <button
           className={`credit-pill ${low ? 'credit-pill-low' : ''}`}
           onClick={() => setOpen(!open)}

@@ -86,6 +86,7 @@ function App() {
   const [autoRevealStarted, setAutoRevealStarted] = useState(false);
   const [revelationReady, setRevelationReady] = useState(false);
   const [canProceed, setCanProceed] = useState(false);
+  const [creditFlash, setCreditFlash] = useState(null); // { amount: -40, id: n }
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
   
@@ -320,9 +321,9 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, sessionTexts]);
 
-  // Entrada al portal con gate de auth + créditos
+  // Entrada al portal: solo verifica auth y créditos suficientes (NO descuenta aún)
   const handleEnterPortalGated = useCallback(async () => {
-    if (!supabase) { _doEnterPortal(); return; }  // sin Supabase configurado: libre
+    if (!supabase) { _doEnterPortal(); return; }
 
     if (!authSession) {
       setPendingAction({ type: 'start_consultation' });
@@ -339,17 +340,7 @@ function App() {
       return;
     }
 
-    const reason = consultCount === 0 ? 'consultation' : 'reconsultation';
-    const result = await deductCredits(authSession, reason);
-    if (!result.ok) {
-      if (result.error === 'insufficient_credits') {
-        setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
-        setShowPurchaseModal(true);
-      }
-      return;
-    }
-    setCredits(result.credits);
-    setConsultCount(prev => prev + 1);
+    // Créditos suficientes: entrar al portal. El descuento ocurre al presionar "Permitir"
     _doEnterPortal();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authSession, credits, consultCount, _doEnterPortal]);
@@ -379,6 +370,7 @@ function App() {
     }
     setCredits(result.credits);
     setConsultCount(prev => prev + 1);
+    flashCredit(-CREDIT_COSTS.reconsultation);
 
     // Resetear estado de consulta
     setSelectedCards([]);
@@ -419,6 +411,11 @@ function App() {
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
       clarifications, revealedStage, consultCount, autoRevealStarted]);
 
+  const flashCredit = (amount) => {
+    setCreditFlash({ amount, id: Date.now() });
+    setTimeout(() => setCreditFlash(null), 2000);
+  };
+
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
     setPhase('portalEntrance');
@@ -428,13 +425,37 @@ function App() {
     speakText(welcomeMsg, lang, () => setCanProceed(true));
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    // Descontar créditos al presionar "Permitir"
+    if (supabase && authSession) {
+      const reason = consultCount === 0 ? 'consultation' : 'reconsultation';
+      const cost = consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation;
+      const currentCredits = credits ?? 0;
+      if (currentCredits < cost) {
+        const nombre = consultCount === 0 ? 'iniciar una consulta' : 're-consultar';
+        setPurchaseReason(`Necesitas ${cost} créditos para ${nombre}. Tienes ${currentCredits}.`);
+        setShowPurchaseModal(true);
+        return;
+      }
+      const result = await deductCredits(authSession, reason);
+      if (!result.ok) {
+        if (result.error === 'insufficient_credits') {
+          setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
+          setShowPurchaseModal(true);
+        }
+        return;
+      }
+      setCredits(result.credits);
+      setConsultCount(prev => prev + 1);
+      flashCredit(-cost);
+    }
+
     setIsFading(true);
     speakText(sessionTexts.askName, language);
     setTimeout(() => {
       setThresholdStep(1);
       setIsFading(false);
-    }, Math.floor(Math.random() * 2000) + 3000); 
+    }, Math.floor(Math.random() * 2000) + 3000);
   };
 
   const handleNextThreshold = () => {
@@ -633,6 +654,7 @@ function App() {
         return;
       }
       setCredits(result.credits);
+      flashCredit(-CREDIT_COSTS.deepening);
     }
     setClarifications(prev => ({
       ...prev,
@@ -779,6 +801,7 @@ function App() {
       <CreditWidget
         user={authUser}
         credits={credits}
+        flash={creditFlash}
         onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
         onShare={() => setShowReferralWidget(true)}
         onLogout={() => {
@@ -807,9 +830,16 @@ function App() {
                 <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
               </p>
               {canProceed && (
-                <button className="start-button blinking-button action-button-reveal" onClick={handleStart}>
-                  {translations.ui.allow}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                  {supabase && authSession && (
+                    <p style={{ color: 'rgba(255,215,0,0.6)', fontSize: '0.82rem', letterSpacing: '1px', margin: 0 }}>
+                      💎 {consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation} {translations.ui.credits_label || 'créditos'}
+                    </p>
+                  )}
+                  <button className="start-button blinking-button action-button-reveal" onClick={handleStart}>
+                    {translations.ui.allow}
+                  </button>
+                </div>
               )}
               
               <div style={{ marginTop: '30px' }}>

@@ -773,6 +773,36 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   right: 90px;
   z-index: 9998;
 }
+
+/* Shake al descontar créditos */
+@keyframes creditShake {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-5px) rotate(-3deg); }
+  30%  { transform: translateX(5px)  rotate(3deg); }
+  45%  { transform: translateX(-4px) rotate(-2deg); }
+  60%  { transform: translateX(4px)  rotate(2deg); }
+  75%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+.credit-widget-shake {
+  animation: creditShake 0.5s ease;
+}
+
+/* Partícula flotante de descuento */
+@keyframes floatUp {
+  0%   { opacity: 1;   transform: translateY(0)    scale(1); }
+  60%  { opacity: 0.9; transform: translateY(-40px) scale(1.2); }
+  100% { opacity: 0;   transform: translateY(-80px) scale(0.8); }
+}
+.credit-flash-particle {
+  animation: floatUp 1.8s ease-out forwards;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255,100,100,0.8), 0 0 20px rgba(255,100,100,0.4);
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
 .credit-pill {
   display: flex;
   align-items: center;
