@@ -215,7 +215,7 @@ function App() {
       setAuthSession(session);
       setAuthUser(session?.user || null);
       if (session) {
-        if (event === 'SIGNED_IN') await initializeProfile(session, ref || '');
+        if (event === 'SIGNED_IN') await initializeProfile(session, ref || '', false);
         await loadProfile(session);
       } else {
         setCredits(null);
@@ -228,7 +228,7 @@ function App() {
       if (session) {
         setAuthSession(session);
         setAuthUser(session.user);
-        if (verified === '1') await initializeProfile(session, ref || '');
+        if (verified === '1') await initializeProfile(session, ref || '', true);
         const baseBalance = await loadProfile(session);
 
         if (payment === 'success') {
@@ -260,12 +260,12 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initializeProfile = async (session, refCode = '') => {
+  const initializeProfile = async (session, refCode = '', isNewRegistration = false) => {
     try {
       await fetch('/api/credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ action: 'initialize', referralCode: refCode }),
+        body: JSON.stringify({ action: 'initialize', referralCode: refCode, isNewRegistration }),
       });
     } catch (e) { console.error('initializeProfile error:', e); }
   };
@@ -274,7 +274,7 @@ function App() {
     setAuthSession(session);
     setAuthUser(session.user);
     if (supabase) {
-      await initializeProfile(session, urlRef || '');
+      await initializeProfile(session, urlRef || '', true);
       const bal = await fetchBalance(session);
       setCredits(bal);
       const { data: profile } = await supabase

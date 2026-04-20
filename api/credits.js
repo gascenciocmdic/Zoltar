@@ -69,7 +69,7 @@ export default async function handler(req, res) {
 
   // ── POST ──────────────────────────────────────────────────
   if (req.method === 'POST') {
-    const { action, reason, referralCode, newUserId } = req.body || {};
+    const { action, reason, referralCode, newUserId, isNewRegistration } = req.body || {};
 
     // ── initialize: crear perfil tras verificar email ──────
     if (action === 'initialize') {
@@ -88,16 +88,17 @@ export default async function handler(req, res) {
         .eq('id', user.id)
         .single();
 
-      // Cuenta de prueba: siempre reiniciar créditos
+      // Si ya está inicializado, retornar sin cambios (salvo cuenta de prueba en nuevo registro)
       const TEST_ACCOUNT = 'ascencio.gustavo@gmail.com';
-      if (existing?.signup_bonus_given && user.email !== TEST_ACCOUNT) {
+      if (existing?.signup_bonus_given) {
+        if (user.email === TEST_ACCOUNT && isNewRegistration) {
+          // Reset solo en re-registro explícito, no en cada login
+          const resetCredits = SIGNUP_BONUS;
+          await sb.from('profiles').update({ credits: resetCredits }).eq('id', user.id);
+          await sb.from('credit_ledger').insert({ user_id: user.id, amount: resetCredits, reason: 'signup_bonus', meta: { test_reset: true } });
+          return res.status(200).json({ credits: resetCredits, test_reset: true });
+        }
         return res.status(200).json({ credits: existing.credits, already_initialized: true });
-      }
-      if (existing?.signup_bonus_given && user.email === TEST_ACCOUNT) {
-        const resetCredits = SIGNUP_BONUS;
-        await sb.from('profiles').update({ credits: resetCredits }).eq('id', user.id);
-        await sb.from('credit_ledger').insert({ user_id: user.id, amount: resetCredits, reason: 'signup_bonus', meta: { test_reset: true } });
-        return res.status(200).json({ credits: resetCredits, test_reset: true });
       }
 
       // Buscar referidor si viene código
