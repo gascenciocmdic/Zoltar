@@ -780,12 +780,12 @@ function App() {
         credits={credits}
         onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
         onShare={() => setShowReferralWidget(true)}
-        onLogout={async () => {
-          try { await supabase?.auth.signOut(); } catch(e) { /* ignorar */ }
-          // Eliminar sesión de Supabase de localStorage aunque signOut falle
-          Object.keys(localStorage).forEach(k => {
-            if (k.startsWith('sb-')) localStorage.removeItem(k);
-          });
+        onLogout={() => {
+          // Limpiar sesión de Supabase sin esperar respuesta
+          supabase?.auth.signOut().catch(() => {});
+          // Eliminar tokens del localStorage directamente
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
+          keys.forEach(k => localStorage.removeItem(k));
           window.location.reload();
         }}
       />
