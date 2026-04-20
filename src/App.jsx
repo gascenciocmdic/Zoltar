@@ -781,7 +781,11 @@ function App() {
         onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
         onShare={() => setShowReferralWidget(true)}
         onLogout={async () => {
-          try { await supabase?.auth.signOut(); } catch(e) { /* ignorar error */ }
+          try { await supabase?.auth.signOut(); } catch(e) { /* ignorar */ }
+          // Eliminar sesión de Supabase de localStorage aunque signOut falle
+          Object.keys(localStorage).forEach(k => {
+            if (k.startsWith('sb-')) localStorage.removeItem(k);
+          });
           window.location.reload();
         }}
       />
