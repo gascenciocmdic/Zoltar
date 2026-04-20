@@ -93,7 +93,7 @@ export default async function handler(req, res) {
       if (existing?.signup_bonus_given) {
         if (user.email === TEST_ACCOUNT && isNewRegistration) {
           // Reset solo en re-registro explícito, no en cada login
-          const resetCredits = SIGNUP_BONUS;
+          const resetCredits = 40;
           await sb.from('profiles').update({ credits: resetCredits }).eq('id', user.id);
           await sb.from('credit_ledger').insert({ user_id: user.id, amount: resetCredits, reason: 'signup_bonus', meta: { test_reset: true } });
           return res.status(200).json({ credits: resetCredits, test_reset: true });
