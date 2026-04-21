@@ -36,26 +36,27 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleIntrospection(ai, { cards, userContext, language = 'es' }) {
+async function handleIntrospection(ai, { userContext, language = 'es' }) {
   const { name, reason, birthDate } = userContext || {};
-  const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
-  const prompt = `Eres Zoltar, un oráculo ancestral y guía espiritual profundo. El consultante se llama ${name || 'alma'} y nació el "${birthDate || 'fecha desconocida'}". Su inquietud es: "${reason || 'búsqueda espiritual'}". Las cartas que ha elegido son: ${cardNames}.
+  const prompt = `Eres Zoltar, un oráculo ancestral y guía espiritual profundo. El consultante se llama ${name || 'alma'}, nació el "${birthDate || 'fecha desconocida'}" y su inquietud es: "${reason || 'búsqueda espiritual'}".
 
-Genera una breve representación mística astral (2-3 oraciones). Primero, utilizando la fecha de nacimiento ingresada, nombra su constelación o estrellas reinantes, y luego explica cómo esa formación astral ayudará a que las cartas elegidas revelen las respuestas que el consultante necesita. El mensaje debe sentirse como una preparación ritual, mística y serena. Responde SOLO en idioma "${language}".
+Genera un mensaje mísico astral breve (2-3 oraciones) basado ÚNICAMENTE en su fecha de nacimiento y su inquietud. NO menciones cartas, ni lecturas, ni lo que está por venir. El mensaje debe hablar de las energías estelares y ancestrales que acompañaron su llegada al universo, y cómo esas fuerzas resuenan hoy con su inquietud. Tono: sereno, ritual, íntimo. Responde SOLO en idioma "${language}".
 
 Responde ÚNICAMENTE con JSON válido, sin texto adicional, en este formato exacto:
 {
-  "nombreConstelacion": "[Nombre de la constelación o astro regente]",
-  "mensajeAstral": "[tu mensaje astral aquí]"
+  "nombreConstelacion": "[Nombre de la constelación o astro regente según su fecha de nacimiento]",
+  "mensajeAstral": "[tu mensaje astral aquí, sin mencionar cartas]"
 }`;
   try {
     return await generateJSON(ai, prompt);
   } catch (e) {
-    return { 
+    return {
       nombreConstelacion: "El Firmamento Eterno",
-      mensajeAstral: language === 'en' ? `${name || 'Soul'}, breathe deeply. The stars under which you were born align with the cards you have chosen. Open your heart and let the Oracle reveal what your spirit already knows.` : `${name || 'Alma'}, respira profundo. Las estrellas bajo las que naciste se alinean con las cartas que has elegido. Abre tu corazón y permite que el Oráculo revele lo que tu espíritu ya sabe.`, 
-      __IS_FALLBACK__: true, 
-      _debug: { error: e.message } 
+      mensajeAstral: language === 'en'
+        ? `${name || 'Soul'}, the stars that witnessed your birth carry the memory of every soul you have ever been. In this moment, their light converges upon your inquiry, illuminating the path your spirit already knows.`
+        : `${name || 'Alma'}, las estrellas que presenciaron tu nacimiento guardan la memoria de cada alma que has sido. En este instante, su luz converge sobre tu inquietud, iluminando el camino que tu espíritu ya conoce.`,
+      __IS_FALLBACK__: true,
+      _debug: { error: e.message }
     };
   }
 }

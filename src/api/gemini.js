@@ -35,7 +35,8 @@ async function fetchWithTimeout(action, payload, timeout = 60000) {
 }
 
 export async function generateIntrospection(cards, apiKey, userContext = {}, language = 'es') {
-  return await fetchWithTimeout('introspection', { cards, userContext, language });
+  // cards no se pasan al prompt de introspección — esa etapa es solo astral/natal
+  return await fetchWithTimeout('introspection', { userContext, language });
 }
 
 export const generateDeepening = async (originalCard, extraCard, userQuestion, previousReading, context, apiKey, language = 'es') => {
