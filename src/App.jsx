@@ -89,6 +89,7 @@ function App() {
   const [revelationReady, setRevelationReady] = useState(false);
   const [canProceed, setCanProceed] = useState(false);
   const [creditFlash, setCreditFlash] = useState(null); // { amount: -40, id: n }
+  const [synthEmailState, setSynthEmailState] = useState('idle'); // idle | sending | sent | error
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
   
@@ -383,6 +384,7 @@ function App() {
     setDichotomousChoice('');
     setBirthDate({ day: '', month: '', year: '' });
     setBirthNarrative(null);
+    setSynthEmailState('idle');
     setClarifications({});
     setRevealedStage(0);
     setCardsFlippedCount(0);
@@ -415,6 +417,37 @@ function App() {
   }, [phase, language, selectedCards, userName, birthDate, visitReason,
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
       clarifications, revealedStage, consultCount, autoRevealStarted, birthNarrative]);
+
+  const handleSendSynthesis = async () => {
+    if (!authSession || synthEmailState !== 'idle') return;
+    if ((credits ?? 0) < CREDIT_COSTS.synthesis_email) {
+      setPurchaseReason(`Necesitas ${CREDIT_COSTS.synthesis_email} créditos para enviar la síntesis.`);
+      setShowPurchaseModal(true);
+      return;
+    }
+    setSynthEmailState('sending');
+    try {
+      const res = await fetch('/api/send-synthesis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authSession.access_token}` },
+        body: JSON.stringify({ language, userName, selectedCards, interpretation, clarifications, birthNarrative }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCredits(data.credits);
+        flashCredit(-CREDIT_COSTS.synthesis_email);
+        setSynthEmailState('sent');
+      } else if (data.error === 'insufficient_credits') {
+        setPurchaseReason(`Créditos insuficientes. Necesitas ${CREDIT_COSTS.synthesis_email}.`);
+        setShowPurchaseModal(true);
+        setSynthEmailState('idle');
+      } else {
+        setSynthEmailState('error');
+      }
+    } catch (e) {
+      setSynthEmailState('error');
+    }
+  };
 
   const flashCredit = (amount) => {
     setCreditFlash({ amount, id: Date.now() });
@@ -1344,13 +1377,45 @@ function App() {
                     </div>
                  </div>
               </div>
-              <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+
+                {/* Enviar síntesis por email */}
+                {authSession && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.78rem', margin: 0, letterSpacing: '1px' }}>
+                      💎 {CREDIT_COSTS.synthesis_email} {translations.ui.credits_label || 'créditos'}
+                    </p>
+                    <button
+                      onClick={handleSendSynthesis}
+                      disabled={synthEmailState !== 'idle'}
+                      style={{
+                        background: synthEmailState === 'sent'
+                          ? 'linear-gradient(135deg,#16a34a,#15803d)'
+                          : synthEmailState === 'error'
+                          ? 'linear-gradient(135deg,#dc2626,#b91c1c)'
+                          : 'linear-gradient(135deg,rgba(124,58,237,0.7),rgba(79,70,229,0.7))',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: '25px', padding: '10px 24px',
+                        color: '#fff', cursor: synthEmailState === 'idle' ? 'pointer' : 'default',
+                        fontSize: '0.88rem', letterSpacing: '0.5px',
+                        opacity: synthEmailState === 'sending' ? 0.7 : 1,
+                        transition: 'all 0.3s',
+                      }}
+                    >
+                      {synthEmailState === 'idle' && `📧 ${translations.ui.send_synthesis_email || 'Enviar síntesis a mi correo'}`}
+                      {synthEmailState === 'sending' && '⏳ Enviando...'}
+                      {synthEmailState === 'sent' && `✅ ${translations.ui.synthesis_sent || '¡Enviado a tu correo!'}`}
+                      {synthEmailState === 'error' && `❌ ${translations.ui.synthesis_error || 'Error al enviar, intenta de nuevo'}`}
+                    </button>
+                  </div>
+                )}
+
                 <button
                   className="start-button blinking-button action-button-reveal"
                   onClick={handleReConsultation}
                 >
                   {translations.ui.new_consultation}
-                  {authSession && <span style={{ fontSize: '0.7rem', opacity: 0.7, marginLeft: '8px' }}>(-20 💎)</span>}
+                  {authSession && <span style={{ fontSize: '0.7rem', opacity: 0.7, marginLeft: '8px' }}>(-40 💎)</span>}
                 </button>
                 {authSession && referralCode && (
                   <button
