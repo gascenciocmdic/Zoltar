@@ -183,7 +183,11 @@ export default async function handler(req, res) {
 
   // Enviar email
   if (!process.env.RESEND_API_KEY) {
-    return res.status(200).json({ ok: true, credits: newCredits, warn: 'RESEND_API_KEY not set' });
+    // Reembolsar créditos — no se puede enviar sin API key
+    await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
+    await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
+    console.error('[send-synthesis] RESEND_API_KEY no configurada');
+    return res.status(500).json({ error: 'Servicio de email no configurado', credits: profile.credits });
   }
 
   const appUrl = process.env.APP_URL || 'https://zoltar-two.vercel.app';
@@ -205,12 +209,12 @@ export default async function handler(req, res) {
   });
 
   if (!emailRes.ok) {
-    const err = await emailRes.text();
-    console.error('[send-synthesis] Resend error:', err);
+    const errText = await emailRes.text();
+    console.error('[send-synthesis] Resend error:', emailRes.status, errText);
     // Devolver créditos si el email falló
     await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
     await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
-    return res.status(500).json({ error: 'Error enviando email', credits: profile.credits });
+    return res.status(500).json({ error: 'Error enviando email', resend_status: emailRes.status, credits: profile.credits });
   }
 
   return res.status(200).json({ ok: true, credits: newCredits });

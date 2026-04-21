@@ -19,11 +19,13 @@ export default function ReferralWidget({ referralCode, onClose }) {
     });
   };
 
+  const shareText = '¿Quieres descubrir tus vidas pasadas con IA? Usa mi código y recibe 25 créditos extra 🔮';
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
         title: 'El Oráculo de Vidas Pasadas',
-        text:  '¿Quieres descubrir tus vidas pasadas con IA? Usa mi código y recibe 25 créditos extra 🔮',
+        text:  shareText,
         url:   referralUrl,
       });
     } else {
@@ -31,9 +33,14 @@ export default function ReferralWidget({ referralCode, onClose }) {
     }
   };
 
+  const handleWhatsApp = () => {
+    const msg = encodeURIComponent(`${shareText}\n${referralUrl}`);
+    window.open(`https://wa.me/?text=${msg}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-modal" onClick={e => e.stopPropagation()}>
+      <div className="auth-modal" onClick={e => e.stopPropagation()} style={{ overflowY: 'auto', maxHeight: '90vh' }}>
         <button className="auth-close" onClick={onClose}>✕</button>
 
         <div className="auth-icon">🌟</div>
@@ -59,6 +66,25 @@ export default function ReferralWidget({ referralCode, onClose }) {
             Compartir 🔮
           </button>
         </div>
+
+        <button
+          onClick={handleWhatsApp}
+          style={{
+            marginTop: '10px',
+            width: '100%',
+            padding: '12px',
+            background: 'linear-gradient(135deg,#25d366,#128c7e)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: '600',
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+            letterSpacing: '0.5px',
+          }}
+        >
+          Invitar por WhatsApp 📱
+        </button>
 
         <div className="referral-rewards">
           <div className="referral-reward-row">
