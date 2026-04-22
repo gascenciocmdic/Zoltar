@@ -194,6 +194,11 @@ export default async function handler(req, res) {
   const L = LABELS[language] || LABELS.es;
   const html = buildHtml({ userName, selectedCards, interpretation, clarifications, birthNarrative, lang: language, appUrl });
 
+  // Sin dominio propio, onboarding@resend.dev solo entrega al email del dueño de la cuenta.
+  // RESEND_TEST_EMAIL redirige todos los envíos a esa dirección para pruebas.
+  const toEmail = process.env.RESEND_TEST_EMAIL || user.email;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Zoltar Oráculo <onboarding@resend.dev>';
+
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -201,9 +206,11 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL || 'Zoltar Oráculo <onboarding@resend.dev>',
-      to: user.email,
-      subject: L.subject,
+      from: fromEmail,
+      to: toEmail,
+      subject: process.env.RESEND_TEST_EMAIL
+        ? `[TEST → ${user.email}] ${L.subject}`
+        : L.subject,
       html,
     }),
   });
