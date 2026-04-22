@@ -442,6 +442,8 @@ function App() {
         setShowPurchaseModal(true);
         setSynthEmailState('idle');
       } else {
+        console.error('[synthesis email] API error:', data);
+        if (data.credits !== undefined) setCredits(data.credits);
         setSynthEmailState('error');
       }
     } catch (e) {
