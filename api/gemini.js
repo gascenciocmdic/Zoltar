@@ -27,12 +27,36 @@ export default async function handler(req, res) {
     switch (action) {
       case 'introspection': return res.status(200).json(await handleIntrospection(ai, payload));
       case 'interpretation': return res.status(200).json(await handleInterpretation(ai, payload));
+      case 'teaser': return res.status(200).json(await handleTeaser(ai, payload));
       case 'anchoring': return res.status(200).json(await handleAnchoring(ai, payload));
       case 'deepening': return res.status(200).json(await handleDeepening(ai, payload));
       default: return res.status(400).json({ error: 'Invalid action' });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+}
+
+async function handleTeaser(ai, { cards, reason, userContext, language = 'es' }) {
+  const { name } = userContext || {};
+  const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
+  const prompt = `Eres Zoltar, un oráculo ancestral de vidas pasadas. El consultante se llama ${name || 'alma'} y su inquietud es: "${reason || 'búsqueda espiritual'}".
+Ha elegido estas tres cartas: ${cardNames}.
+Genera un "fragmento" místico y breve (máximo 2 oraciones) que actúe como un susurro de una vida pasada. No des una lectura completa, solo una pincelada de lo que estas cartas revelan sobre su origen kármico. Debe dejar al consultante con ganas de saber más.
+Tono: enigmático, sagrado, revelador. Responde SOLO en idioma "${language}".
+
+Responde ÚNICAMENTE con JSON válido:
+{
+  "teaser": "[tu susurro místico aquí]"
+}`;
+  try {
+    return await generateJSON(ai, prompt);
+  } catch (e) {
+    return {
+      teaser: language === 'en' 
+        ? "The wind of centuries whispers of a throne lost in the desert sand... the cards hide a secret that your soul is ready to remember."
+        : "El viento de los siglos susurra sobre un trono perdido en la arena del desierto... las cartas esconden un secreto que tu alma está lista para recordar."
+    };
   }
 }
 
@@ -63,13 +87,21 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional, en este formato exac
 
 async function handleInterpretation(ai, { cards, reason, userContext, language = 'es' }) {
   // introspectionAnswer lives inside userContext, not at the payload root
-  const { name, introspectionAnswer, preference } = userContext || {};
+  const { name, introspectionAnswer, preference, tier } = userContext || {};
   const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
   const styleGuide = preference === 'direct' ? 'de forma directa, clara y sin rodeos' : 'de forma metafórica, poética y simbólica';
   const introspectionNote = introspectionAnswer ? `El consultante reflexionó y respondió: "${introspectionAnswer}". Incorpora esta reflexión en la lectura.` : '';
+  
+  const isAncestral = tier === 'ancestral_ritual';
+  const depthInstruction = isAncestral 
+    ? "Esta es una lectura de RITUAL ANCESTRAL. Debe ser extremadamente profunda, extensa y mística. Incluye detalles sobre el propósito del alma y la herencia de vidas pasadas."
+    : "Esta es una lectura ESTÁNDAR. Debe ser profunda y personalizada, enfocada en las tres cartas.";
+
   const prompt = `Eres Zoltar, un oráculo ancestral de vidas pasadas. El consultante se llama ${name || 'alma'} y su inquietud principal es: "${reason || 'búsqueda espiritual'}". ${introspectionNote}
 
 Las tres cartas que ha elegido para su lectura son, en orden: ${cardNames}.
+
+${depthInstruction}
 
 Genera una interpretación profunda, personalizada y emocionalmente resonante ${styleGuide}. Cada carta representa:
 - Carta 1: El Origen Kármico (raíz ancestral de la situación)
@@ -79,13 +111,15 @@ Genera una interpretación profunda, personalizada y emocionalmente resonante ${
 Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido, sin texto adicional:
 {
   "narrativaAncestral": [
-    "[Lectura profunda de la carta 1: El Origen Kármico, 3-4 oraciones personalizadas]",
-    "[Lectura profunda de la carta 2: El Bloqueo Presente, 3-4 oraciones personalizadas]",
-    "[Lectura profunda de la carta 3: El Consejo Sanador, 3-4 oraciones personalizadas]"
+    "[Lectura profunda de la carta 1: El Origen Kármico, ${isAncestral ? '5-6' : '3-4'} oraciones personalizadas]",
+    "[Lectura profunda de la carta 2: El Bloqueo Presente, ${isAncestral ? '5-6' : '3-4'} oraciones personalizadas]",
+    "[Lectura profunda de la carta 3: El Consejo Sanador, ${isAncestral ? '5-6' : '3-4'} oraciones personalizadas]"
   ],
-  "conclusionFinal": "[Síntesis final integrando las 3 cartas y la inquietud del consultante, 2-3 oraciones]",
+  "conclusionFinal": "[Síntesis final integrando las 3 cartas y la inquietud del consultante, 3-4 oraciones]",
   "decreto": "[Una afirmación poderosa y personal de 1 oración que el consultante puede repetir]",
-  "tarea_terrenal": "[Una acción concreta y significativa que el consultante puede hacer esta semana]"
+  "tarea_terrenal": "[Una acción concreta y significativa que el consultante puede hacer esta semana]"${isAncestral ? `,
+  "mision_alma": "[Propósito superior del alma revelado por esta lectura, 2-3 oraciones]",
+  "leccion_karmica": "[La gran lección que el alma viene a aprender en esta encarnación, 2-3 oraciones]"` : ''}
 }`;
   try {
     return await generateJSON(ai, prompt);

@@ -52,3 +52,7 @@ export const generateAnchoring = async (selectedCards, visitReason, dichotomy, u
 export async function interpretCards(cards, soulFeeling, apiKey, userContext = {}, language = 'es') {
   return await fetchWithTimeout('interpretation', { cards, reason: soulFeeling, userContext, language });
 }
+
+export async function generateTeaser(cards, soulFeeling, apiKey, userContext = {}, language = 'es') {
+  return await fetchWithTimeout('teaser', { cards, reason: soulFeeling, userContext, language });
+}

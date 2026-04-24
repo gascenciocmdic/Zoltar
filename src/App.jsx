@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
-import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
+import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening, generateTeaser } from './api/gemini';
 import { cardsData } from './data/cards';
 import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import { I18N } from './data/translations';
@@ -92,6 +92,8 @@ function App() {
   const [synthEmailState, setSynthEmailState] = useState('idle'); // idle | sending | sent | error
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
+  const [teaser, setTeaser] = useState(null);
+  const [readingPaid, setReadingPaid] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
   const [lastDebug, setLastDebug] = useState(null);
@@ -466,30 +468,7 @@ function App() {
   };
 
   const handleStart = async () => {
-    // Descontar créditos al presionar "Permitir"
-    if (supabase && authSession) {
-      const reason = consultCount === 0 ? 'consultation' : 'reconsultation';
-      const cost = consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation;
-      const currentCredits = credits ?? 0;
-      if (currentCredits < cost) {
-        const nombre = consultCount === 0 ? 'iniciar una consulta' : 're-consultar';
-        setPurchaseReason(`Necesitas ${cost} créditos para ${nombre}. Tienes ${currentCredits}.`);
-        setShowPurchaseModal(true);
-        return;
-      }
-      const result = await deductCredits(authSession, reason);
-      if (!result.ok) {
-        if (result.error === 'insufficient_credits') {
-          setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
-          setShowPurchaseModal(true);
-        }
-        return;
-      }
-      setCredits(result.credits);
-      setConsultCount(prev => prev + 1);
-      flashCredit(-cost);
-    }
-
+    // Free entry - credit deduction moved to handlePurchaseReading after the teaser
     setIsFading(true);
     speakText(sessionTexts.askName, language);
     setTimeout(() => {
@@ -589,35 +568,83 @@ function App() {
       setRevealedStage(0);
       setCardsFlippedCount(0);
       setAutoRevealStarted(false);
+      setTeaser(null);
+      setReadingPaid(false);
       
       try {
-        // Enforce full context inclusion
         const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
         const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
-        const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
-        setInterpretation({
-          ...result,
-          decreto: result.decreto || translations.ui.default_decree,
-          tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
-        });
-        if (result.__IS_FALLBACK__) {
-          setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (Interpretation failed)" });
-          setShowDebug(true);
-        }
-        setVibe(result.vibe || 'healing_blue');
+        
+        // Free Teaser Fragment
+        const result = await generateTeaser(selectedCards, visitReason, null, userContext, language);
+        setTeaser(result.teaser);
+        setVibe('healing_blue');
         setLoading(false);
       } catch (error) {
-        console.error("Error al interpretar:", error);
-        setInterpretation({
-          narrativaAncestral: [translations.ui.oracle_misfire, translations.ui.oracle_misfire, translations.ui.oracle_misfire],
-          conclusionFinal: translations.ui.oracle_misfire,
-          decreto: translations.ui.default_decree,
-          tarea_terrenal: translations.ui.default_task,
-          vibe: 'healing_blue'
-        });
+        console.error("Error al obtener teaser:", error);
+        setTeaser(translations.ui.oracle_misfire);
         setLoading(false);
       }
     }, Math.floor(Math.random() * 2000) + 3000); 
+  };
+
+  const handlePurchaseReading = async (tier = 'consultation') => {
+    if (!authSession) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    const cost = CREDIT_COSTS[tier];
+    if ((credits ?? 0) < cost) {
+      setPurchaseReason(`Necesitas ${cost} créditos para esta lectura profunda. Tienes ${credits ?? 0}.`);
+      setShowPurchaseModal(true);
+      return;
+    }
+
+    setLoading(true);
+    setVibe('karmic_red');
+    speakText(sessionTexts.waitMsg, language);
+
+    try {
+      const resultDeduct = await deductCredits(authSession, tier);
+      if (!resultDeduct.ok) {
+        setLoading(false);
+        setVibe('healing_blue');
+        return;
+      }
+      setCredits(resultDeduct.credits);
+      flashCredit(-cost);
+
+      // Fetch Full Interpretation
+      const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
+      const userContext = { 
+        name: userName, 
+        birthDate: bdStr2, 
+        reason: visitReason, 
+        preference: dichotomousChoice,
+        tier // Pass tier to Gemini to customize depth if needed
+      };
+      
+      const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
+      setInterpretation({
+        ...result,
+        decreto: result.decreto || translations.ui.default_decree,
+        tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
+      });
+      
+      setReadingPaid(true);
+      setVibe(result.vibe || 'healing_blue');
+      setLoading(false);
+      
+      // Auto-advance to first stage
+      setRevealedStage(1);
+      speakText(`${translations.ui.origin_karmic}. ${result.narrativaAncestral[0]}`, language, () => setCanProceed(true));
+      
+    } catch (error) {
+      console.error("Error en la lectura pagada:", error);
+      setLoading(false);
+      setVibe('healing_blue');
+    }
   };
 
   const handleNextStage = async () => {
@@ -1246,6 +1273,38 @@ function App() {
                   </div>
                 ) : (
                   <>
+                    {/* Free Teaser UI */}
+                    {revealedStage === 0 && teaser && !readingPaid && (
+                      <div className="teaser-container fade-in-text" style={{ textAlign: 'center', marginTop: '20px', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+                        <p className="teaser-whisper" style={{ fontStyle: 'italic', color: '#a78bfa', fontSize: '1.2rem', marginBottom: '30px', textShadow: '0 0 10px rgba(167, 139, 250, 0.3)' }}>
+                          "{teaser}"
+                        </p>
+                        
+                        <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', padding: '0 20px' }}>
+                          <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '20px', borderRadius: '15px' }}>
+                            <h3 style={{ color: '#ffd700', fontSize: '1rem', marginBottom: '10px' }}>Narrativa del Alma</h3>
+                            <p style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '20px' }}>Lectura completa de 3 cartas y origen kármico.</p>
+                            <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.85rem' }}>
+                              Desbloquear · {CREDIT_COSTS.consultation} 💎
+                            </button>
+                          </div>
+                          
+                          <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '20px', borderRadius: '15px', position: 'relative', overflow: 'hidden' }}>
+                            <div className="popular-badge" style={{ position: 'absolute', top: '10px', right: '-30px', background: '#7c3aed', color: '#fff', fontSize: '0.6rem', padding: '2px 30px', transform: 'rotate(45deg)', fontWeight: 'bold' }}>RITUAL</div>
+                            <h3 style={{ color: '#a78bfa', fontSize: '1rem', marginBottom: '10px' }}>Ritual Ancestral</h3>
+                            <p style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '20px' }}>Máxima profundidad, misión de vida y lección kármica.</p>
+                            <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.85rem', background: '#7c3aed' }}>
+                              Elegir · {CREDIT_COSTS.ancestral_ritual} 💎
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <p style={{ marginTop: '20px', fontSize: '0.75rem', opacity: 0.5 }}>
+                          Usa tus créditos para descender a la profundidad de tu historia.
+                        </p>
+                      </div>
+                    )}
+
                     {revealedStage > 0 && interpretation && (
                       <div className="narrative-container">
                         <div className="interpretation-bubbles" style={{ opacity: isFading ? 0 : 1, transition: 'opacity 1s ease-in-out' }}>
@@ -1361,6 +1420,20 @@ function App() {
                     <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
                       <span className="reveal-text">{interpretation.conclusionFinal}</span>
                     </p>
+
+                    {interpretation.mision_alma && (
+                      <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px' }}>
+                        <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Misión del Alma ✦</h4>
+                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>{interpretation.mision_alma}</p>
+                      </div>
+                    )}
+                    {interpretation.leccion_karmica && (
+                      <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px', marginTop: '20px' }}>
+                        <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Lección Kármica ✦</h4>
+                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>{interpretation.leccion_karmica}</p>
+                      </div>
+                    )}
+
                     <div className="anchoring-grid">
                       <div className="anchor-block decree-box">
                         <div className="mystic-ornament-top"></div>
