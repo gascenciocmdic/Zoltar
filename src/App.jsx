@@ -729,10 +729,10 @@ function App() {
           // Small pause so the transition from loading to content feels ceremonial
           setTimeout(() => {
             setAnchoringLoading(false);
-            speakText(
-              `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`,
-              language
-            );
+            const synthText = consultTier !== null
+              ? `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`
+              : `${translations.ui.great_synthesis.replace('{name}', userName)} ${(finalSynthesis.conclusionFinal || '').split('. ')[0]}.`;
+            speakText(synthText, language);
           }, 500);
         })
         .catch(error => {
@@ -1485,32 +1485,22 @@ function App() {
                       </div>
                     )}
 
-                    {/* Unlock Panel for synthesis if unpaid */}
+                    {/* Unlock button for synthesis if unpaid */}
                     {consultTier === null && (
-                      <div className="unlock-panel fade-in-text" style={{ margin: '20px 0' }}>
-                        <p style={{ color: '#ffd700', fontSize: '0.9rem', marginBottom: '20px', fontWeight: 'bold' }}>
+                      <div className="fade-in-text" style={{ textAlign: 'center', margin: '20px 0' }}>
+                        <p style={{ color: '#ffd700', fontSize: '0.85rem', marginBottom: '12px' }}>
                           ✧ El Oráculo aguarda tu ofrenda para revelar la síntesis final ✧
                         </p>
-                        <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                          <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '15px', borderRadius: '12px' }}>
-                            <h3 style={{ color: '#ffd700', fontSize: '0.85rem', marginBottom: '8px' }}>Narrativa Estándar</h3>
-                            <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.75rem', padding: '8px' }}>
-                              {CREDIT_COSTS.consultation} 💎
-                            </button>
-                          </div>
-                          <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '15px', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
-                            <h3 style={{ color: '#a78bfa', fontSize: '0.85rem', marginBottom: '8px' }}>Ritual Ancestral</h3>
-                            <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.75rem', padding: '8px', background: '#7c3aed' }}>
-                              {CREDIT_COSTS.ancestral_ritual} 💎
-                            </button>
-                          </div>
-                        </div>
-                        {!authSession && (
-                          <div className="signup-bonus-box">
-                            <p className="signup-bonus-text">🎁 Recibe 100 💎 gratis al unirte</p>
-                            <button className="signup-bonus-btn" onClick={() => setShowAuthModal(true)}>Registrarme</button>
-                          </div>
-                        )}
+                        <button
+                          className="start-button blinking-button"
+                          style={{ fontSize: '0.82rem', padding: '10px 24px' }}
+                          onClick={() => {
+                            setShowUnlockModal(true);
+                            trackEvent('unlock_modal_opened', { is_guest: !authSession }, authSession);
+                          }}
+                        >
+                          🔓 Ver lectura completa
+                        </button>
                       </div>
                     )}
 
