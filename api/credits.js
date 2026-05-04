@@ -8,11 +8,15 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import dotenv from "dotenv";
+dotenv.config();
 
 const CREDIT_COSTS = {
-  consultation:   40,
-  deepening:      10,
-  reconsultation: 20,
+  consultation:    40,
+  ancestral_ritual: 70,
+  deepening:       10,
+  reconsultation:  20,
+  synthesis_email: 10,
 };
 
 const SIGNUP_BONUS             = 100;
@@ -20,6 +24,7 @@ const REFERRAL_BONUS_REFERRER  = 50;
 const REFERRAL_BONUS_NEW_USER  = 25;
 
 function supabaseAdmin() {
+  console.log("[Supabase Admin] Initializing with URL:", process.env.SUPABASE_URL ? "SET" : "MISSING");
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -29,14 +34,19 @@ function supabaseAdmin() {
 
 /** Verifica el JWT del usuario y retorna su uid */
 async function getUser(req) {
-  const auth = req.headers['authorization'] || '';
-  const token = auth.replace('Bearer ', '').trim();
-  if (!token) return null;
+  try {
+    const auth = req.headers['authorization'] || '';
+    const token = auth.replace('Bearer ', '').trim();
+    if (!token) return null;
 
-  const sb = supabaseAdmin();
-  const { data: { user }, error } = await sb.auth.getUser(token);
-  if (error || !user) return null;
-  return user;
+    const sb = supabaseAdmin();
+    const { data, error } = await sb.auth.getUser(token);
+    if (error || !data) return null;
+    return data.user || null;
+  } catch (err) {
+    console.error("getUser Exception:", err);
+    return null;
+  }
 }
 
 /** Genera un código de referido único de 8 chars */
