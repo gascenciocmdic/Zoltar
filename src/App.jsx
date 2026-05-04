@@ -339,29 +339,10 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, sessionTexts]);
 
-  // Entrada al portal: solo verifica auth y créditos suficientes (NO descuenta aún)
-  const handleEnterPortalGated = useCallback(async () => {
-    if (!supabase) { _doEnterPortal(); return; }
-
-    if (!authSession) {
-      setPendingAction({ type: 'start_consultation' });
-      setShowAuthModal(true);
-      return;
-    }
-
-    const cost = consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation;
-    const currentCredits = credits ?? 0;
-    if (currentCredits < cost) {
-      const nombre = consultCount === 0 ? 'iniciar una consulta' : 're-consultar';
-      setPurchaseReason(`Necesitas ${cost} créditos para ${nombre}. Tienes ${currentCredits}.`);
-      setShowPurchaseModal(true);
-      return;
-    }
-
-    // Créditos suficientes: entrar al portal. El descuento ocurre al presionar "Permitir"
+  // Portal es libre — sin cobro ni verificación de créditos
+  const handleEnterPortalGated = useCallback(() => {
     _doEnterPortal();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authSession, credits, consultCount, _doEnterPortal]);
+  }, [_doEnterPortal]);
 
   const flashCredit = useCallback((amount) => {
     setCreditFlash({ amount, id: Date.now() });
@@ -483,35 +464,8 @@ function App() {
     speakText(welcomeMsg, lang, () => setCanProceed(true));
   };
 
-  const handleStart = async () => {
-    // Paid entry for logged-in users
-    if (supabase && authSession) {
-      const cost = CREDIT_COSTS.consultation;
-      const currentCredits = credits ?? 0;
-      
-      if (currentCredits < cost) {
-        setPurchaseReason(`Necesitas ${cost} créditos para iniciar una consulta. Tienes ${currentCredits}.`);
-        setShowPurchaseModal(true);
-        return;
-      }
-
-      const result = await deductCredits(authSession, 'consultation');
-      if (!result.ok) {
-        if (result.error === 'insufficient_credits') {
-          setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
-          setShowPurchaseModal(true);
-        }
-        return;
-      }
-      
-      setCredits(result.credits);
-      setConsultCount(prev => prev + 1);
-      flashCredit(-cost);
-      setConsultTier('standard'); // Unblur reading for paying users
-    } else {
-      setConsultTier(null); // Guest mode: blurred teaser
-    }
-
+  const handleStart = () => {
+    setConsultTier(null);
     setIsFading(true);
     speakText(sessionTexts.askName, language);
     setTimeout(() => {
