@@ -140,6 +140,17 @@ function App() {
   const [paymentCredits,     setPaymentCredits]     = useState(0);
   const [pendingAction,      setPendingAction]      = useState(null);
 
+  // Refrescar créditos cuando la ventana recupera el foco (ej: al volver de Stripe)
+  useEffect(() => {
+    const handleFocus = async () => {
+      if (!authSession) return;
+      const bal = await fetchBalance(authSession);
+      if (bal !== null) setCredits(bal);
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [authSession]);
+
   useEffect(() => {
     initSpeech(language);
     return () => { stopSpeech(); stopAmbient(); };
@@ -968,6 +979,11 @@ function App() {
         flash={creditFlash}
         onBuy={() => { setPurchaseReason(''); setShowPurchaseModal(true); }}
         onShare={() => setShowReferralWidget(true)}
+        onRefresh={async () => {
+          if (!authSession) return;
+          const bal = await fetchBalance(authSession);
+          if (bal !== null) setCredits(bal);
+        }}
         onLogout={() => {
           // Limpiar sesión de Supabase sin esperar respuesta
           supabase?.auth.signOut().catch(() => {});

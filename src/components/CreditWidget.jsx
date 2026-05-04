@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export default function CreditWidget({ user, credits, onBuy, onLogout, flash }) {
+export default function CreditWidget({ user, credits, onBuy, onLogout, onRefresh, flash }) {
   const [open, setOpen]             = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [particles, setParticles]   = useState([]);
@@ -133,6 +133,16 @@ export default function CreditWidget({ user, credits, onBuy, onLogout, flash }) 
             <button className="credit-dd-buy" onClick={() => { setOpen(false); onBuy(); }}>
               Comprar créditos
             </button>
+
+            {onRefresh && (
+              <button
+                className="credit-dd-logout"
+                style={{ color: 'rgba(255,215,0,0.6)', fontSize: '0.72rem' }}
+                onClick={async () => { setOpen(false); await onRefresh(); }}
+              >
+                🔄 Actualizar saldo
+              </button>
+            )}
 
             <button className="credit-dd-logout" onClick={handleLogoutClick}>
               Cerrar sesión
