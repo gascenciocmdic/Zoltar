@@ -750,6 +750,15 @@ function App() {
 
   // -------------- DEEPENING FLOW HANDLERS --------------
   const initDeepening = async (cardId) => {
+    // Full tier: deepening gratis para las 3 cartas
+    if (consultTier === 'full') {
+      setClarifications(prev => ({
+        ...prev,
+        [cardId]: { step: 'question', question: '', extraCard: null, extraResponse: '' }
+      }));
+      return;
+    }
+
     if (supabase) {
       if (!authSession) {
         setPendingAction({ type: 'deepening', cardId });
@@ -1357,9 +1366,16 @@ function App() {
                                  {!clarifications[selectedCards[revealedStage-1].id] ? (
                                    canProceed && (
                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                                       <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
-                                         💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
-                                       </p>
+                                       {consultTier === 'standard' && (
+                                         <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
+                                           💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
+                                         </p>
+                                       )}
+                                       {consultTier === 'full' && (
+                                         <p style={{ color: 'rgba(167,139,250,0.7)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
+                                           ✦ Profundización incluida
+                                         </p>
+                                       )}
                                        <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
                                          {translations.ui.deepen_action || translations.ui.deepen}
                                        </button>
