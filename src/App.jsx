@@ -349,63 +349,6 @@ function App() {
     setTimeout(() => setCreditFlash(null), 2000);
   }, []);
 
-  // Re-consulta desde fase de anclaje (estado ya existente, costo reducido)
-  const handleReConsultation = useCallback(async () => {
-    // If guest, just reset locally
-    if (!authSession || !supabase) {
-      setSelectedCards([]);
-      setInterpretation(null);
-      setRevealedStage(0);
-      setCardsFlippedCount(0);
-      setAutoRevealStarted(false);
-      setRevelationReady(false);
-      setConsultTier(null);
-      setThresholdStep(3); // Inquietud
-      setPhase('threshold');
-      setVibe('healing_blue');
-      return;
-    }
-
-    const cost = CREDIT_COSTS.reconsultation;
-    const currentCredits = credits ?? 0;
-    if (currentCredits < cost) {
-      setPurchaseReason(`Necesitas ${cost} créditos para re-consultar. Tienes ${currentCredits}.`);
-      setShowPurchaseModal(true);
-      return;
-    }
-
-    const result = await deductCredits(authSession, 'reconsultation');
-    if (!result.ok) {
-      if (result.error === 'insufficient_credits') {
-        setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
-        setShowPurchaseModal(true);
-      }
-      return;
-    }
-    setCredits(result.credits);
-    setConsultCount(prev => prev + 1);
-    flashCredit(-cost);
-
-    // Resetear estado de consulta
-    setSelectedCards([]);
-    setInterpretation(null);
-    setRevealedStage(0);
-    setCardsFlippedCount(0);
-    setAutoRevealStarted(false);
-    setRevelationReady(false);
-    setConsultTier('standard'); // Since they just paid 40
-    setThresholdStep(3); // Ir directo a la inquietud
-    setPhase('threshold');
-    setVibe('healing_blue');
-    
-    const deck = [...cardsData];
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    setShuffledDeck(deck);
-  }, [authSession, credits, flashCredit]);
-
   // Guarda el estado de la consulta en sessionStorage antes de redirigir a Stripe
   const saveStateForPurchase = useCallback(() => {
     try {
@@ -1577,21 +1520,6 @@ function App() {
                   </div>
                 )}
 
-                <button
-                  className="start-button blinking-button action-button-reveal"
-                  onClick={handleReConsultation}
-                >
-                  {translations.ui.new_consultation}
-                  {authSession && <span style={{ fontSize: '0.7rem', opacity: 0.7, marginLeft: '8px' }}>(-40 💎)</span>}
-                </button>
-                {authSession && referralCode && (
-                  <button
-                    style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.4)', borderRadius: '25px', padding: '8px 20px', color: '#ffd700', cursor: 'pointer', fontSize: '0.85rem' }}
-                    onClick={() => setShowReferralWidget(true)}
-                  >
-                    🌟 Invitar amigos y ganar créditos
-                  </button>
-                )}
               </div>
             </>
           )}
