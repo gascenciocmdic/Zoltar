@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const APP_URL = 'https://zoltar.app';
+const APP_URL = 'https://zoltar-two.vercel.app';
 
 export default function InviteWidget({ authSession, referralCode }) {
   const [email, setEmail] = useState('');
