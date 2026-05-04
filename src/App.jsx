@@ -371,7 +371,7 @@ function App() {
       // 'deepening': el botón sigue visible en la fase revelation; el usuario lo pulsa de nuevo
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAction, urlRef, _doEnterPortal]);
+  }, [pendingAction, urlRef]);
 
   // Lógica interna de entrada al portal (sin gate)
   const _doEnterPortal = useCallback(() => {
