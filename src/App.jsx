@@ -352,21 +352,26 @@ function App() {
     setAuthSession(session);
     setAuthUser(session.user);
     if (supabase) {
-      await initializeProfile(session, urlRef || '', false); // login, no nuevo registro
+      // onAuthStateChange ya llama initializeProfile en SIGNED_IN — no duplicar aquí
       const bal = await fetchBalance(session);
       setCredits(bal);
       const { data: profile } = await supabase
         .from('profiles').select('referral_code').eq('id', session.user.id).single();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
     }
-    // Ejecutar acción pendiente
-    if (pendingAction?.type === 'start_consultation') {
+    if (pendingAction) {
+      const action = pendingAction;
       setPendingAction(null);
-      // Pequeño delay para que el estado se propague
-      setTimeout(() => _doEnterPortal(), 300);
+      if (action.type === 'start_consultation') {
+        setTimeout(() => _doEnterPortal(), 300);
+      } else if (action.type === 'unlock' || action.type === 'purchase_reading') {
+        // Re-abrir UnlockModal — ahora el usuario está autenticado y puede elegir tier
+        setShowUnlockModal(true);
+      }
+      // 'deepening': el botón sigue visible en la fase revelation; el usuario lo pulsa de nuevo
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAction, urlRef]);
+  }, [pendingAction, urlRef, _doEnterPortal]);
 
   // Lógica interna de entrada al portal (sin gate)
   const _doEnterPortal = useCallback(() => {
@@ -591,6 +596,7 @@ function App() {
 
   const handlePurchaseReading = async (tier = 'consultation') => {
     if (!authSession) {
+      setPendingAction({ type: 'purchase_reading', tier });
       setShowAuthModal(true);
       return;
     }
@@ -658,6 +664,7 @@ function App() {
 
   const handleUnlock = async (tier) => {
     if (!authSession) {
+      setPendingAction({ type: 'unlock', tier });
       setShowAuthModal(true);
       return;
     }
