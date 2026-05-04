@@ -21,6 +21,23 @@ import UnlockModal from './components/UnlockModal';
 import InviteWidget from './components/InviteWidget';
 import { trackEvent } from './lib/analytics';
 
+const splitFirstSentence = (text) => {
+  if (!text) return null;
+  let idx = text.indexOf('. ');
+  if (idx === -1) idx = text.indexOf('.\n');
+  if (idx === -1) {
+    const p = text.indexOf('.');
+    if (p !== -1 && p < text.length - 1) idx = p;
+  }
+  if (idx === -1 || idx >= text.length - 1) {
+    if (text.length <= 80) return null;
+    const cut = text.slice(0, 140).lastIndexOf(' ');
+    const at = cut > 20 ? cut : 100;
+    return { visible: text.slice(0, at), blurred: text.slice(at + 1) };
+  }
+  return { visible: text.slice(0, idx + 1), blurred: text.slice(idx + 1).trimStart() };
+};
+
 function App() {
   console.log("=== ZOLTAR INITIALIZING ===");
   console.log("Supabase configured:", !!supabase);
@@ -1332,19 +1349,14 @@ function App() {
                                   return <span className="reveal-text">{fullText}</span>;
                                 }
 
-                                // Split at first ". " to show extracto + blur the rest
-                                const dotIdx = fullText.indexOf('. ');
-                                if (dotIdx === -1) {
-                                  return <span className="reveal-text">{fullText}</span>;
-                                }
-                                const visible = fullText.slice(0, dotIdx + 1);
-                                const blurred = fullText.slice(dotIdx + 2);
+                                const split = splitFirstSentence(fullText);
+                                if (!split) return <span className="reveal-text">{fullText}</span>;
 
                                 return (
                                   <>
-                                    <span className="reveal-text">{visible}</span>
+                                    <span className="reveal-text">{split.visible}</span>
                                     {' '}
-                                    <span className="steamy-blur">{blurred}</span>
+                                    <span className="steamy-blur">{split.blurred}</span>
                                   </>
                                 );
                               })()}
@@ -1478,13 +1490,13 @@ function App() {
                       {(() => {
                         const text = interpretation.conclusionFinal;
                         if (consultTier !== null) return <span className="reveal-text">{text}</span>;
-                        const dotIdx = text.indexOf('. ');
-                        if (dotIdx === -1) return <span className="reveal-text">{text}</span>;
+                        const split = splitFirstSentence(text);
+                        if (!split) return <span className="reveal-text">{text}</span>;
                         return (
                           <>
-                            <span className="reveal-text">{text.slice(0, dotIdx + 1)}</span>
+                            <span className="reveal-text">{split.visible}</span>
                             {' '}
-                            <span className="steamy-blur">{text.slice(dotIdx + 2)}</span>
+                            <span className="steamy-blur">{split.blurred}</span>
                           </>
                         );
                       })()}

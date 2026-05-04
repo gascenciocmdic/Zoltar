@@ -53,7 +53,10 @@ export default function UnlockModal({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
           <button
-            onClick={() => canAffordStandard ? onUnlock('standard') : onShowPurchase()}
+            onClick={() => {
+              if (!isLoggedIn) { onShowAuth(); return; }
+              canAffordStandard ? onUnlock('standard') : onShowPurchase();
+            }}
             style={{
               background: 'rgba(255,215,0,0.08)', border: '1px solid #ffd700',
               borderRadius: '12px', padding: '12px', color: '#ffd700',
@@ -74,7 +77,10 @@ export default function UnlockModal({
           </button>
 
           <button
-            onClick={() => canAffordFull ? onUnlock('full') : onShowPurchase()}
+            onClick={() => {
+              if (!isLoggedIn) { onShowAuth(); return; }
+              canAffordFull ? onUnlock('full') : onShowPurchase();
+            }}
             style={{
               background: '#7c3aed', border: 'none', borderRadius: '12px',
               padding: '12px', color: '#fff', cursor: 'pointer',
