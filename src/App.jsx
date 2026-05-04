@@ -18,6 +18,7 @@ import PurchaseModal from './components/PurchaseModal';
 import ReferralWidget from './components/ReferralWidget';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 import UnlockModal from './components/UnlockModal';
+import InviteWidget from './components/InviteWidget';
 import { trackEvent } from './lib/analytics';
 
 function App() {
@@ -404,7 +405,7 @@ function App() {
     setLanguage(lang);
     setPhase('portalEntrance');
     setCanProceed(false);
-    // Directly use translations to start welcome speech
+    trackEvent('session_started', { language: lang, is_guest: !authSession }, authSession);
     const welcomeMsg = I18N[lang].greetings[Math.floor(Math.random() * I18N[lang].greetings.length)];
     speakText(welcomeMsg, lang, () => setCanProceed(true));
   };
@@ -511,6 +512,11 @@ function App() {
       setCardsFlippedCount(0);
       setAutoRevealStarted(false);
       setConsultTier(null);
+      trackEvent('revelation_viewed', {
+        cards: selectedCards.map(c => c.id),
+        language,
+        is_guest: !authSession,
+      }, authSession);
 
       try {
         const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
@@ -1573,6 +1579,10 @@ function App() {
                   </div>
                 )}
 
+                <InviteWidget
+                  authSession={authSession}
+                  referralCode={referralCode || null}
+                />
               </div>
             </>
           )}
