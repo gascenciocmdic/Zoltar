@@ -1323,28 +1323,31 @@ function App() {
                             </p>
                             
                             <div style={{ marginBottom: '20px' }}>
-                              <span className="reveal-text">
-                                {(() => {
-                                  const fullText = Array.isArray(interpretation.narrativaAncestral) 
-                                    ? interpretation.narrativaAncestral[revealedStage - 1]
-                                    : interpretation.narrativaAncestral;
-                                  
-                                  if (consultTier !== null) return fullText;
+                              {(() => {
+                                const fullText = Array.isArray(interpretation.narrativaAncestral)
+                                  ? interpretation.narrativaAncestral[revealedStage - 1]
+                                  : interpretation.narrativaAncestral;
 
-                                  // Steamy window logic: split at first period
-                                  const parts = fullText.split('. ');
-                                  if (parts.length <= 1) return fullText;
-                                  
-                                  return (
-                                    <>
-                                      {parts[0]}. 
-                                      <span className="steamy-blur">
-                                        {parts.slice(1).join('. ')}
-                                      </span>
-                                    </>
-                                  );
-                                })()}
-                              </span>
+                                if (consultTier !== null) {
+                                  return <span className="reveal-text">{fullText}</span>;
+                                }
+
+                                // Split at first ". " to show extracto + blur the rest
+                                const dotIdx = fullText.indexOf('. ');
+                                if (dotIdx === -1) {
+                                  return <span className="reveal-text">{fullText}</span>;
+                                }
+                                const visible = fullText.slice(0, dotIdx + 1);
+                                const blurred = fullText.slice(dotIdx + 2);
+
+                                return (
+                                  <>
+                                    <span className="reveal-text">{visible}</span>
+                                    {' '}
+                                    <span className="steamy-blur">{blurred}</span>
+                                  </>
+                                );
+                              })()}
                             </div>
 
                             {/* Unlock button for unpaid users */}
@@ -1472,25 +1475,28 @@ function App() {
               <div className="narrative-container">
                  <div className="brain-bubble narrative" style={{ borderLeftColor: '#ffd700', animation: 'fadeIn 2.5s ease' }}>
                     <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
-                      <span className="reveal-text">
-                        {(() => {
-                          if (consultTier !== null) return interpretation.conclusionFinal;
-                          const parts = interpretation.conclusionFinal.split('. ');
-                          if (parts.length <= 1) return interpretation.conclusionFinal;
-                          return <>{parts[0]}. <span className="steamy-blur">{parts.slice(1).join('. ')}</span></>;
-                        })()}
-                      </span>
+                      {(() => {
+                        const text = interpretation.conclusionFinal;
+                        if (consultTier !== null) return <span className="reveal-text">{text}</span>;
+                        const dotIdx = text.indexOf('. ');
+                        if (dotIdx === -1) return <span className="reveal-text">{text}</span>;
+                        return (
+                          <>
+                            <span className="reveal-text">{text.slice(0, dotIdx + 1)}</span>
+                            {' '}
+                            <span className="steamy-blur">{text.slice(dotIdx + 2)}</span>
+                          </>
+                        );
+                      })()}
                     </p>
 
                     {interpretation.mision_alma && (
                       <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px' }}>
                         <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Misión del Alma ✦</h4>
                         <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>
-                          {(() => {
-                            if (consultTier !== null) return interpretation.mision_alma;
-                            const parts = interpretation.mision_alma.split('. ');
-                            return <><span className="steamy-blur">{parts.join('. ')}</span></>;
-                          })()}
+                          {consultTier !== null
+                            ? interpretation.mision_alma
+                            : <span className="steamy-blur">{interpretation.mision_alma}</span>}
                         </p>
                       </div>
                     )}
@@ -1498,11 +1504,9 @@ function App() {
                       <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px', marginTop: '20px' }}>
                         <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Lección Kármica ✦</h4>
                         <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>
-                          {(() => {
-                            if (consultTier !== null) return interpretation.leccion_karmica;
-                            const parts = interpretation.leccion_karmica.split('. ');
-                            return <><span className="steamy-blur">{parts.join('. ')}</span></>;
-                          })()}
+                          {consultTier !== null
+                            ? interpretation.leccion_karmica
+                            : <span className="steamy-blur">{interpretation.leccion_karmica}</span>}
                         </p>
                       </div>
                     )}

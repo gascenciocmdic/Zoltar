@@ -1008,3 +1008,57 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   background: rgba(124, 58, 237, 0.08);
   border-left-width: 4px;
 }
+
+/* ── Steamy Window Effect ──────────────────────────────── */
+.steamy-blur {
+  display: inline;
+  filter: blur(6px) !important;
+  opacity: 0.5;
+  user-select: none;
+  pointer-events: none;
+  color: rgba(255,255,255,0.7);
+}
+
+.unlock-panel {
+  margin-top: 40px;
+  padding: 30px;
+  background: rgba(20, 22, 28, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 1s ease;
+}
+
+.signup-bonus-box {
+  margin-top: 25px;
+  padding: 15px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(79, 70, 229, 0.1));
+  border-radius: 12px;
+  border: 1px dashed #7c3aed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.signup-bonus-text {
+  font-size: 0.9rem;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+}
+
+.signup-bonus-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.signup-bonus-btn:hover {
+  transform: scale(1.05);
+}
