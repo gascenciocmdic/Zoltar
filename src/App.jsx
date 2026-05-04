@@ -17,6 +17,8 @@ import CreditWidget from './components/CreditWidget';
 import PurchaseModal from './components/PurchaseModal';
 import ReferralWidget from './components/ReferralWidget';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
+import UnlockModal from './components/UnlockModal';
+import { trackEvent } from './lib/analytics';
 
 function App() {
   console.log("=== ZOLTAR INITIALIZING ===");
@@ -606,6 +608,66 @@ function App() {
     }
   };
 
+  const handleUnlock = async (tier) => {
+    if (!authSession) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const creditKey = tier === 'full' ? 'ancestral_ritual' : 'consultation';
+    const cost = CREDIT_COSTS[creditKey];
+
+    if ((credits ?? 0) < cost) {
+      setPurchaseReason(`Necesitas ${cost} créditos. Tienes ${credits ?? 0}.`);
+      setShowPurchaseModal(true);
+      return;
+    }
+
+    setLoading(true);
+    setVibe('karmic_red');
+    speakText(sessionTexts.waitMsg, language);
+
+    const resultDeduct = await deductCredits(authSession, creditKey);
+    if (!resultDeduct.ok) {
+      setLoading(false);
+      setVibe('healing_blue');
+      return;
+    }
+    setCredits(resultDeduct.credits);
+    flashCredit(-cost);
+
+    let newInterpretation = interpretation;
+
+    if (tier === 'full') {
+      const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
+      const userContext = {
+        name: userName, birthDate: bdStr, reason: visitReason,
+        preference: dichotomousChoice, tier: 'ancestral_ritual',
+      };
+      const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
+      newInterpretation = {
+        ...result,
+        decreto: result.decreto || translations.ui.default_decree,
+        tarea_terrenal: result.tarea_terrenal || translations.ui.default_task,
+      };
+      setInterpretation(newInterpretation);
+      setVibe(result.vibe || 'healing_blue');
+    }
+
+    setConsultTier(tier);
+    setShowUnlockModal(false);
+    setLoading(false);
+
+    if (revealedStage > 0) {
+      const fullText = Array.isArray(newInterpretation.narrativaAncestral)
+        ? newInterpretation.narrativaAncestral[revealedStage - 1]
+        : newInterpretation.narrativaAncestral;
+      speakText(fullText, language, () => setCanProceed(true));
+    }
+
+    trackEvent('reading_unlocked', { tier, credits_spent: cost }, authSession);
+  };
+
   const handleNextStage = async () => {
     // Reembolsar 10 créditos si el usuario inició profundización pero avanza sin usarla
     if (revealedStage > 0 && revealedStage <= 3 && authSession && supabase) {
@@ -640,8 +702,11 @@ function App() {
           if (nextStage === 1) prefix = translations.ui.origin_karmic + ". ";
           if (nextStage === 2) prefix = translations.ui.present_blockage + ". ";
           if (nextStage === 3) prefix = translations.ui.healing_advice + ". ";
+          const audioText = consultTier !== null
+            ? prefix + textToRead
+            : prefix + textToRead.split('. ')[0] + '.';
           setCanProceed(false);
-          speakText(prefix + textToRead, language, () => setCanProceed(true));
+          speakText(audioText, language, () => setCanProceed(true));
         }
       }, Math.floor(Math.random() * 2000) + 3000);
     } else {
@@ -1267,40 +1332,22 @@ function App() {
                               </span>
                             </div>
 
-                            {/* Unlock Panel for unpaid users */}
+                            {/* Unlock button for unpaid users */}
                             {consultTier === null && revealedStage >= 1 && (
-                              <div className="unlock-panel fade-in-text">
-                                <p style={{ color: '#ffd700', fontSize: '0.9rem', marginBottom: '20px', fontWeight: 'bold' }}>
-                                  ✧ El velo oculta el resto de tu historia ✧
+                              <div className="fade-in-text" style={{ textAlign: 'center', marginTop: '16px' }}>
+                                <p style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>
+                                  ✦ Primera revelación ✦
                                 </p>
-                                
-                                <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                  <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '15px', borderRadius: '12px' }}>
-                                    <h3 style={{ color: '#ffd700', fontSize: '0.85rem', marginBottom: '8px' }}>Narrativa Estándar</h3>
-                                    <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.75rem', padding: '8px' }}>
-                                      {CREDIT_COSTS.consultation} 💎
-                                    </button>
-                                  </div>
-                                  
-                                  <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '15px', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
-                                    <h3 style={{ color: '#a78bfa', fontSize: '0.85rem', marginBottom: '8px' }}>Ritual Ancestral</h3>
-                                    <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.75rem', padding: '8px', background: '#7c3aed' }}>
-                                      {CREDIT_COSTS.ancestral_ritual} 💎
-                                    </button>
-                                  </div>
-                                </div>
-
-                                {/* Signup Bonus CTA - Only for Guests */}
-                                {!authSession && (
-                                  <div className="signup-bonus-box">
-                                    <p className="signup-bonus-text">
-                                      🎁 ¿Sin créditos? Únete al Oráculo y recibe 100 gratis.
-                                    </p>
-                                    <button className="signup-bonus-btn" onClick={() => setShowAuthModal(true)}>
-                                      Registrarme y obtener 100 💎
-                                    </button>
-                                  </div>
-                                )}
+                                <button
+                                  className="start-button blinking-button"
+                                  style={{ fontSize: '0.82rem', padding: '10px 24px' }}
+                                  onClick={() => {
+                                    setShowUnlockModal(true);
+                                    trackEvent('unlock_modal_opened', { is_guest: !authSession }, authSession);
+                                  }}
+                                >
+                                  🔓 Ver lectura completa
+                                </button>
                               </div>
                             )}
                             
@@ -1526,6 +1573,15 @@ function App() {
         </div>
       )}
       {/* ── Modales de monetización ─────────────────────────── */}
+      <UnlockModal
+        isOpen={showUnlockModal}
+        onClose={() => setShowUnlockModal(false)}
+        onUnlock={handleUnlock}
+        authSession={authSession}
+        credits={credits}
+        onShowAuth={() => { setShowUnlockModal(false); setShowAuthModal(true); }}
+        onShowPurchase={() => { setShowUnlockModal(false); setShowPurchaseModal(true); }}
+      />
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => { setShowAuthModal(false); setPendingAction(null); }}
