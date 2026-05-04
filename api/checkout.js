@@ -9,6 +9,8 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import dotenv from "dotenv";
+dotenv.config();
 
 const PACKAGES = {
   iniciado:   { credits: 150,  price_cents: 499,  name: 'Zoltar Iniciado — 150 créditos' },
@@ -17,6 +19,7 @@ const PACKAGES = {
 };
 
 function supabaseAdmin() {
+  console.log("[Checkout API] Supabase URL:", process.env.SUPABASE_URL ? "SET" : "MISSING");
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -25,11 +28,20 @@ function supabaseAdmin() {
 }
 
 async function getUser(req) {
-  const token = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
-  if (!token) return null;
-  const sb = supabaseAdmin();
-  const { data: { user } } = await sb.auth.getUser(token);
-  return user || null;
+  try {
+    const token = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+    if (!token) return null;
+    const sb = supabaseAdmin();
+    const { data, error } = await sb.auth.getUser(token);
+    if (error || !data) {
+      console.error("Auth Error:", error);
+      return null;
+    }
+    return data.user || null;
+  } catch (err) {
+    console.error("getUser Exception:", err);
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -39,55 +51,66 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
-  const user = await getUser(req);
-  if (!user) return res.status(401).json({ error: 'No autenticado' });
+  try {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ error: 'No autenticado' });
 
-  const { packageId } = req.body || {};
-  const pkg = PACKAGES[packageId];
-  if (!pkg) return res.status(400).json({ error: 'Paquete inválido' });
+    const { packageId } = req.body || {};
+    const pkg = PACKAGES[packageId];
+    if (!pkg) return res.status(400).json({ error: 'Paquete inválido' });
 
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(503).json({ error: 'Pagos no configurados aún. Contacta al administrador.' });
-  }
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(503).json({ error: 'Pagos no configurados aún. Contacta al administrador.' });
+    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }); // Using a known stable version
 
-  const appUrl = process.env.APP_URL || 'https://zoltar-two.vercel.app';
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
-  const session = await stripe.checkout.sessions.create({
-    mode:          'payment',
-    payment_method_types: ['card'],
-    customer_email: user.email,
-    line_items: [{
-      price_data: {
-        currency:     'usd',
-        unit_amount:  pkg.price_cents,
-        product_data: {
-          name:        pkg.name,
-          description: `${pkg.credits} créditos para el Oráculo de Vidas Pasadas`,
-          images:      [`${appUrl}/zoltar-logo.jpg`],
+    const session = await stripe.checkout.sessions.create({
+      mode:          'payment',
+      payment_method_types: ['card'],
+      customer_email: user.email,
+      line_items: [{
+        price_data: {
+          currency:     'usd',
+          unit_amount:  pkg.price_cents,
+          product_data: {
+            name:        pkg.name,
+            description: `${pkg.credits} créditos para el Oráculo de Vidas Pasadas`,
+            images:      [`${appUrl}/zoltar-logo.jpg`],
+          },
         },
+        quantity: 1,
+      }],
+      metadata: {
+        user_id:    user.id,
+        package_id: packageId,
+        credits:    String(pkg.credits),
       },
-      quantity: 1,
-    }],
-    metadata: {
-      user_id:    user.id,
-      package_id: packageId,
-      credits:    String(pkg.credits),
-    },
-    success_url: `${appUrl}?payment=success&credits=${pkg.credits}`,
-    cancel_url:  `${appUrl}?payment=cancelled`,
-  });
+      success_url: `${appUrl}?payment=success&credits=${pkg.credits}&sid={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${appUrl}?payment=cancelled`,
+    });
 
-  // Registrar compra pendiente
-  const sb = supabaseAdmin();
-  await sb.from('purchases').insert({
-    user_id:           user.id,
-    stripe_session_id: session.id,
-    package_id:        packageId,
-    amount_cents:      pkg.price_cents,
-    credits:           pkg.credits,
-    status:            'pending',
-  });
+    // Registrar compra pendiente
+    try {
+      const sb = supabaseAdmin();
+      const { error: dbError } = await sb.from('purchases').insert({
+        user_id:           user.id,
+        stripe_session_id: session.id,
+        package_id:        packageId,
+        amount_cents:      pkg.price_cents,
+        credits:           pkg.credits,
+        status:            'pending',
+      });
+      if (dbError) console.error("Database Insert Error:", dbError);
+    } catch (dbEx) {
+      console.error("Database Exception:", dbEx);
+      // We still return the session URL even if the log fails
+    }
 
-  return res.status(200).json({ url: session.url });
+    return res.status(200).json({ url: session.url });
+  } catch (error) {
+    console.error("Checkout Handler Exception:", error);
+    return res.status(500).json({ error: error.message });
+  }
 }

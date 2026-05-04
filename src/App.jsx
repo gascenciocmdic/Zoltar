@@ -185,6 +185,7 @@ function App() {
     const verified  = params.get('verified');
     const payment   = params.get('payment');
     const creditsPurchased = parseInt(params.get('credits') || '0', 10);
+    const stripeSessionId  = params.get('sid');
 
     if (ref) setUrlRef(ref);
 
@@ -282,10 +283,23 @@ function App() {
           await loadProfile(session);
 
           if (payment === 'success') {
-            // Espera 4s (webhook suele llegar en 1-3s), refresca saldo y cierra spinner
+            // Espera 4s (webhook suele llegar en 1-3s), refresca saldo y cierra spinner.
+            // Si el webhook falló, verify-purchase acredita los créditos directamente.
             const refreshAndClose = async (delay) => {
               await new Promise(r => setTimeout(r, delay));
               try {
+                if (stripeSessionId) {
+                  const vr = await fetch('/api/verify-purchase', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ sessionId: stripeSessionId }),
+                  });
+                  const vd = await vr.json();
+                  if (vd.credits != null) { setCredits(vd.credits); setPaymentIsVerifying(false); return; }
+                }
                 const bal = await fetchBalance(session);
                 if (bal !== null) setCredits(bal);
               } catch(e) { /* no-op */ }
