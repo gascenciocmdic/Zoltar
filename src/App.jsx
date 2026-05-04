@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
 import Card from './components/Card';
-import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening, generateTeaser } from './api/gemini';
+import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
 import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import { I18N } from './data/translations';
@@ -19,6 +19,9 @@ import ReferralWidget from './components/ReferralWidget';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 
 function App() {
+  console.log("=== ZOLTAR INITIALIZING ===");
+  console.log("Supabase configured:", !!supabase);
+  
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
   const [phase, setPhase] = useState('languageSelection'); // languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
@@ -92,8 +95,8 @@ function App() {
   const [synthEmailState, setSynthEmailState] = useState('idle'); // idle | sending | sent | error
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
-  const [teaser, setTeaser] = useState(null);
-  const [readingPaid, setReadingPaid] = useState(false);
+  const [consultTier, setConsultTier] = useState(null); // null | 'standard' | 'full'
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
   const [lastDebug, setLastDebug] = useState(null);
@@ -223,6 +226,7 @@ function App() {
 
     // ── 2. Helpers de sesión ──────────────────────────────────
     const loadProfile = async (session) => {
+      if (!supabase) return;
       const bal = await fetchBalance(session);
       setCredits(bal);
       const { data: profile } = await supabase
@@ -232,52 +236,60 @@ function App() {
     };
 
     // ── 3. Listener de cambios de auth ────────────────────────
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setAuthSession(session);
-      setAuthUser(session?.user || null);
-      if (session) {
-        if (event === 'SIGNED_IN') await initializeProfile(session, ref || '', false);
-        await loadProfile(session);
-      } else {
-        setCredits(null);
-        setReferralCode(null);
-      }
-    });
+    let subscription = null;
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        setAuthSession(session);
+        setAuthUser(session?.user || null);
+        if (session) {
+          if (event === 'SIGNED_IN') await initializeProfile(session, ref || '', false);
+          await loadProfile(session);
+        } else {
+          setCredits(null);
+          setReferralCode(null);
+        }
+      });
+      subscription = data.subscription;
+    }
 
     // ── 4. Sesión inicial + polling de créditos post-pago ─────
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        setAuthSession(session);
-        setAuthUser(session.user);
-        if (verified === '1') await initializeProfile(session, ref || '', true);
-        const baseBalance = await loadProfile(session);
+    if (supabase) {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (session) {
+          setAuthSession(session);
+          setAuthUser(session.user);
+          if (verified === '1') await initializeProfile(session, ref || '', true);
+          await loadProfile(session);
 
-        if (payment === 'success') {
-          // Espera 4s (webhook suele llegar en 1-3s), refresca saldo y cierra spinner
-          const refreshAndClose = async (delay) => {
-            await new Promise(r => setTimeout(r, delay));
-            try {
-              const bal = await fetchBalance(session);
-              if (bal !== null) setCredits(bal);
-            } catch(e) { /* no-op */ }
-            setPaymentIsVerifying(false);
-          };
-          refreshAndClose(4000);
+          if (payment === 'success') {
+            // Espera 4s (webhook suele llegar en 1-3s), refresca saldo y cierra spinner
+            const refreshAndClose = async (delay) => {
+              await new Promise(r => setTimeout(r, delay));
+              try {
+                const bal = await fetchBalance(session);
+                if (bal !== null) setCredits(bal);
+              } catch(e) { /* no-op */ }
+              setPaymentIsVerifying(false);
+            };
+            refreshAndClose(4000);
+          }
+        } else if (payment === 'success') {
+          // Sin sesión: cerrar spinner después de 4s igual
+          setTimeout(() => setPaymentIsVerifying(false), 4000);
         }
-      } else if (payment === 'success') {
-        // Sin sesión: cerrar spinner después de 4s igual
-        setTimeout(() => setPaymentIsVerifying(false), 4000);
-      }
 
-      if (verified) {
-        window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
-      }
-    }).catch((err) => {
-      console.warn('[Auth] getSession error:', err);
-      // El timer de seguridad ya se encargará de cerrar el spinner
-    });
+        if (verified) {
+          window.history.replaceState({}, '', window.location.pathname + (ref ? `?ref=${ref}` : ''));
+        }
+      }).catch((err) => {
+        console.warn('[Auth] getSession error:', err);
+        // El timer de seguridad ya se encargará de cerrar el spinner
+      });
+    }
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -351,10 +363,25 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authSession, credits, consultCount, _doEnterPortal]);
 
+  const flashCredit = useCallback((amount) => {
+    setCreditFlash({ amount, id: Date.now() });
+    setTimeout(() => setCreditFlash(null), 2000);
+  }, []);
+
   // Re-consulta desde fase de anclaje (estado ya existente, costo reducido)
   const handleReConsultation = useCallback(async () => {
+    // If guest, just reset locally
     if (!authSession || !supabase) {
-      window.location.reload();
+      setSelectedCards([]);
+      setInterpretation(null);
+      setRevealedStage(0);
+      setCardsFlippedCount(0);
+      setAutoRevealStarted(false);
+      setRevelationReady(false);
+      setConsultTier(null);
+      setThresholdStep(3); // Inquietud
+      setPhase('threshold');
+      setVibe('healing_blue');
       return;
     }
 
@@ -376,33 +403,27 @@ function App() {
     }
     setCredits(result.credits);
     setConsultCount(prev => prev + 1);
-    flashCredit(-CREDIT_COSTS.reconsultation);
+    flashCredit(-cost);
 
     // Resetear estado de consulta
     setSelectedCards([]);
     setInterpretation(null);
-    setIntrospectionMessage('');
-    setVisitReason('');
-    setDichotomousChoice('');
-    setBirthDate({ day: '', month: '', year: '' });
-    setBirthNarrative(null);
-    setSynthEmailState('idle');
-    setClarifications({});
     setRevealedStage(0);
     setCardsFlippedCount(0);
     setAutoRevealStarted(false);
     setRevelationReady(false);
-    setThresholdStep(1);
+    setConsultTier('standard'); // Since they just paid 40
+    setThresholdStep(3); // Ir directo a la inquietud
     setPhase('threshold');
     setVibe('healing_blue');
+    
     const deck = [...cardsData];
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [deck[i], deck[j]] = [deck[j], deck[i]];
     }
     setShuffledDeck(deck);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authSession, credits]);
+  }, [authSession, credits, flashCredit]);
 
   // Guarda el estado de la consulta en sessionStorage antes de redirigir a Stripe
   const saveStateForPurchase = useCallback(() => {
@@ -453,11 +474,6 @@ function App() {
     }
   };
 
-  const flashCredit = (amount) => {
-    setCreditFlash({ amount, id: Date.now() });
-    setTimeout(() => setCreditFlash(null), 2000);
-  };
-
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
     setPhase('portalEntrance');
@@ -468,7 +484,34 @@ function App() {
   };
 
   const handleStart = async () => {
-    // Free entry - credit deduction moved to handlePurchaseReading after the teaser
+    // Paid entry for logged-in users
+    if (supabase && authSession) {
+      const cost = CREDIT_COSTS.consultation;
+      const currentCredits = credits ?? 0;
+      
+      if (currentCredits < cost) {
+        setPurchaseReason(`Necesitas ${cost} créditos para iniciar una consulta. Tienes ${currentCredits}.`);
+        setShowPurchaseModal(true);
+        return;
+      }
+
+      const result = await deductCredits(authSession, 'consultation');
+      if (!result.ok) {
+        if (result.error === 'insufficient_credits') {
+          setPurchaseReason(`Créditos insuficientes. Tienes ${result.credits ?? currentCredits}.`);
+          setShowPurchaseModal(true);
+        }
+        return;
+      }
+      
+      setCredits(result.credits);
+      setConsultCount(prev => prev + 1);
+      flashCredit(-cost);
+      setConsultTier('standard'); // Unblur reading for paying users
+    } else {
+      setConsultTier(null); // Guest mode: blurred teaser
+    }
+
     setIsFading(true);
     speakText(sessionTexts.askName, language);
     setTimeout(() => {
@@ -568,21 +611,32 @@ function App() {
       setRevealedStage(0);
       setCardsFlippedCount(0);
       setAutoRevealStarted(false);
-      setTeaser(null);
-      setReadingPaid(false);
-      
+      setConsultTier(null);
+
       try {
         const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
         const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
-        
-        // Free Teaser Fragment
-        const result = await generateTeaser(selectedCards, visitReason, null, userContext, language);
-        setTeaser(result.teaser);
-        setVibe('healing_blue');
+
+        // Fetch Full Standard Interpretation (for free preview)
+        const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
+        setInterpretation({
+          ...result,
+          decreto: result.decreto || translations.ui.default_decree,
+          tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
+        });
+
+        setConsultTier(null); // It's free but blurred
+        setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
-        console.error("Error al obtener teaser:", error);
-        setTeaser(translations.ui.oracle_misfire);
+        console.error("Error al obtener revelación:", error);
+        setInterpretation({
+          narrativaAncestral: [translations.ui.oracle_misfire, translations.ui.oracle_misfire, translations.ui.oracle_misfire],
+          conclusionFinal: translations.ui.oracle_misfire,
+          decreto: translations.ui.default_decree,
+          tarea_terrenal: translations.ui.default_task,
+          vibe: 'healing_blue'
+        });
         setLoading(false);
       }
     }, Math.floor(Math.random() * 2000) + 3000); 
@@ -615,30 +669,38 @@ function App() {
       setCredits(resultDeduct.credits);
       flashCredit(-cost);
 
-      // Fetch Full Interpretation
+      if (tier === 'consultation') {
+        // Standard reading already exists from the preview, just unblur it
+        setConsultTier('standard');
+        setLoading(false);
+        setVibe(interpretation?.vibe || 'healing_blue');
+        speakText(interpretation.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
+        return;
+      }
+
+      // Fetch Full Interpretation for Ancestral Ritual
       const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
-      const userContext = { 
-        name: userName, 
-        birthDate: bdStr2, 
-        reason: visitReason, 
+      const userContext = {
+        name: userName,
+        birthDate: bdStr2,
+        reason: visitReason,
         preference: dichotomousChoice,
-        tier // Pass tier to Gemini to customize depth if needed
+        tier
       };
-      
+
       const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
       setInterpretation({
         ...result,
         decreto: result.decreto || translations.ui.default_decree,
         tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
       });
-      
-      setReadingPaid(true);
+
+      setConsultTier('full');
       setVibe(result.vibe || 'healing_blue');
       setLoading(false);
       
-      // Auto-advance to first stage
-      setRevealedStage(1);
-      speakText(`${translations.ui.origin_karmic}. ${result.narrativaAncestral[0]}`, language, () => setCanProceed(true));
+      // Speak the new interpretation for the current stage
+      speakText(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
       
     } catch (error) {
       console.error("Error en la lectura pagada:", error);
@@ -1273,38 +1335,6 @@ function App() {
                   </div>
                 ) : (
                   <>
-                    {/* Free Teaser UI */}
-                    {revealedStage === 0 && teaser && !readingPaid && (
-                      <div className="teaser-container fade-in-text" style={{ textAlign: 'center', marginTop: '20px', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
-                        <p className="teaser-whisper" style={{ fontStyle: 'italic', color: '#a78bfa', fontSize: '1.2rem', marginBottom: '30px', textShadow: '0 0 10px rgba(167, 139, 250, 0.3)' }}>
-                          "{teaser}"
-                        </p>
-                        
-                        <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', padding: '0 20px' }}>
-                          <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '20px', borderRadius: '15px' }}>
-                            <h3 style={{ color: '#ffd700', fontSize: '1rem', marginBottom: '10px' }}>Narrativa del Alma</h3>
-                            <p style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '20px' }}>Lectura completa de 3 cartas y origen kármico.</p>
-                            <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.85rem' }}>
-                              Desbloquear · {CREDIT_COSTS.consultation} 💎
-                            </button>
-                          </div>
-                          
-                          <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '20px', borderRadius: '15px', position: 'relative', overflow: 'hidden' }}>
-                            <div className="popular-badge" style={{ position: 'absolute', top: '10px', right: '-30px', background: '#7c3aed', color: '#fff', fontSize: '0.6rem', padding: '2px 30px', transform: 'rotate(45deg)', fontWeight: 'bold' }}>RITUAL</div>
-                            <h3 style={{ color: '#a78bfa', fontSize: '1rem', marginBottom: '10px' }}>Ritual Ancestral</h3>
-                            <p style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '20px' }}>Máxima profundidad, misión de vida y lección kármica.</p>
-                            <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.85rem', background: '#7c3aed' }}>
-                              Elegir · {CREDIT_COSTS.ancestral_ritual} 💎
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <p style={{ marginTop: '20px', fontSize: '0.75rem', opacity: 0.5 }}>
-                          Usa tus créditos para descender a la profundidad de tu historia.
-                        </p>
-                      </div>
-                    )}
-
                     {revealedStage > 0 && interpretation && (
                       <div className="narrative-container">
                         <div className="interpretation-bubbles" style={{ opacity: isFading ? 0 : 1, transition: 'opacity 1s ease-in-out' }}>
@@ -1316,49 +1346,107 @@ function App() {
                             </p>
                             
                             <div style={{ marginBottom: '20px' }}>
-                              <span className="reveal-text">{Array.isArray(interpretation.narrativaAncestral) 
-                                ? interpretation.narrativaAncestral[revealedStage - 1]
-                                : interpretation.narrativaAncestral}</span>
+                              <span className="reveal-text">
+                                {(() => {
+                                  const fullText = Array.isArray(interpretation.narrativaAncestral) 
+                                    ? interpretation.narrativaAncestral[revealedStage - 1]
+                                    : interpretation.narrativaAncestral;
+                                  
+                                  if (consultTier !== null) return fullText;
+
+                                  // Steamy window logic: split at first period
+                                  const parts = fullText.split('. ');
+                                  if (parts.length <= 1) return fullText;
+                                  
+                                  return (
+                                    <>
+                                      {parts[0]}. 
+                                      <span className="steamy-blur">
+                                        {parts.slice(1).join('. ')}
+                                      </span>
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </div>
+
+                            {/* Unlock Panel for unpaid users */}
+                            {consultTier === null && revealedStage >= 1 && (
+                              <div className="unlock-panel fade-in-text">
+                                <p style={{ color: '#ffd700', fontSize: '0.9rem', marginBottom: '20px', fontWeight: 'bold' }}>
+                                  ✧ El velo oculta el resto de tu historia ✧
+                                </p>
+                                
+                                <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                  <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '15px', borderRadius: '12px' }}>
+                                    <h3 style={{ color: '#ffd700', fontSize: '0.85rem', marginBottom: '8px' }}>Narrativa Estándar</h3>
+                                    <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.75rem', padding: '8px' }}>
+                                      {CREDIT_COSTS.consultation} 💎
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '15px', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
+                                    <h3 style={{ color: '#a78bfa', fontSize: '0.85rem', marginBottom: '8px' }}>Ritual Ancestral</h3>
+                                    <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.75rem', padding: '8px', background: '#7c3aed' }}>
+                                      {CREDIT_COSTS.ancestral_ritual} 💎
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Signup Bonus CTA - Only for Guests */}
+                                {!authSession && (
+                                  <div className="signup-bonus-box">
+                                    <p className="signup-bonus-text">
+                                      🎁 ¿Sin créditos? Únete al Oráculo y recibe 100 gratis.
+                                    </p>
+                                    <button className="signup-bonus-btn" onClick={() => setShowAuthModal(true)}>
+                                      Registrarme y obtener 100 💎
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             
-                            {/* Deepen logic per card */}
-                            <div className="deepen-box">
-                               {!clarifications[selectedCards[revealedStage-1].id] ? (
-                                 canProceed && (
-                                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                                     <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
-                                       💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
-                                     </p>
-                                     <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
-                                       {translations.ui.deepen_action || translations.ui.deepen}
-                                     </button>
+                            {/* Deepen logic per card - only show if paid */}
+                            {consultTier !== null && (
+                              <div className="deepen-box">
+                                 {!clarifications[selectedCards[revealedStage-1].id] ? (
+                                   canProceed && (
+                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                       <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
+                                         💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
+                                       </p>
+                                       <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
+                                         {translations.ui.deepen_action || translations.ui.deepen}
+                                       </button>
+                                     </div>
+                                   )
+                                 ) : clarifications[selectedCards[revealedStage-1].id].step === 'question' ? (
+                                   <div className="fade-in-text">
+                                      <input 
+                                        type="text" 
+                                        className="soul-input" 
+                                        style={{ fontSize: '0.9rem', marginBottom: '10px'}} 
+                                        placeholder={translations.ui.revelation_confession}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') submitDeepenQuestion(selectedCards[revealedStage-1].id, e.target.value);
+                                        }}
+                                      />
+                                      <p style={{ fontSize: '0.7rem', color: '#ffd700' }}>{translations.ui.press_enter}</p>
                                    </div>
-                                 )
-                               ) : clarifications[selectedCards[revealedStage-1].id].step === 'question' ? (
-                                 <div className="fade-in-text">
-                                    <input 
-                                      type="text" 
-                                      className="soul-input" 
-                                      style={{ fontSize: '0.9rem', marginBottom: '10px'}} 
-                                      placeholder={translations.ui.revelation_confession}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') submitDeepenQuestion(selectedCards[revealedStage-1].id, e.target.value);
-                                      }}
-                                    />
-                                    <p style={{ fontSize: '0.7rem', color: '#ffd700' }}>{translations.ui.press_enter}</p>
-                                 </div>
-                               ) : clarifications[selectedCards[revealedStage-1].id].step === 'done' ? (
-                                 <div style={{ animation: 'fadeIn 1.5s ease' }}>
-                                   {/* Deepening whisper */}
-                                   <div className="brain-bubble narrative" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(20,22,28,0) 100%)', border: '1px solid rgba(255,215,0,0.25)', borderLeft: '3px solid #ffd700', boxShadow: 'inset 0 0 20px rgba(255,215,0,0.05)' }}>
-                                      <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>✦ {translations.ui.deepen_subtitle} ✦</p>
-                                      <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
-                                        <span className="reveal-text" style={{ animationDelay: '0.2s' }}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</span>
-                                      </p>
+                                 ) : clarifications[selectedCards[revealedStage-1].id].step === 'done' ? (
+                                   <div style={{ animation: 'fadeIn 1.5s ease' }}>
+                                     {/* Deepening whisper */}
+                                     <div className="brain-bubble narrative" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(20,22,28,0) 100%)', border: '1px solid rgba(255,215,0,0.25)', borderLeft: '3px solid #ffd700', boxShadow: 'inset 0 0 20px rgba(255,215,0,0.05)' }}>
+                                        <p className="narrative-meta" style={{ color: '#ffd700', fontSize: '0.8rem', marginBottom: '10px' }}>✦ {translations.ui.deepen_subtitle} ✦</p>
+                                        <p style={{ fontSize: '0.95rem', fontStyle: 'italic' }}>
+                                          <span className="reveal-text" style={{ animationDelay: '0.2s' }}>{clarifications[selectedCards[revealedStage-1].id].extraResponse}</span>
+                                        </p>
+                                     </div>
                                    </div>
-                                 </div>
-                               ) : null}
-                            </div>
+                                 ) : null}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1418,38 +1506,88 @@ function App() {
               <div className="narrative-container">
                  <div className="brain-bubble narrative" style={{ borderLeftColor: '#ffd700', animation: 'fadeIn 2.5s ease' }}>
                     <p style={{ fontStyle: 'italic', marginBottom: '20px' }}>
-                      <span className="reveal-text">{interpretation.conclusionFinal}</span>
+                      <span className="reveal-text">
+                        {(() => {
+                          if (consultTier !== null) return interpretation.conclusionFinal;
+                          const parts = interpretation.conclusionFinal.split('. ');
+                          if (parts.length <= 1) return interpretation.conclusionFinal;
+                          return <>{parts[0]}. <span className="steamy-blur">{parts.slice(1).join('. ')}</span></>;
+                        })()}
+                      </span>
                     </p>
 
                     {interpretation.mision_alma && (
                       <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px' }}>
                         <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Misión del Alma ✦</h4>
-                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>{interpretation.mision_alma}</p>
+                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>
+                          {(() => {
+                            if (consultTier !== null) return interpretation.mision_alma;
+                            const parts = interpretation.mision_alma.split('. ');
+                            return <><span className="steamy-blur">{parts.join('. ')}</span></>;
+                          })()}
+                        </p>
                       </div>
                     )}
                     {interpretation.leccion_karmica && (
                       <div className="ritual-extra-section fade-in-text" style={{ marginBottom: '20px', marginTop: '20px' }}>
                         <h4 style={{ color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>✦ Lección Kármica ✦</h4>
-                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>{interpretation.leccion_karmica}</p>
+                        <p style={{ fontStyle: 'italic', fontSize: '1.1rem' }}>
+                          {(() => {
+                            if (consultTier !== null) return interpretation.leccion_karmica;
+                            const parts = interpretation.leccion_karmica.split('. ');
+                            return <><span className="steamy-blur">{parts.join('. ')}</span></>;
+                          })()}
+                        </p>
                       </div>
                     )}
 
-                    <div className="anchoring-grid">
-                      <div className="anchor-block decree-box">
-                        <div className="mystic-ornament-top"></div>
-                        <p className="mystic-title">{translations.ui.healing_decree}</p>
-                        <p style={{ fontSize: '1.25rem', letterSpacing: '0.5px', color: '#fff', textShadow: '0 0 10px rgba(255,215,0,0.3)' }}>
-                          <span className="reveal-text" style={{ animationDelay: '1.5s' }}>&#8220;{interpretation.decreto}&#8221;</span>
+                    {/* Unlock Panel for synthesis if unpaid */}
+                    {consultTier === null && (
+                      <div className="unlock-panel fade-in-text" style={{ margin: '20px 0' }}>
+                        <p style={{ color: '#ffd700', fontSize: '0.9rem', marginBottom: '20px', fontWeight: 'bold' }}>
+                          ✧ El Oráculo aguarda tu ofrenda para revelar la síntesis final ✧
                         </p>
-                        <div className="mystic-ornament-bottom"></div>
+                        <div className="payment-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                          <div className="payment-option-card ritual-tier" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,215,0,0.2)', padding: '15px', borderRadius: '12px' }}>
+                            <h3 style={{ color: '#ffd700', fontSize: '0.85rem', marginBottom: '8px' }}>Narrativa Estándar</h3>
+                            <button className="start-button" onClick={() => handlePurchaseReading('consultation')} style={{ fontSize: '0.75rem', padding: '8px' }}>
+                              {CREDIT_COSTS.consultation} 💎
+                            </button>
+                          </div>
+                          <div className="payment-option-card ancestral-tier" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0,0,0,0))', border: '1px solid #7c3aed', padding: '15px', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
+                            <h3 style={{ color: '#a78bfa', fontSize: '0.85rem', marginBottom: '8px' }}>Ritual Ancestral</h3>
+                            <button className="start-button" onClick={() => handlePurchaseReading('ancestral_ritual')} style={{ fontSize: '0.75rem', padding: '8px', background: '#7c3aed' }}>
+                              {CREDIT_COSTS.ancestral_ritual} 💎
+                            </button>
+                          </div>
+                        </div>
+                        {!authSession && (
+                          <div className="signup-bonus-box">
+                            <p className="signup-bonus-text">🎁 Recibe 100 💎 gratis al unirte</p>
+                            <button className="signup-bonus-btn" onClick={() => setShowAuthModal(true)}>Registrarme</button>
+                          </div>
+                        )}
                       </div>
-                      <div className="anchor-block task-box">
-                        <div className="mystic-ornament-top"></div>
-                        <p className="mystic-title">{translations.ui.earthly_task}</p>
-                        <p style={{ color: '#eaeaea', lineHeight: '1.6' }}><span className="reveal-text" style={{ animationDelay: '3s' }}>{interpretation.tarea_terrenal}</span></p>
-                        <div className="mystic-ornament-bottom"></div>
+                    )}
+
+                    {consultTier !== null && (
+                      <div className="anchoring-grid">
+                        <div className="anchor-block decree-box">
+                          <div className="mystic-ornament-top"></div>
+                          <p className="mystic-title">{translations.ui.healing_decree}</p>
+                          <p style={{ fontSize: '1.25rem', letterSpacing: '0.5px', color: '#fff', textShadow: '0 0 10px rgba(255,215,0,0.3)' }}>
+                            <span className="reveal-text" style={{ animationDelay: '0.5s' }}>&#8220;{interpretation.decreto}&#8221;</span>
+                          </p>
+                          <div className="mystic-ornament-bottom"></div>
+                        </div>
+                        <div className="anchor-block task-box">
+                          <div className="mystic-ornament-top"></div>
+                          <p className="mystic-title">{translations.ui.earthly_task}</p>
+                          <p style={{ color: '#eaeaea', lineHeight: '1.6' }}><span className="reveal-text" style={{ animationDelay: '1.5s' }}>{interpretation.tarea_terrenal}</span></p>
+                          <div className="mystic-ornament-bottom"></div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                  </div>
               </div>
               <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
