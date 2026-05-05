@@ -617,6 +617,10 @@ function App() {
       if (!resultDeduct.ok) {
         setLoading(false);
         setVibe('healing_blue');
+        const errMsg = resultDeduct.error === 'insufficient_credits'
+          ? `Créditos insuficientes (tienes ${resultDeduct.credits ?? 0}, necesitas ${cost}).`
+          : `Error al descontar créditos: ${resultDeduct.error || 'desconocido'}`;
+        alert(errMsg);
         return;
       }
       setCredits(resultDeduct.credits);
@@ -678,14 +682,27 @@ function App() {
       return;
     }
 
+    setShowUnlockModal(false);
     setLoading(true);
     setVibe('karmic_red');
     speakText(sessionTexts.waitMsg, language);
 
-    const resultDeduct = await deductCredits(authSession, creditKey);
+    let resultDeduct;
+    try {
+      resultDeduct = await deductCredits(authSession, creditKey);
+    } catch (e) {
+      setLoading(false);
+      setVibe('healing_blue');
+      alert(`Error al procesar el pago: ${e.message}`);
+      return;
+    }
     if (!resultDeduct.ok) {
       setLoading(false);
       setVibe('healing_blue');
+      const errMsg = resultDeduct.error === 'insufficient_credits'
+        ? `Créditos insuficientes (tienes ${resultDeduct.credits ?? 0}, necesitas ${cost}).`
+        : `Error al descontar créditos: ${resultDeduct.error || 'desconocido'}`;
+      alert(errMsg);
       return;
     }
     setCredits(resultDeduct.credits);
@@ -710,7 +727,6 @@ function App() {
     }
 
     setConsultTier(tier);
-    setShowUnlockModal(false);
     setLoading(false);
 
     if (revealedStage > 0) {
@@ -1211,7 +1227,7 @@ function App() {
             
             {selectedCards.length === 3 && (
               <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
-                <button className="start-button blinking-button" onClick={handleGoToAstralAlignment} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
+                <button className="start-button blinking-button" onClick={handleGoToAstralAlignment} disabled={loading} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
                   {translations.ui.continue}
                 </button>
               </div>
@@ -1408,6 +1424,7 @@ function App() {
                                 <button
                                   className="start-button blinking-button"
                                   style={{ fontSize: '0.82rem', padding: '10px 24px' }}
+                                  disabled={loading}
                                   onClick={() => {
                                     setShowUnlockModal(true);
                                     trackEvent('unlock_modal_opened', { is_guest: !authSession }, authSession);
@@ -1434,7 +1451,7 @@ function App() {
                                            ✦ Profundización incluida
                                          </p>
                                        )}
-                                       <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
+                                       <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} disabled={loading} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
                                          {translations.ui.deepen_action || translations.ui.deepen}
                                        </button>
                                      </div>
@@ -1471,9 +1488,10 @@ function App() {
                     )}
                     
                     {autoRevealStarted && canProceed && (
-                      <button 
-                        className="start-button blinking-button action-button-reveal" 
-                        onClick={handleNextStage} 
+                      <button
+                        className="start-button blinking-button action-button-reveal"
+                        onClick={handleNextStage}
+                        disabled={loading}
                         style={{ marginTop: '30px' }}
                       >
                         {revealedStage < 3 

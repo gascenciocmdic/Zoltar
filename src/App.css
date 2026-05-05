@@ -146,6 +146,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
+.start-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .card-grid {
   display: flex;
   flex-wrap: wrap;
