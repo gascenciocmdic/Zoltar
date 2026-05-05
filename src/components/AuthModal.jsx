@@ -35,7 +35,7 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
       password,
       options: {
         data: { referral_code_used: refCode || null },
-        emailRedirectTo: `${window.location.origin}?verified=1&ref=${refCode || ''}`,
+        emailRedirectTo: `https://zoltar-two.vercel.app?verified=1&ref=${refCode || ''}`,
       },
     });
 
@@ -62,6 +62,19 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
 
   // ── Pantalla: verificación pendiente ────────────────────
   if (pendingVerification) {
+    const handleAlreadyVerified = async () => {
+      if (!email || !password) { setTab('login'); setPendingVerification(false); return; }
+      setLoading(true); setError('');
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(false);
+      if (err) {
+        setError('Aún no confirmado o contraseña incorrecta. Revisa tu correo e intenta de nuevo.');
+        return;
+      }
+      onAuth(data.session);
+      onClose();
+    };
+
     return (
       <div className="auth-overlay" onClick={onClose}>
         <div className="auth-modal" onClick={e => e.stopPropagation()}>
@@ -71,9 +84,13 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
             Enviamos un enlace de verificación a <strong>{email}</strong>.
             Al confirmarlo recibirás <strong>100 créditos</strong> de bienvenida.
           </p>
-          <p className="auth-note">
-            {refCode && `¡Además recibirás 25 créditos extra por haber sido referido!`}
-          </p>
+          {refCode && (
+            <p className="auth-note">¡Además recibirás 25 créditos extra por haber sido referido!</p>
+          )}
+          <button className="auth-btn-primary" onClick={handleAlreadyVerified} disabled={loading} style={{ marginBottom: '10px' }}>
+            {loading ? '...' : '✅ Ya confirmé mi correo — Iniciar sesión'}
+          </button>
+          {error && <p className="auth-error">{error}</p>}
           <button className="auth-btn-secondary" onClick={onClose}>Cerrar por ahora</button>
         </div>
       </div>

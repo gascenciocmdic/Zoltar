@@ -274,7 +274,12 @@ function App() {
         setAuthSession(session);
         setAuthUser(session?.user || null);
         if (session) {
-          if (event === 'SIGNED_IN') await initializeProfile(session, ref || '', false);
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+            await initializeProfile(session, ref || '', false);
+            // Cerrar modal de auth si estaba abierto (ej: confirmación de email desde otro tab)
+            setShowAuthModal(false);
+            await handlePostAuth(session);
+          }
           await loadProfile(session);
         } else {
           setCredits(null);
