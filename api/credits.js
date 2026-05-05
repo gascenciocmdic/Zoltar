@@ -13,7 +13,7 @@ const CREDIT_COSTS = {
   consultation:    40,
   ancestral_ritual: 70,
   deepening:       10,
-  reconsultation:  20,
+  reconsultation:  40,
   synthesis_email: 10,
 };
 

@@ -459,8 +459,29 @@ function App() {
     speakText(welcomeMsg, lang, () => setCanProceed(true));
   };
 
-  const handleStart = () => {
-    setConsultTier(null);
+  const handleStart = async () => {
+    const cost = CREDIT_COSTS.consultation;
+
+    if (authSession && (credits ?? 0) >= cost) {
+      // Usuario logueado con créditos suficientes: cobrar ahora y mostrar lectura completa
+      const result = await deductCredits(authSession, 'consultation');
+      if (result.ok) {
+        setCredits(result.credits);
+        flashCredit(-cost);
+        setConsultTier('standard'); // lectura desbloqueada desde el inicio
+      } else {
+        // Falló el cobro — mostrar error y no continuar
+        const errMsg = result.error === 'insufficient_credits'
+          ? `Créditos insuficientes (tienes ${result.credits ?? 0}, necesitas ${cost}).`
+          : `Error al descontar créditos: ${result.error || 'desconocido'}`;
+        alert(errMsg);
+        return;
+      }
+    } else {
+      // Sin sesión o créditos insuficientes: flujo libre con teaser y unlock posterior
+      setConsultTier(null);
+    }
+
     setIsFading(true);
     speakText(sessionTexts.askName, language);
     setTimeout(() => {
