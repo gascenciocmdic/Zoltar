@@ -462,6 +462,8 @@ function App() {
   const handleStart = async () => {
     const cost = CREDIT_COSTS.consultation;
 
+    alert(`DEBUG handleStart:\nauthSession: ${authSession ? 'SÍ (uid: ' + authSession.user?.id?.slice(0,8) + ')' : 'NULL'}\ncredits: ${credits}\ncost: ${cost}\ncondición: ${!!(authSession && (credits ?? 0) >= cost)}`);
+
     if (authSession && (credits ?? 0) >= cost) {
       // Usuario logueado con créditos suficientes: cobrar ahora y mostrar lectura completa
       const result = await deductCredits(authSession, 'consultation');
