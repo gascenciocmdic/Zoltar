@@ -567,9 +567,9 @@ function App() {
 
       try {
         const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
-        const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer };
+        const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer, tier: 'ancestral_ritual' };
 
-        // Fetch Full Standard Interpretation (for free preview)
+        // Fetch the full (ancestral) interpretation once — both standard and full tiers unblur this same text
         const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
         setInterpretation({
           ...result,
@@ -708,31 +708,13 @@ function App() {
     setCredits(resultDeduct.credits);
     flashCredit(-cost);
 
-    let newInterpretation = interpretation;
-
-    if (tier === 'full') {
-      const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
-      const userContext = {
-        name: userName, birthDate: bdStr, reason: visitReason,
-        preference: dichotomousChoice, tier: 'ancestral_ritual',
-      };
-      const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
-      newInterpretation = {
-        ...result,
-        decreto: result.decreto || translations.ui.default_decree,
-        tarea_terrenal: result.tarea_terrenal || translations.ui.default_task,
-      };
-      setInterpretation(newInterpretation);
-      setVibe(result.vibe || 'healing_blue');
-    }
-
     setConsultTier(tier);
     setLoading(false);
 
     if (revealedStage > 0) {
-      const fullText = Array.isArray(newInterpretation.narrativaAncestral)
-        ? newInterpretation.narrativaAncestral[revealedStage - 1]
-        : newInterpretation.narrativaAncestral;
+      const fullText = Array.isArray(interpretation.narrativaAncestral)
+        ? interpretation.narrativaAncestral[revealedStage - 1]
+        : interpretation.narrativaAncestral;
       speakText(fullText, language, () => setCanProceed(true));
     }
 
