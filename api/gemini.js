@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
+import 'dotenv/config';
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "models/gemini-2.5-flash";
 
 async function generateJSON(ai, prompt) {
   const response = await ai.models.generateContent({
@@ -18,21 +19,30 @@ async function generateJSON(ai, prompt) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { action, payload } = req.body;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Gemini API Key missing.' });
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  
+  console.log(`[Gemini API] Action: ${action}`, { tier: payload?.userContext?.tier });
+
+  if (!apiKey) {
+    console.error("[Gemini API] API Key missing.");
+    return res.status(500).json({ error: 'Gemini API Key missing.' });
+  }
 
   const ai = new GoogleGenAI({ apiKey });
 
   try {
+    let result;
     switch (action) {
-      case 'introspection': return res.status(200).json(await handleIntrospection(ai, payload));
-      case 'interpretation': return res.status(200).json(await handleInterpretation(ai, payload));
-      case 'teaser': return res.status(200).json(await handleTeaser(ai, payload));
-      case 'anchoring': return res.status(200).json(await handleAnchoring(ai, payload));
-      case 'deepening': return res.status(200).json(await handleDeepening(ai, payload));
+      case 'introspection': result = await handleIntrospection(ai, payload); break;
+      case 'interpretation': result = await handleInterpretation(ai, payload); break;
+      case 'teaser': result = await handleTeaser(ai, payload); break;
+      case 'anchoring': result = await handleAnchoring(ai, payload); break;
+      case 'deepening': result = await handleDeepening(ai, payload); break;
       default: return res.status(400).json({ error: 'Invalid action' });
     }
+    return res.status(200).json(result);
   } catch (error) {
+    console.error(`[Gemini API] Error in action ${action}:`, error);
     return res.status(500).json({ error: error.message });
   }
 }
