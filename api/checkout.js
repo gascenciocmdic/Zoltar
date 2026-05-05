@@ -4,12 +4,13 @@
  * POST { packageId: 'iniciado'|'explorador'|'oraculo' }
  * Headers: Authorization: Bearer <supabase_jwt>
  *
- * Retorna: { url: string }  ← redirigir al usuario a esta URL
+ * Retorna: { url: string }
  */
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const PACKAGES = {
   iniciado:   { credits: 150,  price_cents: 499,  name: 'Zoltar Iniciado — 150 créditos' },
@@ -18,7 +19,6 @@ const PACKAGES = {
 };
 
 function supabaseAdmin() {
-  console.log("[Checkout API] Supabase URL:", process.env.SUPABASE_URL ? "SET" : "MISSING");
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -32,68 +32,77 @@ async function getUser(req) {
     if (!token) return null;
     const sb = supabaseAdmin();
     const { data, error } = await sb.auth.getUser(token);
-    if (error || !data) {
-      console.error("Auth Error:", error);
-      return null;
-    }
+    if (error || !data) return null;
     return data.user || null;
   } catch (err) {
-    console.error("getUser Exception:", err);
+    console.error('[checkout] getUser error:', err);
     return null;
   }
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+  // Outer safety net — guarantees we always return JSON even if inner catch fails
+  const safeJson = (status, body) => {
+    try { res.status(status).json(body); } catch (_) { /* response already sent */ }
+  };
 
   try {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return safeJson(405, { error: 'Método no permitido' });
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return safeJson(503, { error: 'Pagos no configurados. Contacta al administrador.' });
+    }
+
     const user = await getUser(req);
-    if (!user) return res.status(401).json({ error: 'No autenticado' });
+    if (!user) return safeJson(401, { error: 'No autenticado' });
 
     const { packageId } = req.body || {};
     const pkg = PACKAGES[packageId];
-    if (!pkg) return res.status(400).json({ error: 'Paquete inválido' });
+    if (!pkg) return safeJson(400, { error: 'Paquete inválido' });
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(503).json({ error: 'Pagos no configurados aún. Contacta al administrador.' });
-    }
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const appUrl = (process.env.APP_URL || 'https://zoltar-two.vercel.app').replace(/\/$/, '');
 
-    const appUrl = process.env.APP_URL || 'http://localhost:5173';
-
-    const session = await stripe.checkout.sessions.create({
-      mode:          'payment',
-      payment_method_types: ['card'],
-      customer_email: user.email,
-      line_items: [{
-        price_data: {
-          currency:     'usd',
-          unit_amount:  pkg.price_cents,
-          product_data: {
-            name:        pkg.name,
-            description: `${pkg.credits} créditos para el Oráculo de Vidas Pasadas`,
-            images:      [`${appUrl}/zoltar-logo.jpg`],
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        customer_email: user.email,
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            unit_amount: pkg.price_cents,
+            product_data: {
+              name: pkg.name,
+              description: `${pkg.credits} créditos para Zoltar`,
+            },
           },
+          quantity: 1,
+        }],
+        metadata: {
+          user_id:    user.id,
+          package_id: packageId,
+          credits:    String(pkg.credits),
         },
-        quantity: 1,
-      }],
-      metadata: {
-        user_id:    user.id,
-        package_id: packageId,
-        credits:    String(pkg.credits),
-      },
-      success_url: `${appUrl}?payment=success&credits=${pkg.credits}&sid={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${appUrl}?payment=cancelled`,
-    });
+        success_url: `${appUrl}?payment=success&credits=${pkg.credits}`,
+        cancel_url:  `${appUrl}?payment=cancelled`,
+      });
+    } catch (stripeErr) {
+      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
+      console.error('[checkout] Stripe error:', msg);
+      return safeJson(502, { error: `Error Stripe: ${msg}` });
+    }
 
-    // Registrar compra pendiente
+    // Registrar compra pendiente (no-fatal si la tabla no existe)
     try {
       const sb = supabaseAdmin();
-      const { error: dbError } = await sb.from('purchases').insert({
+      await sb.from('purchases').insert({
         user_id:           user.id,
         stripe_session_id: session.id,
         package_id:        packageId,
@@ -101,15 +110,13 @@ export default async function handler(req, res) {
         credits:           pkg.credits,
         status:            'pending',
       });
-      if (dbError) console.error("Database Insert Error:", dbError);
-    } catch (dbEx) {
-      console.error("Database Exception:", dbEx);
-      // We still return the session URL even if the log fails
-    }
+    } catch (_) { /* non-fatal */ }
 
-    return res.status(200).json({ url: session.url });
-  } catch (error) {
-    console.error("Checkout Handler Exception:", error);
-    return res.status(500).json({ error: error.message });
+    return safeJson(200, { url: session.url });
+
+  } catch (fatal) {
+    const msg = fatal instanceof Error ? fatal.message : String(fatal);
+    console.error('[checkout] Fatal error:', msg);
+    safeJson(500, { error: msg });
   }
 }
