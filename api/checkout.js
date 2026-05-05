@@ -9,8 +9,6 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const PACKAGES = {
   iniciado:   { credits: 150,  price_cents: 499,  name: 'Zoltar Iniciado — 150 créditos' },

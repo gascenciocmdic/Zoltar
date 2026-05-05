@@ -10,8 +10,6 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
 
 function supabaseAdmin() {
   return createClient(

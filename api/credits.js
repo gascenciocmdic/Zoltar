@@ -8,8 +8,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const CREDIT_COSTS = {
   consultation:    40,
