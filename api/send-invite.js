@@ -118,11 +118,15 @@ export default async function handler(req, res) {
     body: JSON.stringify({ from: `Zoltar Oráculo <${fromEmail}>`, to: actualTo, subject: finalSubject, html }),
   });
 
+  const resendBody = await emailRes.text();
+  let resendJson;
+  try { resendJson = JSON.parse(resendBody); } catch (_) { resendJson = { raw: resendBody }; }
+
   if (!emailRes.ok) {
-    const errText = await emailRes.text();
-    console.error('[send-invite] Resend error:', emailRes.status, errText);
-    return res.status(500).json({ error: 'Error enviando invitación', detail: errText });
+    console.error('[send-invite] Resend error:', emailRes.status, resendBody);
+    return res.status(500).json({ error: 'Error enviando invitación', detail: resendJson });
   }
 
-  return res.status(200).json({ ok: true });
+  console.log('[send-invite] Sent to:', actualTo, 'Resend ID:', resendJson?.id);
+  return res.status(200).json({ ok: true, resend_id: resendJson?.id, sent_to: actualTo });
 }
