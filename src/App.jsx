@@ -1637,6 +1637,7 @@ function App() {
                 <InviteWidget
                   authSession={authSession}
                   referralCode={referralCode || null}
+                  inviterName={userName || null}
                 />
               </div>
             </>

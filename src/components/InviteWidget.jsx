@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const APP_URL = 'https://zoltar-two.vercel.app';
 
-export default function InviteWidget({ authSession, referralCode }) {
+export default function InviteWidget({ authSession, referralCode, inviterName }) {
   const [email, setEmail] = useState('');
   const [emailState, setEmailState] = useState('idle'); // idle | sending | sent | error
   const [copied, setCopied] = useState(false);
@@ -16,7 +16,7 @@ export default function InviteWidget({ authSession, referralCode }) {
       const res = await fetch('/api/send-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toEmail: email, referralCode: referralCode || undefined }),
+        body: JSON.stringify({ toEmail: email, referralCode: referralCode || undefined, inviterName: inviterName || undefined }),
       });
       setEmailState(res.ok ? 'sent' : 'error');
     } catch {
