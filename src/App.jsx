@@ -462,17 +462,21 @@ function App() {
   const handleStart = async () => {
     const cost = CREDIT_COSTS.consultation;
 
-    alert(`DEBUG handleStart:\nauthSession: ${authSession ? 'SÍ (uid: ' + authSession.user?.id?.slice(0,8) + ')' : 'NULL'}\ncredits: ${credits}\ncost: ${cost}\ncondición: ${!!(authSession && (credits ?? 0) >= cost)}`);
-
     if (authSession && (credits ?? 0) >= cost) {
       // Usuario logueado con créditos suficientes: cobrar ahora y mostrar lectura completa
-      const result = await deductCredits(authSession, 'consultation');
+      let result;
+      try {
+        result = await deductCredits(authSession, 'consultation');
+      } catch (e) {
+        alert(`DEBUG: deductCredits lanzó excepción: ${e.message}`);
+        return;
+      }
+      alert(`DEBUG deductCredits result:\nok: ${result.ok}\ncredits: ${result.credits}\nerror: ${result.error}\nkeys: ${Object.keys(result).join(', ')}`);
       if (result.ok) {
         setCredits(result.credits);
         flashCredit(-cost);
-        setConsultTier('standard'); // lectura desbloqueada desde el inicio
+        setConsultTier('standard');
       } else {
-        // Falló el cobro — mostrar error y no continuar
         const errMsg = result.error === 'insufficient_credits'
           ? `Créditos insuficientes (tienes ${result.credits ?? 0}, necesitas ${cost}).`
           : `Error al descontar créditos: ${result.error || 'desconocido'}`;
