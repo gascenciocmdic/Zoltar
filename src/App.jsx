@@ -439,7 +439,9 @@ function App() {
         setShowPurchaseModal(true);
         setSynthEmailState('idle');
       } else {
+        const detail = data.resend_error || data.error || 'Error desconocido';
         console.error('[synthesis email] API error:', data);
+        alert(`Error al enviar el correo:\n${detail}`);
         if (data.credits !== undefined) setCredits(data.credits);
         setSynthEmailState('error');
       }
