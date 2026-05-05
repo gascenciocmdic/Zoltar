@@ -32,7 +32,10 @@ export default function PurchaseModal({ isOpen, onClose, session, reason, onSave
         body: JSON.stringify({ packageId }),
       });
 
-      const data = await res.json();
+      let data;
+      try { data = await res.json(); } catch (_) {
+        throw new Error('Error del servidor. Intenta de nuevo en un momento.');
+      }
       if (!res.ok || !data.url) throw new Error(data.error || 'Error al crear sesión de pago');
 
       // Guardar estado de la app antes de salir

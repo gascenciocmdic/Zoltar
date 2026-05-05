@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(503).json({ error: 'Pagos no configurados aún. Contacta al administrador.' });
     }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }); // Using a known stable version
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const appUrl = process.env.APP_URL || 'http://localhost:5173';
 

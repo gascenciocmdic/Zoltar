@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   const { sessionId } = req.body || {};
   if (!sessionId) return res.status(400).json({ error: 'sessionId requerido' });
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const sb = supabaseAdmin();
 
   // Verificar sesión en Stripe
