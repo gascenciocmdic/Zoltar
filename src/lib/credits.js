@@ -1,7 +1,7 @@
 // ── Costos de acciones ──────────────────────────────────────
 export const CREDIT_COSTS = {
   consultation:    40,   // Consulta completa nueva
-  ancestral_ritual: 70,   // Consulta premium con mayor profundidad
+  ancestral_ritual: 65,   // Consulta premium con mayor profundidad
   deepening:       10,   // Profundización por carta
   reconsultation:  40,   // Nueva consulta en la misma sesión (sin recargar)
   synthesis_email: 10,   // Enviar síntesis final por correo

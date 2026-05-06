@@ -473,10 +473,9 @@ function App() {
       try {
         result = await deductCredits(authSession, 'consultation');
       } catch (e) {
-        alert(`DEBUG: deductCredits lanzó excepción: ${e.message}`);
+        alert(`Error al procesar el pago: ${e.message}`);
         return;
       }
-      alert(`DEBUG deductCredits result:\nok: ${result.ok}\ncredits: ${result.credits}\nerror: ${result.error}\nkeys: ${Object.keys(result).join(', ')}`);
       if (result.ok) {
         setCredits(result.credits);
         flashCredit(-cost);

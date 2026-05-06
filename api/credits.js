@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const CREDIT_COSTS = {
   consultation:    40,
-  ancestral_ritual: 70,
+  ancestral_ritual: 65,
   deepening:       10,
   reconsultation:  40,
   synthesis_email: 10,
