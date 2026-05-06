@@ -472,7 +472,9 @@ function App() {
       let result;
       try {
         result = await deductCredits(authSession, 'consultation');
+        console.log('[handleStart] deductCredits result:', JSON.stringify(result));
       } catch (e) {
+        console.error('[handleStart] deductCredits exception:', e);
         alert(`Error al procesar el pago: ${e.message}`);
         return;
       }
