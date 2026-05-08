@@ -19,6 +19,8 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
+  const [forgotPassword,     setForgotPassword]     = useState(false);
+  const [resetSent,          setResetSent]          = useState(false);
 
   useEffect(() => { if (referralCode) setRefCode(referralCode); }, [referralCode]);
   useEffect(() => { if (isOpen) { setError(''); setLoading(false); } }, [isOpen]);
@@ -59,6 +61,71 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') tab === 'register' ? handleRegister() : handleLogin();
   };
+
+  // ── Pantalla: recuperación de contraseña ────────────────
+  if (forgotPassword) {
+    const handleResetPassword = async () => {
+      if (!email) return setError('Ingresa tu correo electrónico');
+      setLoading(true); setError('');
+
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://zoltar-two.vercel.app?reset=1',
+      });
+
+      setLoading(false);
+      if (err) return setError(err.message);
+      setResetSent(true);
+    };
+
+    if (resetSent) {
+      return (
+        <div className="auth-overlay" onClick={onClose}>
+          <div className="auth-modal" onClick={e => e.stopPropagation()}>
+            <div className="auth-icon">✉️</div>
+            <h2 className="auth-title">Revisa tu correo</h2>
+            <p className="auth-subtitle">
+              Te enviamos un enlace de recuperación a <strong>{email}</strong>
+            </p>
+            <button className="auth-btn-secondary" onClick={onClose}>Cerrar</button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="auth-overlay" onClick={onClose}>
+        <div className="auth-modal" onClick={e => e.stopPropagation()}>
+          <button className="auth-close" onClick={onClose}>✕</button>
+          <div className="auth-icon">🔑</div>
+          <h2 className="auth-title">Recupera tu acceso</h2>
+          <p className="auth-subtitle">
+            Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña
+          </p>
+          <div className="auth-fields">
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="tu@correo.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleResetPassword(); }}
+            />
+          </div>
+          {error && <p className="auth-error">{error}</p>}
+          <button className="auth-btn-primary" onClick={handleResetPassword} disabled={loading}>
+            {loading ? '...' : 'Enviar enlace de recuperación'}
+          </button>
+          <button
+            className="auth-btn-secondary"
+            style={{ marginTop: '10px', background: 'none', border: 'none', color: '#ffd700', cursor: 'pointer', fontSize: '0.85rem' }}
+            onClick={() => { setForgotPassword(false); setResetSent(false); setError(''); setTab('login'); }}
+          >
+            ← Volver al inicio de sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Pantalla: verificación pendiente ────────────────────
   if (pendingVerification) {
@@ -152,6 +219,14 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
               onChange={e => setRefCode(e.target.value.toUpperCase())}
               maxLength={8}
             />
+          )}
+          {tab === 'login' && (
+            <button
+              style={{ background: 'none', border: 'none', color: '#ffd700', cursor: 'pointer', fontSize: '0.8rem', padding: '2px 0', textAlign: 'right', alignSelf: 'flex-end', opacity: 0.85 }}
+              onClick={() => { setForgotPassword(true); setResetSent(false); setError(''); }}
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
           )}
         </div>
 
