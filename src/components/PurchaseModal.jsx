@@ -91,6 +91,14 @@ export default function PurchaseModal({ isOpen, onClose, session, reason, onSave
 
         <p className="auth-terms">
           Pago seguro vía Stripe · Sin suscripción · Los créditos no expiran
+          <br />
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#ffd700' }}>
+            Términos y Condiciones
+          </a>
+          {' · '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#ffd700' }}>
+            Privacidad
+          </a>
         </p>
       </div>
     </div>

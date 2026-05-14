@@ -18,8 +18,11 @@ import PurchaseModal from './components/PurchaseModal';
 import ReferralWidget from './components/ReferralWidget';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 import UnlockModal from './components/UnlockModal';
+import CookieConsent from './components/CookieConsent';
+import ToastContainer, { showToast } from './components/Toast';
+import LandingScreen from './components/LandingScreen';
 import InviteWidget from './components/InviteWidget';
-import { trackEvent } from './lib/analytics';
+import { trackEvent, identifyUser } from './lib/analytics';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -39,11 +42,8 @@ const splitFirstSentence = (text) => {
 };
 
 function App() {
-  console.log("=== ZOLTAR INITIALIZING ===");
-  console.log("Supabase configured:", !!supabase);
-  
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
-  const [phase, setPhase] = useState('languageSelection'); // languageSelection, threshold, synchrony, introspection, revelation, anchoring
+  const [phase, setPhase] = useState('landing'); // landing, languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
   const [textIndices, setTextIndices] = useState({
     greeting: 0,
@@ -356,6 +356,7 @@ function App() {
   const handlePostAuth = useCallback(async (session) => {
     setAuthSession(session);
     setAuthUser(session.user);
+    identifyUser(session.user.id, session.user.email);
     if (supabase) {
       // onAuthStateChange ya llama initializeProfile en SIGNED_IN — no duplicar aquí
       const bal = await fetchBalance(session);
@@ -446,7 +447,7 @@ function App() {
       } else {
         const detail = data.resend_error || data.error || 'Error desconocido';
         console.error('[synthesis email] API error:', data);
-        alert(`Error al enviar el correo:\n${detail}`);
+        showToast(`Error al enviar el correo: ${detail}`);
         if (data.credits !== undefined) setCredits(data.credits);
         setSynthEmailState('error');
       }
@@ -475,7 +476,7 @@ function App() {
         console.log('[handleStart] deductCredits result:', JSON.stringify(result));
       } catch (e) {
         console.error('[handleStart] deductCredits exception:', e);
-        alert(`Error al procesar el pago: ${e.message}`);
+        showToast(`Error al procesar el pago: ${e.message}`);
         return;
       }
       if (result.ok) {
@@ -486,7 +487,7 @@ function App() {
         const errMsg = result.error === 'insufficient_credits'
           ? `Créditos insuficientes (tienes ${result.credits ?? 0}, necesitas ${cost}).`
           : `Error al descontar créditos: ${result.error || 'desconocido'}`;
-        alert(errMsg);
+        showToast(errMsg);
         return;
       }
     } else {
@@ -503,18 +504,19 @@ function App() {
   };
 
   const handleNextThreshold = () => {
-    if (thresholdStep === 1 && !userName) return alert(translations.ui.your_name_placeholder);
+    if (thresholdStep === 1 && !userName) { showToast(translations.ui.your_name_placeholder, 'warning'); return; }
     if (thresholdStep === 2) {
       const { day, month, year } = birthDate;
-      if (!day || !month || !year) return alert(translations.ui.birthdate_placeholder || 'Ingresa tu fecha de nacimiento completa');
+      if (!day || !month || !year) { showToast(translations.ui.birthdate_placeholder || 'Ingresa tu fecha de nacimiento completa', 'warning'); return; }
       const d = Number(day), m = Number(month), y = Number(year);
-      if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > new Date().getFullYear())
-        return alert('Fecha inválida. Verifica día (1-31), mes (1-12) y año.');
+      if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > new Date().getFullYear()) {
+        showToast('Fecha inválida. Verifica día (1-31), mes (1-12) y año.', 'warning'); return;
+      }
       // Generar narrativa astrológica una sola vez
       const narrative = generateBirthNarrative(d, m, y, language);
       setBirthNarrative(narrative);
     }
-    if (thresholdStep === 3 && !visitReason) return alert(translations.ui.what_inquires_you);
+    if (thresholdStep === 3 && !visitReason) { showToast(translations.ui.what_inquires_you, 'warning'); return; }
     
     setIsFading(true);
     
@@ -655,7 +657,7 @@ function App() {
         const errMsg = resultDeduct.error === 'insufficient_credits'
           ? `Créditos insuficientes (tienes ${resultDeduct.credits ?? 0}, necesitas ${cost}).`
           : `Error al descontar créditos: ${resultDeduct.error || 'desconocido'}`;
-        alert(errMsg);
+        showToast(errMsg);
         return;
       }
       setCredits(resultDeduct.credits);
@@ -728,7 +730,7 @@ function App() {
     } catch (e) {
       setLoading(false);
       setVibe('healing_blue');
-      alert(`Error al procesar el pago: ${e.message}`);
+      showToast(`Error al procesar el pago: ${e.message}`);
       return;
     }
     if (!resultDeduct.ok) {
@@ -737,7 +739,7 @@ function App() {
       const errMsg = resultDeduct.error === 'insufficient_credits'
         ? `Créditos insuficientes (tienes ${resultDeduct.credits ?? 0}, necesitas ${cost}).`
         : `Error al descontar créditos: ${resultDeduct.error || 'desconocido'}`;
-      alert(errMsg);
+      showToast(errMsg);
       return;
     }
     setCredits(resultDeduct.credits);
@@ -878,7 +880,7 @@ function App() {
   };
 
   const submitDeepenQuestion = (cardId, questionText) => {
-    if (!questionText.trim()) return alert(translations.ui.revelation_confession);
+    if (!questionText.trim()) { showToast(translations.ui.revelation_confession, 'warning'); return; }
     setIsFading(true);
     speakText(translations.ui.deepen_loading, language);
     setTimeout(() => {
@@ -940,16 +942,52 @@ function App() {
     }
   };
 
+  const handleNewConsultation = () => {
+    stopSpeech();
+    stopAmbient();
+    setPhase('threshold');
+    setVibe('healing_blue');
+    setSelectedCards([]);
+    setLoading(false);
+    setInterpretation(null);
+    setIntrospectionMessage('');
+    setIsFading(false);
+    setShowSynchronyPopup(false);
+    setShowInfoPopup(false);
+    setClarifications({});
+    setRevealedStage(0);
+    setThresholdStep(0);
+    setUserName('');
+    setBirthDate({ day: '', month: '', year: '' });
+    setBirthNarrative(null);
+    setVisitReason('');
+    setDichotomousChoice('');
+    setCardsFlippedCount(0);
+    setAutoRevealStarted(false);
+    setRevelationReady(false);
+    setCanProceed(false);
+    setSynthEmailState('idle');
+    setDeepeningActive(null);
+    setAnchoringLoading(false);
+    setConsultTier(null);
+    setShowUnlockModal(false);
+    setLastDebug(null);
+  };
+
   return (
     <div className="app-container">
       <VortexCanvas vibe={vibe} />
       
       {/* Global Logo - Persistent unless in specific high-z-index phases */}
-      {phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
+      {phase !== 'landing' && phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
 
-      {!language ? (
+      {phase === 'landing' && (
+        <LandingScreen onEnter={() => setPhase('languageSelection')} />
+      )}
+
+      {phase !== 'landing' && !language ? (
         <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
           background: 'transparent', backdropFilter: 'blur(30px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
@@ -1672,6 +1710,31 @@ function App() {
                   referralCode={referralCode || null}
                   inviterName={userName || null}
                 />
+
+                {/* Nueva consulta */}
+                <div style={{ textAlign: 'center', marginTop: 32 }}>
+                  <button
+                    onClick={handleNewConsultation}
+                    style={{
+                      background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)',
+                      borderRadius: 50, padding: '12px 36px', cursor: 'pointer',
+                      color: '#ffd700', fontSize: '0.9rem', fontWeight: 600,
+                      letterSpacing: '0.05em', backdropFilter: 'blur(8px)',
+                      transition: 'background 0.2s, border-color 0.2s',
+                      fontFamily: 'inherit',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,215,0,0.16)';
+                      e.currentTarget.style.borderColor = 'rgba(255,215,0,0.6)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,215,0,0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(255,215,0,0.3)';
+                    }}
+                  >
+                    ✦ {translations.ui.new_consultation || 'Nueva consulta'}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -1708,19 +1771,21 @@ function App() {
         />
       )}
 
-      {/* Global Debug Toggle Button */}
-      <button 
-        onClick={() => setShowDebug(!showDebug)}
-        style={{
-          position: 'fixed', bottom: '25px', right: '85px', zIndex: 9999,
-          background: showDebug ? 'rgba(255,0,0,0.4)' : 'rgba(255,215,0,0.1)', 
-          border: '1px solid #ffd700', borderRadius: '50px',
-          padding: '5px 15px', cursor: 'pointer', color: '#ffd700', fontSize: '0.7rem',
-          backdropFilter: 'blur(5px)'
-        }}
-      >
-        {showDebug ? 'CLOSE DEBUG' : 'SHOW DEBUG'}
-      </button>
+      {/* Debug Console — visible only for master user */}
+      {authUser?.email === 'ascencio.gustavo@gmail.com' && (
+        <button
+          onClick={() => setShowDebug(!showDebug)}
+          style={{
+            position: 'fixed', bottom: '25px', right: '25px', zIndex: 9999,
+            background: showDebug ? 'rgba(255,0,0,0.4)' : 'rgba(255,215,0,0.1)',
+            border: '1px solid #ffd700', borderRadius: '50px',
+            padding: '5px 15px', cursor: 'pointer', color: '#ffd700', fontSize: '0.7rem',
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          {showDebug ? 'CLOSE DEBUG' : 'DEBUG'}
+        </button>
+      )}
 
       {/* Debug Console - Floating at the TOP for maximum visibility */}
       {showDebug && (
@@ -1754,6 +1819,9 @@ function App() {
           {!lastDebug && <div>Esperando respuesta del Oráculo...</div>}
         </div>
       )}
+
+      <CookieConsent />
+      <ToastContainer />
       </div>
     </div>
   );

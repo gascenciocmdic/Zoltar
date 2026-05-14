@@ -37,7 +37,7 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
       password,
       options: {
         data: { referral_code_used: refCode || null },
-        emailRedirectTo: `https://zoltar-two.vercel.app?verified=1&ref=${refCode || ''}`,
+        emailRedirectTo: `${import.meta.env.VITE_APP_URL || 'https://zoltar-two.vercel.app'}?verified=1&ref=${refCode || ''}`,
       },
     });
 
@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
       setLoading(true); setError('');
 
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://zoltar-two.vercel.app?reset=1',
+        redirectTo: `${import.meta.env.VITE_APP_URL || 'https://zoltar-two.vercel.app'}?reset=1`,
       });
 
       setLoading(false);
@@ -242,7 +242,14 @@ export default function AuthModal({ isOpen, onClose, onAuth, referralCode, langu
 
         {tab === 'register' && (
           <p className="auth-terms">
-            Al registrarte aceptas el uso de tus datos para la experiencia oracular.
+            Al registrarte aceptas nuestros{' '}
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#ffd700' }}>
+              Términos y Condiciones
+            </a>
+            {' '}y la{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#ffd700' }}>
+              Política de Privacidad
+            </a>.
           </p>
         )}
       </div>

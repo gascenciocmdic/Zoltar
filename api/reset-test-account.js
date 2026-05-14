@@ -7,6 +7,10 @@ import { createClient } from '@supabase/supabase-js';
 const TEST_EMAIL = 'ascencio.gustavo@gmail.com';
 
 export default async function handler(req, res) {
+  if (process.env.VERCEL_ENV === 'production') {
+    return res.status(404).json({ error: 'Not found' });
+  }
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.query?.secret !== 'zoltar-debug') {
     return res.status(403).json({ error: 'Acceso denegado' });
