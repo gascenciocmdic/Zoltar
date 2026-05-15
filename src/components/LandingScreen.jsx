@@ -112,14 +112,15 @@ export default function LandingScreen({ onEnter }) {
       {/* Logo */}
       <div style={{
         width: 220, height: 110,
-        backgroundImage: "url('/zoltar-logo.jpg')",
+        backgroundImage: isLight ? "url('/zoltar-logo-light.svg')" : "url('/zoltar-logo.jpg')",
         backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
-        mixBlendMode: isLight ? 'multiply' : 'screen',
+        mixBlendMode: isLight ? 'normal' : 'screen',
         marginBottom: 8,
         filter: isLight
-          ? 'hue-rotate(200deg) saturate(0.7) brightness(0.85) drop-shadow(0 0 16px rgba(124,111,160,0.3))'
+          ? 'drop-shadow(0 2px 12px rgba(124,111,160,0.25))'
           : 'drop-shadow(0 0 24px rgba(255,215,0,0.4))',
+        transition: 'filter 0.4s',
       }} />
 
       {/* Title */}
