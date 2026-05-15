@@ -44,6 +44,7 @@ const splitFirstSentence = (text) => {
 
 function App() {
   const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
   const [phase, setPhase] = useState('landing'); // landing, languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
@@ -1028,9 +1029,17 @@ function App() {
         title={isMutedState ? translations.ui.unmute : translations.ui.mute}
         style={{
           position: 'fixed', top: '25px', right: '25px', zIndex: 9999,
-          background: 'rgba(20,22,28,0.8)', border: '1px solid rgba(255,215,0,0.4)', borderRadius: '50%',
+          background: isLight ? 'rgba(255,255,255,0.88)' : 'rgba(20,22,28,0.8)',
+          border: isLight ? '1px solid rgba(124,111,160,0.35)' : '1px solid rgba(255,215,0,0.4)',
+          borderRadius: '50%',
           width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center',
-          cursor: 'pointer', color: '#ffd700', fontSize: '1.4rem', boxShadow: '0 0 15px rgba(0,0,0,0.8)'
+          cursor: 'pointer',
+          color: isLight ? '#7c6fa0' : '#ffd700',
+          fontSize: '1.4rem',
+          boxShadow: isLight
+            ? '0 2px 12px rgba(124,111,160,0.2)'
+            : '0 0 15px rgba(0,0,0,0.8)',
+          transition: 'all 0.3s ease',
         }}
       >
         {isMutedState ? '🔇' : '🔊'}

@@ -83,12 +83,14 @@ export default function LandingScreen({ onEnter }) {
       style={{
         position: 'fixed', inset: 0, zIndex: 99999,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', padding: '20px 16px',
+        justifyContent: 'center',
+        padding: 'max(60px, 5vh) 16px 24px',
         background: bg,
         backdropFilter: 'blur(4px)',
         opacity: entered ? 0 : 1,
         transition: 'opacity 0.4s ease',
         overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       {/* Theme toggle */}
@@ -110,18 +112,32 @@ export default function LandingScreen({ onEnter }) {
       </button>
 
       {/* Logo */}
-      <div style={{
-        width: 220, height: 110,
-        backgroundImage: isLight ? "url('/zoltar-logo-light.svg')" : "url('/zoltar-logo.jpg')",
-        backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        mixBlendMode: isLight ? 'normal' : 'screen',
-        marginBottom: 8,
-        filter: isLight
-          ? 'drop-shadow(0 2px 12px rgba(124,111,160,0.25))'
-          : 'drop-shadow(0 0 24px rgba(255,215,0,0.4))',
-        transition: 'filter 0.4s',
-      }} />
+      <div style={{ marginBottom: 8, lineHeight: 0 }}>
+        {isLight ? (
+          <img
+            src="/zoltar-logo-light.svg"
+            alt="Zoltar"
+            style={{
+              width: 'clamp(200px, 55vw, 280px)',
+              height: 'auto',
+              display: 'block',
+              filter: 'drop-shadow(0 2px 12px rgba(124,111,160,0.22))',
+            }}
+          />
+        ) : (
+          <img
+            src="/zoltar-logo.jpg"
+            alt="Zoltar"
+            style={{
+              width: 'clamp(200px, 55vw, 280px)',
+              height: 'auto',
+              display: 'block',
+              mixBlendMode: 'screen',
+              filter: 'drop-shadow(0 0 24px rgba(255,215,0,0.4))',
+            }}
+          />
+        )}
+      </div>
 
       {/* Title */}
       <h1 style={{
@@ -178,8 +194,8 @@ export default function LandingScreen({ onEnter }) {
       {/* Free credits hook */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 6,
-        color: hookColor, fontSize: 13, marginBottom: 40,
-        fontWeight: 600, transition: 'color 0.4s',
+        color: hookColor, fontSize: 'clamp(11px, 2.8vw, 13px)', marginBottom: 28,
+        fontWeight: 600, transition: 'color 0.4s', textAlign: 'center',
       }}>
         <span>🎁</span>
         <span>100 créditos gratis al registrarte · Sin tarjeta requerida</span>
@@ -187,29 +203,30 @@ export default function LandingScreen({ onEnter }) {
 
       {/* Feature pills */}
       <div style={{
-        display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center',
-        maxWidth: 680, marginBottom: 32,
+        display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center',
+        width: '100%', maxWidth: 680, marginBottom: 24, padding: '0 8px',
       }}>
         {FEATURES.map((f) => (
           <div key={f.title} style={{
             background: pillBg,
             border: `1px solid ${pillBorder}`,
-            borderRadius: 14, padding: '16px 20px', flex: '1 1 180px', maxWidth: 200,
+            borderRadius: 14, padding: '12px 14px',
+            flex: '1 1 140px', maxWidth: 200, minWidth: 120,
             textAlign: 'center', transition: 'background 0.4s, border-color 0.4s',
           }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{f.icon}</div>
-            <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 13, marginBottom: 6, transition: 'color 0.4s' }}>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>{f.icon}</div>
+            <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 12, marginBottom: 4, transition: 'color 0.4s' }}>
               {f.title}
             </div>
-            <div style={{ color: pillDescColor, fontSize: 12, lineHeight: 1.5, transition: 'color 0.4s' }}>{f.desc}</div>
+            <div style={{ color: pillDescColor, fontSize: 11, lineHeight: 1.5, transition: 'color 0.4s' }}>{f.desc}</div>
           </div>
         ))}
       </div>
 
       {/* Pricing anchor */}
       <div style={{
-        display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center',
-        marginBottom: 24,
+        display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center',
+        marginBottom: 20, padding: '0 8px', width: '100%', maxWidth: 420,
       }}>
         {[
           { label: 'Iniciado', credits: '150 cr', price: '$4.99' },

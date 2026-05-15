@@ -1,213 +1,168 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 220" width="440" height="220" role="img" aria-label="Zoltar — Guía Espiritual y Sanación">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 210" role="img" aria-label="Zoltar — Guía Espiritual y Sanación">
   <defs>
-    <!-- Glow filter for orb -->
-    <filter id="orbGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
+    <filter id="orbGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <!-- Soft text glow -->
-    <filter id="textGlow" x="-10%" y="-30%" width="120%" height="160%">
-      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+    <filter id="softGlow" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <!-- Halo glow ring -->
-    <filter id="haloGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
+    <filter id="haloGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <!-- Orb radial gradient: cerulean center → amethyst → indigo -->
-    <radialGradient id="orbGrad" cx="42%" cy="38%" r="58%">
-      <stop offset="0%" stop-color="#c8e8ff"/>
-      <stop offset="25%" stop-color="#7eb8e8"/>
-      <stop offset="55%" stop-color="#4a7ab5"/>
-      <stop offset="80%" stop-color="#7c6fa0"/>
+
+    <!-- Orb gradient: cerulean center → amethyst edge -->
+    <radialGradient id="orbGrad" cx="40%" cy="35%" r="60%">
+      <stop offset="0%"   stop-color="#d4eeff"/>
+      <stop offset="30%"  stop-color="#7eb8e8"/>
+      <stop offset="60%"  stop-color="#4a7ab5"/>
+      <stop offset="85%"  stop-color="#7c6fa0"/>
       <stop offset="100%" stop-color="#3d2d6e"/>
     </radialGradient>
-    <!-- Orb shimmer overlay -->
-    <radialGradient id="orbShimmer" cx="35%" cy="30%" r="45%">
-      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+    <radialGradient id="orbShimmer" cx="32%" cy="28%" r="42%">
+      <stop offset="0%"   stop-color="white" stop-opacity="0.65"/>
       <stop offset="100%" stop-color="white" stop-opacity="0"/>
     </radialGradient>
-    <!-- Inner swirl gradient -->
-    <radialGradient id="swirlGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#a8d8f0" stop-opacity="0.9"/>
-      <stop offset="50%" stop-color="#7c6fa0" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#2d2540" stop-opacity="0.1"/>
-    </radialGradient>
-    <!-- Halo ring gradient -->
-    <radialGradient id="haloGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="75%" stop-color="transparent"/>
-      <stop offset="88%" stop-color="#b8860b" stop-opacity="0.35"/>
+    <radialGradient id="haloRing" cx="50%" cy="50%" r="50%">
+      <stop offset="72%"  stop-color="transparent"/>
+      <stop offset="85%"  stop-color="#b8860b" stop-opacity="0.3"/>
       <stop offset="100%" stop-color="transparent"/>
     </radialGradient>
-    <!-- Letter gradient: deep indigo to amethyst -->
-    <linearGradient id="letterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#4a3a6e"/>
-      <stop offset="45%" stop-color="#2d2540"/>
-      <stop offset="100%" stop-color="#1e1830"/>
+    <!-- Letter fill gradient -->
+    <linearGradient id="letterFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#4a3a6e"/>
+      <stop offset="50%"  stop-color="#2d2540"/>
+      <stop offset="100%" stop-color="#1a1530"/>
     </linearGradient>
-    <!-- Letter shimmer edge -->
-    <linearGradient id="letterShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#9b8abf" stop-opacity="0.8"/>
-      <stop offset="40%" stop-color="#7c6fa0" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#4a90c4" stop-opacity="0.5"/>
+    <!-- Letter edge shimmer -->
+    <linearGradient id="letterEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#9b8abf" stop-opacity="0.9"/>
+      <stop offset="50%"  stop-color="#7c6fa0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#4a90c4" stop-opacity="0.6"/>
     </linearGradient>
     <!-- Wing gradient -->
-    <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7c6fa0" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#4a90c4" stop-opacity="0.5"/>
+    <linearGradient id="wingFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#7c6fa0" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#4a90c4" stop-opacity="0.45"/>
     </linearGradient>
   </defs>
 
-  <!-- Outer halo ring behind orb -->
-  <circle cx="220" cy="98" r="62" fill="url(#haloGrad)" filter="url(#haloGlow)"/>
-  <circle cx="220" cy="98" r="58" fill="none" stroke="#b8860b" stroke-width="0.5" stroke-opacity="0.25"/>
+  <!-- Ambient halo behind orb -->
+  <circle cx="250" cy="96" r="68" fill="url(#haloRing)" filter="url(#haloGlow)"/>
+  <circle cx="250" cy="96" r="62" fill="none" stroke="#b8860b" stroke-width="0.6" stroke-opacity="0.2"/>
 
-  <!-- === LEFT WING === -->
-  <g opacity="0.82" filter="url(#textGlow)">
-    <!-- Primary feather sweep -->
-    <path d="M 138 88 C 115 68, 88 72, 72 82 C 88 78, 110 80, 128 96 Z" fill="url(#wingGrad)"/>
-    <path d="M 136 94 C 112 82, 84 88, 68 102 C 86 94, 110 93, 130 104 Z" fill="url(#wingGrad)" opacity="0.8"/>
-    <path d="M 138 100 C 116 96, 90 106, 76 120 C 92 108, 116 105, 134 112 Z" fill="url(#wingGrad)" opacity="0.6"/>
-    <!-- Eye accent on wing tip -->
-    <ellipse cx="74" cy="84" rx="5" ry="3.5" fill="#4a90c4" opacity="0.6"/>
-    <ellipse cx="74" cy="84" rx="2.5" ry="2" fill="#2d2540" opacity="0.8"/>
-    <circle cx="73.5" cy="83.5" r="0.8" fill="white" opacity="0.9"/>
-    <!-- Feather detail lines -->
-    <line x1="128" y1="96" x2="90" y2="78" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.5"/>
-    <line x1="130" y1="104" x2="88" y2="92" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.4"/>
-    <line x1="134" y1="112" x2="92" y2="108" stroke="#7c6fa0" stroke-width="0.5" stroke-opacity="0.35"/>
+  <!-- ── LEFT WING ── -->
+  <g opacity="0.8" filter="url(#softGlow)">
+    <path d="M158 84 C132 62,100 68, 82 80 C100 74,124 78,148 94 Z" fill="url(#wingFill)"/>
+    <path d="M156 92 C128 78, 98 86, 80 102 C100 92,126 90,150 102 Z" fill="url(#wingFill)" opacity="0.75"/>
+    <path d="M158 100 C132 94,102 106, 86 122 C104 110,128 108,152 116 Z" fill="url(#wingFill)" opacity="0.55"/>
+    <!-- Eye detail -->
+    <ellipse cx="84" cy="82" rx="6" ry="4" fill="#4a90c4" opacity="0.55"/>
+    <ellipse cx="84" cy="82" rx="3" ry="2.2" fill="#2d2540" opacity="0.75"/>
+    <circle cx="83" cy="81" r="1" fill="white" opacity="0.9"/>
+    <!-- Feather veins -->
+    <line x1="148" y1="94" x2="106" y2="74" stroke="#7c6fa0" stroke-width="0.7" stroke-opacity="0.45"/>
+    <line x1="150" y1="102" x2="106" y2="90" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.35"/>
+    <line x1="152" y1="116" x2="108" y2="108" stroke="#7c6fa0" stroke-width="0.5" stroke-opacity="0.3"/>
   </g>
 
-  <!-- === RIGHT WING === -->
-  <g opacity="0.82" filter="url(#textGlow)">
-    <path d="M 302 88 C 325 68, 352 72, 368 82 C 352 78, 330 80, 312 96 Z" fill="url(#wingGrad)"/>
-    <path d="M 304 94 C 328 82, 356 88, 372 102 C 354 94, 330 93, 310 104 Z" fill="url(#wingGrad)" opacity="0.8"/>
-    <path d="M 302 100 C 324 96, 350 106, 364 120 C 348 108, 324 105, 306 112 Z" fill="url(#wingGrad)" opacity="0.6"/>
-    <!-- Eye accent on wing tip -->
-    <ellipse cx="366" cy="84" rx="5" ry="3.5" fill="#4a90c4" opacity="0.6"/>
-    <ellipse cx="366" cy="84" rx="2.5" ry="2" fill="#2d2540" opacity="0.8"/>
-    <circle cx="365.5" cy="83.5" r="0.8" fill="white" opacity="0.9"/>
-    <!-- Feather detail lines -->
-    <line x1="312" y1="96" x2="350" y2="78" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.5"/>
-    <line x1="310" y1="104" x2="352" y2="92" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.4"/>
-    <line x1="306" y1="112" x2="348" y2="108" stroke="#7c6fa0" stroke-width="0.5" stroke-opacity="0.35"/>
+  <!-- ── RIGHT WING ── -->
+  <g opacity="0.8" filter="url(#softGlow)">
+    <path d="M342 84 C368 62,400 68, 418 80 C400 74,376 78,352 94 Z" fill="url(#wingFill)"/>
+    <path d="M344 92 C372 78, 402 86, 420 102 C400 92,374 90,350 102 Z" fill="url(#wingFill)" opacity="0.75"/>
+    <path d="M342 100 C368 94,398 106, 414 122 C396 110,372 108,348 116 Z" fill="url(#wingFill)" opacity="0.55"/>
+    <ellipse cx="416" cy="82" rx="6" ry="4" fill="#4a90c4" opacity="0.55"/>
+    <ellipse cx="416" cy="82" rx="3" ry="2.2" fill="#2d2540" opacity="0.75"/>
+    <circle cx="415" cy="81" r="1" fill="white" opacity="0.9"/>
+    <line x1="352" y1="94" x2="394" y2="74" stroke="#7c6fa0" stroke-width="0.7" stroke-opacity="0.45"/>
+    <line x1="350" y1="102" x2="394" y2="90" stroke="#7c6fa0" stroke-width="0.6" stroke-opacity="0.35"/>
+    <line x1="348" y1="116" x2="392" y2="108" stroke="#7c6fa0" stroke-width="0.5" stroke-opacity="0.3"/>
   </g>
 
-  <!-- === CRYSTAL ORB (center, sits over the O) === -->
+  <!-- ── CRYSTAL ORB ── -->
   <g filter="url(#orbGlow)">
-    <!-- Shadow/depth ring -->
-    <circle cx="220" cy="100" r="46" fill="#2d2540" opacity="0.12"/>
-    <!-- Main orb body -->
-    <circle cx="220" cy="98" r="44" fill="url(#orbGrad)"/>
-    <!-- Swirl pattern inside -->
-    <g opacity="0.55">
-      <path d="M220 60 C240 70 248 90 236 108 C224 126 200 128 188 112 C176 96 184 72 204 66 C214 63 226 66 232 76" fill="none" stroke="#a8d8f0" stroke-width="1.8" stroke-linecap="round"/>
-      <path d="M220 68 C235 76 241 93 230 108 C219 122 200 122 191 108" fill="none" stroke="#c8e8ff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
-      <!-- Star/mandala center -->
-      <circle cx="220" cy="98" r="8" fill="none" stroke="#c8e8ff" stroke-width="0.8" opacity="0.8"/>
-      <circle cx="220" cy="98" r="4" fill="#a8d8f0" opacity="0.6"/>
-      <!-- Mandala petal lines -->
-      <line x1="220" y1="90" x2="220" y2="106" stroke="#c8e8ff" stroke-width="0.7" opacity="0.6"/>
-      <line x1="212" y1="98" x2="228" y2="98" stroke="#c8e8ff" stroke-width="0.7" opacity="0.6"/>
-      <line x1="214.3" y1="92.3" x2="225.7" y2="103.7" stroke="#c8e8ff" stroke-width="0.6" opacity="0.5"/>
-      <line x1="225.7" y1="92.3" x2="214.3" y2="103.7" stroke="#c8e8ff" stroke-width="0.6" opacity="0.5"/>
+    <circle cx="250" cy="96" r="50" fill="#2d2540" opacity="0.1"/>
+    <circle cx="250" cy="96" r="47" fill="url(#orbGrad)"/>
+    <!-- Inner swirl -->
+    <g opacity="0.5">
+      <path d="M250 56 C272 66,280 88,268 108 C256 128,228 130,214 112 C200 94,210 68,232 62 C242 59,256 62,264 74"
+            fill="none" stroke="#b8d8f0" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M250 66 C268 74,276 94,264 110 C252 125,232 124,220 110"
+            fill="none" stroke="#d0eaff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+      <!-- Mandala center -->
+      <circle cx="250" cy="96" r="9"  fill="none" stroke="#c8e8ff" stroke-width="0.9" opacity="0.8"/>
+      <circle cx="250" cy="96" r="4.5" fill="#aad8f0" opacity="0.65"/>
+      <line x1="250" y1="87"  x2="250" y2="105" stroke="#c8e8ff" stroke-width="0.8" opacity="0.6"/>
+      <line x1="241" y1="96"  x2="259" y2="96"  stroke="#c8e8ff" stroke-width="0.8" opacity="0.6"/>
+      <line x1="243.6" y1="89.6" x2="256.4" y2="102.4" stroke="#c8e8ff" stroke-width="0.65" opacity="0.5"/>
+      <line x1="256.4" y1="89.6" x2="243.6" y2="102.4" stroke="#c8e8ff" stroke-width="0.65" opacity="0.5"/>
     </g>
     <!-- Specular highlight -->
-    <ellipse cx="210" cy="82" rx="14" ry="10" fill="url(#orbShimmer)"/>
-    <!-- Orb edge rim -->
-    <circle cx="220" cy="98" r="44" fill="none" stroke="#9bb8d8" stroke-width="1.2" stroke-opacity="0.5"/>
+    <ellipse cx="238" cy="80" rx="15" ry="11" fill="url(#orbShimmer)"/>
+    <!-- Rim -->
+    <circle cx="250" cy="96" r="47" fill="none" stroke="#9bbbd8" stroke-width="1.3" stroke-opacity="0.45"/>
   </g>
 
-  <!-- === ZOLTAR LETTERING === -->
-  <!-- Using text with Georgia/serif — wide spaced, bold, indigo -->
-  <!-- "ZO" left side -->
-  <text
-    x="66" y="118"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="68"
-    font-weight="900"
-    letter-spacing="2"
-    fill="url(#letterGrad)"
-    filter="url(#textGlow)"
-  >Z</text>
+  <!-- ── ZOLTAR LETTERING ──
+       Strategy: use a single centered text, then mask the O area with the orb.
+       Font-size 58, letter-spacing 6, text-anchor middle.
+       "ZOLTAR" centered at x=250 → spans full width safely. -->
 
-  <!-- Spacer for orb — "LTAR" right side -->
-  <text
-    x="268" y="118"
+  <!-- Shadow pass for depth -->
+  <text x="251" y="120"
     font-family="Georgia, 'Times New Roman', serif"
-    font-size="68"
-    font-weight="900"
-    letter-spacing="2"
-    fill="url(#letterGrad)"
-    filter="url(#textGlow)"
-  >LTAR</text>
+    font-size="62" font-weight="900" letter-spacing="5"
+    fill="#1a1530" opacity="0.18"
+    text-anchor="middle">ZOLTAR</text>
 
-  <!-- Shimmer overlay on letters (lighter edge) -->
-  <text
-    x="66" y="118"
+  <!-- Main letters -->
+  <text x="250" y="118"
     font-family="Georgia, 'Times New Roman', serif"
-    font-size="68"
-    font-weight="900"
-    letter-spacing="2"
-    fill="none"
-    stroke="url(#letterShimmer)"
-    stroke-width="0.8"
-    opacity="0.6"
-  >Z</text>
-  <text
-    x="268" y="118"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="68"
-    font-weight="900"
-    letter-spacing="2"
-    fill="none"
-    stroke="url(#letterShimmer)"
-    stroke-width="0.8"
-    opacity="0.6"
-  >LTAR</text>
-
-  <!-- === MYSTICAL RUNE ACCENTS around orb === -->
-  <g font-family="Georgia, serif" font-size="11" fill="#7c6fa0" opacity="0.45" text-anchor="middle">
-    <text x="220" y="52" transform="rotate(-8,220,52)">ᚢ</text>
-    <text x="175" y="65" transform="rotate(-22,175,65)">ᚱ</text>
-    <text x="265" y="65" transform="rotate(22,265,65)">ᚾ</text>
-    <text x="162" y="100">ᛗ</text>
-    <text x="278" y="100">ᛚ</text>
-    <text x="220" y="150" transform="rotate(4,220,150)">ᛟ</text>
-  </g>
-
-  <!-- === DECORATIVE DIVIDER + SUBTITLE === -->
-  <!-- Left ornament line -->
-  <line x1="60" y1="148" x2="148" y2="148" stroke="#b8860b" stroke-width="0.8" stroke-opacity="0.5"/>
-  <circle cx="148" cy="148" r="1.5" fill="#b8860b" opacity="0.6"/>
-  <!-- Right ornament line -->
-  <line x1="380" y1="148" x2="292" y2="148" stroke="#b8860b" stroke-width="0.8" stroke-opacity="0.5"/>
-  <circle cx="292" cy="148" r="1.5" fill="#b8860b" opacity="0.6"/>
-  <!-- Diamond center -->
-  <polygon points="220,143 224,148 220,153 216,148" fill="#b8860b" opacity="0.55"/>
-
-  <!-- Subtitle -->
-  <text
-    x="220" y="172"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="13.5"
-    font-weight="400"
-    letter-spacing="3.5"
-    fill="#b8860b"
+    font-size="62" font-weight="900" letter-spacing="5"
+    fill="url(#letterFill)"
     text-anchor="middle"
-    opacity="0.85"
-  >GUÍA ESPIRITUAL Y SANACIÓN</text>
+    filter="url(#softGlow)">ZOLTAR</text>
 
-  <!-- Subtle sparkle dots -->
-  <g fill="#b8860b" opacity="0.5">
-    <circle cx="92" cy="130" r="1.2"/>
-    <circle cx="100" cy="136" r="0.8"/>
-    <circle cx="86" cy="140" r="0.7"/>
-    <circle cx="348" cy="130" r="1.2"/>
-    <circle cx="340" cy="136" r="0.8"/>
-    <circle cx="354" cy="140" r="0.7"/>
-    <circle cx="148" cy="56" r="0.9"/>
-    <circle cx="292" cy="56" r="0.9"/>
+  <!-- Shimmer stroke overlay -->
+  <text x="250" y="118"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="62" font-weight="900" letter-spacing="5"
+    fill="none" stroke="url(#letterEdge)" stroke-width="0.9" opacity="0.55"
+    text-anchor="middle">ZOLTAR</text>
+
+  <!-- ── MYSTICAL RUNE ACCENTS ── -->
+  <g font-family="Georgia, serif" font-size="11" fill="#7c6fa0" opacity="0.4" text-anchor="middle">
+    <text x="250" y="48"  transform="rotate(-5,250,48)">ᚢ</text>
+    <text x="196" y="58"  transform="rotate(-20,196,58)">ᚱ</text>
+    <text x="304" y="58"  transform="rotate(20,304,58)">ᚾ</text>
+    <text x="186" y="96">ᛗ</text>
+    <text x="314" y="96">ᛚ</text>
+    <text x="250" y="148" transform="rotate(3,250,148)">ᛟ</text>
+  </g>
+
+  <!-- ── DIVIDER + SUBTITLE ── -->
+  <line x1="68"  y1="148" x2="172" y2="148" stroke="#b8860b" stroke-width="0.9" stroke-opacity="0.45"/>
+  <circle cx="172" cy="148" r="1.6" fill="#b8860b" opacity="0.55"/>
+  <line x1="432" y1="148" x2="328" y2="148" stroke="#b8860b" stroke-width="0.9" stroke-opacity="0.45"/>
+  <circle cx="328" cy="148" r="1.6" fill="#b8860b" opacity="0.55"/>
+  <polygon points="250,142 255,148 250,154 245,148" fill="#b8860b" opacity="0.5"/>
+
+  <text x="250" y="173"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="13" font-weight="400" letter-spacing="3.5"
+    fill="#b8860b" text-anchor="middle" opacity="0.88">GUÍA ESPIRITUAL Y SANACIÓN</text>
+
+  <!-- Sparkle dots -->
+  <g fill="#b8860b" opacity="0.45">
+    <circle cx="108" cy="132" r="1.2"/>
+    <circle cx="118" cy="138" r="0.8"/>
+    <circle cx="100" cy="142" r="0.7"/>
+    <circle cx="392" cy="132" r="1.2"/>
+    <circle cx="382" cy="138" r="0.8"/>
+    <circle cx="400" cy="142" r="0.7"/>
+    <circle cx="172" cy="52"  r="0.9"/>
+    <circle cx="328" cy="52"  r="0.9"/>
   </g>
 </svg>

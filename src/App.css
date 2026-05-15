@@ -588,6 +588,37 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   .anchoring-grid {
     grid-template-columns: 1fr;
   }
+
+  /* ── Global mobile fixes ─────────────────────────────────── */
+  .card-wrapper {
+    width: 110px;
+    height: 172px;
+    margin: 6px;
+  }
+
+  .card-grid {
+    gap: 8px;
+  }
+
+  .threshold-content,
+  .synchrony-content,
+  .introspection-content,
+  .revelation-content,
+  .anchoring-content {
+    padding: 20px 14px;
+    margin: 0 8px;
+    width: calc(100% - 16px);
+    box-sizing: border-box;
+  }
+
+  .soul-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+
+  .start-button {
+    padding: 12px 28px;
+    font-size: 0.82rem;
+  }
 }
 
 .constellation-wrapper {
@@ -1144,27 +1175,55 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
 /* ── Buttons ──────────────────────────────────────────────── */
 [data-theme="light"] .start-button {
-  border-color: rgba(124, 111, 160, 0.5);
-  color: #4a3f6b;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #7c6fa0;
+  color: #2d2540;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(124, 111, 160, 0.15);
 }
 
 [data-theme="light"] .start-button:hover {
-  background: rgba(124, 111, 160, 0.12);
-  color: #2d2540;
+  background: #7c6fa0;
+  color: #fff;
   border-color: #7c6fa0;
-  box-shadow: 0 0 20px rgba(124, 111, 160, 0.2);
+  box-shadow: 0 4px 20px rgba(124, 111, 160, 0.35);
 }
 
 [data-theme="light"] .choice-button {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(124, 111, 160, 0.3);
-  color: #4a3f6b;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(124, 111, 160, 0.45);
+  color: #2d2540;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(124, 111, 160, 0.1);
+}
+
+[data-theme="light"] .choice-button:hover {
+  background: rgba(124, 111, 160, 0.1);
+  border-color: #7c6fa0;
+  color: #2d2540;
 }
 
 [data-theme="light"] .choice-button.selected {
-  background: rgba(184, 134, 11, 0.1);
+  background: rgba(184, 134, 11, 0.12);
   border-color: #b8860b;
-  box-shadow: 0 0 15px rgba(184, 134, 11, 0.15);
+  color: #6b4e00;
+  box-shadow: 0 0 15px rgba(184, 134, 11, 0.2);
+}
+
+/* ── Language buttons (text must be readable) ─────────────── */
+[data-theme="light"] .language-button {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(124, 111, 160, 0.4) !important;
+  color: #2d2540 !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(124, 111, 160, 0.1);
+}
+
+[data-theme="light"] .language-button:hover {
+  background: #7c6fa0 !important;
+  color: #fff !important;
+  border-color: #7c6fa0 !important;
+  box-shadow: 0 4px 16px rgba(124, 111, 160, 0.3);
 }
 
 /* ── Cards ────────────────────────────────────────────────── */
@@ -1427,3 +1486,51 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 [data-theme="light"] ::-webkit-scrollbar-track { background: #f0ecff; }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(124,111,160,0.3); }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(124,111,160,0.5); }
+
+/* ── Playing cards — light design ────────────────────────── */
+[data-theme="light"] .card-front,
+[data-theme="light"] .card-back {
+  background: linear-gradient(145deg, #fdfbff, #f0ecff);
+  border: 1px solid rgba(124, 111, 160, 0.25);
+  box-shadow: 0 4px 16px rgba(124, 111, 160, 0.15);
+}
+
+[data-theme="light"] .card-front {
+  background: linear-gradient(145deg, #fefcf8, #f5f0ff);
+  color: #2d2540;
+}
+
+[data-theme="light"] .card-back {
+  background: linear-gradient(135deg, #f0ecff, #e6e0f8);
+  border: 1px solid rgba(124, 111, 160, 0.2);
+  box-shadow: inset 0 0 20px rgba(124, 111, 160, 0.08);
+}
+
+[data-theme="light"] .card-pattern {
+  mix-blend-mode: multiply;
+  filter: hue-rotate(200deg) saturate(0.55) brightness(0.88) opacity(0.45);
+}
+
+[data-theme="light"] .card-wrapper:hover {
+  filter: drop-shadow(0 20px 30px rgba(124, 111, 160, 0.35));
+}
+
+[data-theme="light"] .card-wrapper.selected {
+  filter: drop-shadow(0 0 25px rgba(184, 134, 11, 0.55));
+}
+
+[data-theme="light"] .card-wrapper.selected .card-front,
+[data-theme="light"] .card-wrapper.selected .card-back {
+  border: 2px solid #b8860b;
+  box-shadow: 0 0 22px 4px rgba(184, 134, 11, 0.25);
+}
+
+/* ── Card image / text inside ─────────────────────────────── */
+[data-theme="light"] .card-front .card-image-placeholder {
+  color: #4a3f6b;
+}
+
+/* Card grid hover shadow fix */
+[data-theme="light"] .card-grid {
+  filter: none;
+}
