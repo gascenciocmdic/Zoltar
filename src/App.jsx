@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
+import { useTheme } from './lib/themeContext';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
@@ -42,6 +43,7 @@ const splitFirstSentence = (text) => {
 };
 
 function App() {
+  const { theme } = useTheme();
   const [language, setLanguage] = useState(''); // Default empty to trigger selection
   const [phase, setPhase] = useState('landing'); // landing, languageSelection, threshold, synchrony, introspection, revelation, anchoring
   
@@ -976,7 +978,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <VortexCanvas vibe={vibe} />
+      <VortexCanvas vibe={vibe} theme={theme} />
       
       {/* Global Logo - Persistent unless in specific high-z-index phases */}
       {phase !== 'landing' && phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}

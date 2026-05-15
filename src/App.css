@@ -1068,3 +1068,362 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 .signup-bonus-btn:hover {
   transform: scale(1.05);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE — Colores espirituales, sanadores, de paz
+   Palette:
+     #f5f0ff  lavender mist (bg)
+     #e8e0f8  soft amethyst (bg-2)
+     #2d2540  deep indigo (text)
+     #6b5f8a  muted violet (text-2)
+     #b8860b  warm amber (gold)
+     #7c6fa0  soft amethyst (purple)
+     #8aad99  sage green (accent)
+     #88b8d4  sky blue (accent-2)
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .app-container {
+  color: #2d2540;
+}
+
+[data-theme="light"] .global-logo {
+  mix-blend-mode: multiply;
+  filter: hue-rotate(200deg) saturate(0.7) brightness(0.85);
+  opacity: 0.9;
+}
+
+/* ── Phase containers ─────────────────────────────────────── */
+[data-theme="light"] .threshold-content,
+[data-theme="light"] .synchrony-content,
+[data-theme="light"] .introspection-content,
+[data-theme="light"] .revelation-content,
+[data-theme="light"] .anchoring-content {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(124, 111, 160, 0.2);
+  box-shadow: 0 8px 32px rgba(124, 111, 160, 0.15);
+  backdrop-filter: blur(20px);
+}
+
+[data-theme="light"] .welcome-text {
+  color: #4a3f6b;
+}
+
+[data-theme="light"] .phase-title {
+  color: #b8860b;
+  text-shadow: 0 0 20px rgba(184, 134, 11, 0.2);
+}
+
+[data-theme="light"] .subtitle {
+  color: rgba(45, 37, 64, 0.6);
+}
+
+[data-theme="light"] p,
+[data-theme="light"] .welcome-text,
+[data-theme="light"] .narrative-text {
+  color: #4a3f6b;
+}
+
+[data-theme="light"] .narrative-text {
+  color: #b8860b;
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+[data-theme="light"] .soul-input {
+  border-bottom: 1px solid rgba(124, 111, 160, 0.4);
+  color: #2d2540;
+}
+
+[data-theme="light"] .soul-input::placeholder {
+  color: rgba(45, 37, 64, 0.35);
+}
+
+[data-theme="light"] .soul-input:focus {
+  border-bottom-color: #7c6fa0;
+  box-shadow: 0 0 12px rgba(124, 111, 160, 0.2);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+[data-theme="light"] .start-button {
+  border-color: rgba(124, 111, 160, 0.5);
+  color: #4a3f6b;
+}
+
+[data-theme="light"] .start-button:hover {
+  background: rgba(124, 111, 160, 0.12);
+  color: #2d2540;
+  border-color: #7c6fa0;
+  box-shadow: 0 0 20px rgba(124, 111, 160, 0.2);
+}
+
+[data-theme="light"] .choice-button {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(124, 111, 160, 0.3);
+  color: #4a3f6b;
+}
+
+[data-theme="light"] .choice-button.selected {
+  background: rgba(184, 134, 11, 0.1);
+  border-color: #b8860b;
+  box-shadow: 0 0 15px rgba(184, 134, 11, 0.15);
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+[data-theme="light"] .revelation-card-block {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(124, 111, 160, 0.15);
+  box-shadow: 0 4px 16px rgba(124, 111, 160, 0.1);
+}
+
+[data-theme="light"] .revelation-card-block.active-reveal {
+  box-shadow: 0 0 30px rgba(184, 134, 11, 0.3);
+}
+
+/* ── Cursors & typing ─────────────────────────────────────── */
+[data-theme="light"] .typing-cursor,
+[data-theme="light"] .blinking-cursor {
+  color: rgba(184, 134, 11, 0.9);
+}
+
+[data-theme="light"] .blinking-caret {
+  background-color: #b8860b;
+}
+
+/* ── Oracle thinking ──────────────────────────────────────── */
+[data-theme="light"] .oracle-thinking-text {
+  color: rgba(184, 134, 11, 0.9);
+  text-shadow: 0 0 18px rgba(184, 134, 11, 0.2);
+}
+
+/* ── Language buttons ─────────────────────────────────────── */
+[data-theme="light"] .language-button {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(184, 134, 11, 0.35);
+  color: #4a3f6b;
+}
+
+[data-theme="light"] .language-button:hover {
+  background: rgba(184, 134, 11, 0.08);
+  border-color: #b8860b;
+  box-shadow: 0 0 20px rgba(184, 134, 11, 0.15);
+}
+
+/* ── Anchoring blocks ─────────────────────────────────────── */
+[data-theme="light"] .decree-box {
+  background-color: rgba(255, 252, 240, 0.9);
+  background-image: radial-gradient(circle at top left, rgba(184,134,11,0.08), transparent 70%);
+  border: 1px solid rgba(184, 134, 11, 0.25);
+  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.08);
+}
+
+[data-theme="light"] .task-box {
+  background-color: rgba(248, 244, 255, 0.9);
+  background-image: radial-gradient(circle at bottom right, rgba(124,111,160,0.1), transparent 70%);
+  border: 1px solid rgba(124, 111, 160, 0.25);
+  box-shadow: 0 4px 20px rgba(124, 111, 160, 0.08);
+}
+
+[data-theme="light"] .anchor-block::before {
+  mix-blend-mode: multiply;
+  opacity: 0.05;
+}
+
+[data-theme="light"] .decree-box .mystic-title { color: #b8860b; }
+[data-theme="light"] .task-box .mystic-title   { color: #7c6fa0; }
+[data-theme="light"] .decree-box .mystic-ornament-top,
+[data-theme="light"] .decree-box .mystic-ornament-bottom { background: rgba(184,134,11,0.3); }
+[data-theme="light"] .task-box .mystic-ornament-top,
+[data-theme="light"] .task-box .mystic-ornament-bottom   { background: rgba(124,111,160,0.3); }
+
+[data-theme="light"] .decree-text,
+[data-theme="light"] .task-text {
+  color: #4a3f6b;
+}
+
+/* ── Constellation wrapper ────────────────────────────────── */
+[data-theme="light"] .constellation-wrapper {
+  background: radial-gradient(circle, rgba(240,236,255,0.8) 0%, rgba(240,236,255,0) 70%);
+}
+
+/* ── Auth / modals ────────────────────────────────────────── */
+[data-theme="light"] .auth-overlay {
+  background: rgba(200, 190, 230, 0.5);
+  backdrop-filter: blur(16px);
+}
+
+[data-theme="light"] .auth-modal {
+  background: linear-gradient(145deg, #faf8ff, #f0ecff);
+  border: 1px solid rgba(184, 134, 11, 0.2);
+  box-shadow: 0 0 40px rgba(124, 111, 160, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .auth-close {
+  color: rgba(45, 37, 64, 0.4);
+}
+[data-theme="light"] .auth-close:hover { color: #2d2540; }
+
+[data-theme="light"] .auth-title {
+  color: #b8860b;
+}
+
+[data-theme="light"] .auth-subtitle {
+  color: rgba(45, 37, 64, 0.65);
+}
+
+[data-theme="light"] .auth-note { color: #7c6fa0; }
+
+[data-theme="light"] .auth-tabs {
+  background: rgba(124, 111, 160, 0.08);
+}
+
+[data-theme="light"] .auth-tab {
+  color: rgba(45, 37, 64, 0.5);
+}
+
+[data-theme="light"] .auth-tab.active {
+  background: rgba(184, 134, 11, 0.12);
+  color: #b8860b;
+}
+
+[data-theme="light"] .auth-input {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(184, 134, 11, 0.2);
+  color: #2d2540;
+}
+[data-theme="light"] .auth-input::placeholder { color: rgba(45, 37, 64, 0.3); }
+[data-theme="light"] .auth-input:focus { border-color: rgba(184, 134, 11, 0.5); }
+
+[data-theme="light"] .auth-btn-primary {
+  background: linear-gradient(135deg, #7c6fa0, #5b8db8);
+}
+
+[data-theme="light"] .auth-btn-secondary {
+  border-color: rgba(124, 111, 160, 0.3);
+  color: rgba(45, 37, 64, 0.7);
+}
+[data-theme="light"] .auth-btn-secondary:hover {
+  border-color: rgba(184, 134, 11, 0.4);
+  color: #b8860b;
+}
+
+[data-theme="light"] .auth-terms {
+  color: rgba(45, 37, 64, 0.35);
+}
+
+/* ── Credit widget ────────────────────────────────────────── */
+[data-theme="light"] .credit-pill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(184, 134, 11, 0.35);
+  color: #b8860b;
+  box-shadow: 0 2px 12px rgba(124, 111, 160, 0.15);
+}
+
+[data-theme="light"] .credit-dropdown {
+  background: linear-gradient(145deg, #faf8ff, #f0ecff);
+  border-color: rgba(184, 134, 11, 0.2);
+  box-shadow: 0 20px 60px rgba(124, 111, 160, 0.15);
+}
+
+[data-theme="light"] .credit-dd-email { color: rgba(45, 37, 64, 0.5); }
+[data-theme="light"] .credit-dd-close { color: rgba(45, 37, 64, 0.4); }
+
+[data-theme="light"] .credit-dd-balance {
+  background: rgba(184, 134, 11, 0.07);
+}
+[data-theme="light"] .credit-dd-num { color: #b8860b; }
+[data-theme="light"] .credit-dd-label { color: rgba(45, 37, 64, 0.5); }
+
+[data-theme="light"] .credit-cost-row {
+  color: rgba(45, 37, 64, 0.5);
+  border-bottom-color: rgba(124, 111, 160, 0.08);
+}
+
+[data-theme="light"] .credit-dd-buy {
+  background: linear-gradient(135deg, #7c6fa0, #5b8db8);
+}
+
+[data-theme="light"] .credit-dd-logout {
+  border-color: rgba(124, 111, 160, 0.15);
+  color: rgba(45, 37, 64, 0.4);
+}
+[data-theme="light"] .credit-dd-logout:hover {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, 0.3);
+}
+
+/* ── Purchase modal ───────────────────────────────────────── */
+[data-theme="light"] .purchase-modal {
+  background: linear-gradient(145deg, #faf8ff, #f0ecff);
+  border: 1px solid rgba(184, 134, 11, 0.2);
+  box-shadow: 0 0 40px rgba(124, 111, 160, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .purchase-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(124, 111, 160, 0.2);
+}
+[data-theme="light"] .purchase-card:hover {
+  border-color: rgba(184, 134, 11, 0.4);
+}
+[data-theme="light"] .purchase-card-popular {
+  border-color: rgba(184, 134, 11, 0.4);
+  background: rgba(184, 134, 11, 0.05);
+}
+[data-theme="light"] .purchase-badge { background: #7c6fa0; }
+[data-theme="light"] .purchase-card-name { color: rgba(45, 37, 64, 0.8); }
+[data-theme="light"] .purchase-card-credits { color: #b8860b; }
+[data-theme="light"] .purchase-card-subs { color: rgba(45, 37, 64, 0.4); }
+[data-theme="light"] .purchase-card-price { color: #7c6fa0; }
+[data-theme="light"] .purchase-btn {
+  background: linear-gradient(135deg, #7c6fa0, #5b8db8);
+}
+
+/* ── Referral widget ──────────────────────────────────────── */
+[data-theme="light"] .referral-code-box {
+  background: rgba(184, 134, 11, 0.06);
+  border-color: rgba(184, 134, 11, 0.2);
+}
+[data-theme="light"] .referral-code-label { color: rgba(45, 37, 64, 0.4); }
+[data-theme="light"] .referral-code-value { color: #b8860b; }
+
+[data-theme="light"] .referral-url-box { background: rgba(255, 255, 255, 0.6); }
+[data-theme="light"] .referral-url-text { color: rgba(45, 37, 64, 0.4); }
+
+[data-theme="light"] .referral-reward-row span:first-child { color: #b8860b; }
+[data-theme="light"] .referral-reward-row span:last-child  { color: rgba(45, 37, 64, 0.55); }
+
+/* ── Teaser / unlock panels ───────────────────────────────── */
+[data-theme="light"] .teaser-container {
+  background: radial-gradient(circle at center, rgba(124, 111, 160, 0.06) 0%, transparent 70%);
+  border-color: rgba(124, 111, 160, 0.1);
+}
+
+[data-theme="light"] .unlock-panel {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(184, 134, 11, 0.2);
+}
+
+[data-theme="light"] .signup-bonus-box {
+  background: linear-gradient(135deg, rgba(124,111,160,0.1), rgba(91,141,184,0.06));
+  border-color: #7c6fa0;
+}
+[data-theme="light"] .signup-bonus-text { color: #2d2540; }
+[data-theme="light"] .signup-bonus-btn  { background: #7c6fa0; }
+
+/* ── Steamy blur ──────────────────────────────────────────── */
+[data-theme="light"] .steamy-blur { color: rgba(45, 37, 64, 0.5); }
+
+/* ── Relaxed pulse (gold glow) ────────────────────────────── */
+[data-theme="light"] .blinking-button {
+  animation: relaxPulseLight 3s infinite ease-in-out;
+}
+
+@keyframes relaxPulseLight {
+  0%   { transform: scale(1);    box-shadow: 0 0 0px  rgba(184,134,11,0); }
+  50%  { transform: scale(1.02); box-shadow: 0 0 16px rgba(184,134,11,0.25); }
+  100% { transform: scale(1);    box-shadow: 0 0 0px  rgba(184,134,11,0); }
+}
+
+/* ── Scrollbar in light mode ──────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar-track { background: #f0ecff; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(124,111,160,0.3); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(124,111,160,0.5); }

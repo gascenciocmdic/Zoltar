@@ -5,6 +5,7 @@ import App from './App.jsx';
 import UATWrapper from './UATWrapper.jsx';
 import TermsPage from './components/legal/TermsPage.jsx';
 import PrivacyPage from './components/legal/PrivacyPage.jsx';
+import { ThemeProvider } from './lib/themeContext.jsx';
 
 const path = window.location.pathname;
 
@@ -17,6 +18,8 @@ function Root() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Root />
+    <ThemeProvider>
+      <Root />
+    </ThemeProvider>
   </StrictMode>,
 );

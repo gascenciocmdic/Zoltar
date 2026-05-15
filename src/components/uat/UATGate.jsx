@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-const UAT_USER = 'uat';
-const UAT_PASS = 'zoltar2024';
+const UAT_USER = 'ascencio.gustavo@gmail.com';
+const UAT_PASS = 'Zoltar2026';
 const SESSION_KEY = 'zoltar_uat_auth';
 
 export function isUATAuthenticated() {
