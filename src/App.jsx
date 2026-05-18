@@ -1446,7 +1446,10 @@ function App() {
 
             return (
               <>
-                <div className="selected-cards-display" style={{ position: 'relative' }}>
+                <div
+                  className="selected-cards-display revelation-cloth"
+                  style={{ position: 'relative', backgroundImage: `url(${mostrarManos})` }}
+                >
                   <Dragonfly visible={cardsFlippedCount < 3} />
                   {selectedCards.map((card, index) => {
                     const clar = clarifications[card.id];
