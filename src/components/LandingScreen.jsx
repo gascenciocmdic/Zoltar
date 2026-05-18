@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../lib/themeContext';
+import logoDark from '../assets/Logo_Zoltar_oscuro.png';
+import logoClaro from '../assets/Logo_Zoltar_claro.png';
 
 const FEATURES = [
   {
@@ -115,7 +117,7 @@ export default function LandingScreen({ onEnter }) {
       <div style={{ marginBottom: 8, lineHeight: 0 }}>
         {isLight ? (
           <img
-            src="/zoltar-logo-light.svg"
+            src={logoClaro}
             alt="Zoltar"
             style={{
               width: 'clamp(200px, 55vw, 280px)',
@@ -126,7 +128,7 @@ export default function LandingScreen({ onEnter }) {
           />
         ) : (
           <img
-            src="/zoltar-logo.jpg"
+            src={logoDark}
             alt="Zoltar"
             style={{
               width: 'clamp(200px, 55vw, 280px)',
