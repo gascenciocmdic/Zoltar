@@ -1233,9 +1233,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
           <div className="popup-box" style={{
-             background: 'rgba(20,22,28,0.95)', padding: '50px', borderRadius: '20px',
-             maxWidth: '90%', width: '500px', textAlign: 'center', border: '1px solid rgba(255,215,0,0.3)',
-             boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.05)'
+             padding: '50px', borderRadius: '20px',
+             maxWidth: '90%', width: '500px', textAlign: 'center',
           }}>
             <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.4rem', letterSpacing: '2px', textTransform: 'uppercase'}}>{translations.ui.info_popup_title}</h3>
             <p style={{fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '20px', fontStyle: 'italic', color: '#b0b0b5', fontWeight: '300'}}>
@@ -1262,9 +1261,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
           <div className="popup-box" style={{
-             background: 'rgba(20,22,28,0.95)', padding: '50px', borderRadius: '20px',
-             maxWidth: '500px', textAlign: 'center', border: '1px solid rgba(255,215,0,0.3)',
-             boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.05)'
+             padding: '50px', borderRadius: '20px',
+             maxWidth: '500px', textAlign: 'center',
           }}>
             <h3 style={{color: '#ffd700', marginBottom: '20px', fontSize: '1.6rem', letterSpacing: '2px', textTransform: 'uppercase'}}>{translations.ui.call_title}</h3>
             <p style={{fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '40px', fontStyle: 'italic', color: '#e0e0e0', fontWeight: '300'}}>
@@ -1311,7 +1309,7 @@ function App() {
             
             {selectedCards.length === 3 && (
               <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
-                <button className="start-button blinking-button" onClick={handleGoToAstralAlignment} disabled={loading} style={{ background: 'rgba(20,22,28,0.95)', padding: '15px 50px', boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.4)', display: 'block', margin: '0 auto', width: '100%' }}>
+                <button className="start-button blinking-button continue-btn" onClick={handleGoToAstralAlignment} disabled={loading} style={{ display: 'block', margin: '0 auto', width: '100%' }}>
                   {translations.ui.continue}
                 </button>
               </div>

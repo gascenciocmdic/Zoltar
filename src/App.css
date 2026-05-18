@@ -1293,7 +1293,8 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
 /* ── Constellation wrapper ────────────────────────────────── */
 [data-theme="light"] .constellation-wrapper {
-  background: radial-gradient(circle, rgba(240,236,255,0.8) 0%, rgba(240,236,255,0) 70%);
+  background: radial-gradient(circle, rgba(13,13,26,0.95) 0%, rgba(13,13,26,0.7) 70%);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.12);
 }
 
 /* ── Auth / modals ────────────────────────────────────────── */
@@ -1521,6 +1522,39 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 /* ── Card image / text inside ─────────────────────────────── */
 [data-theme="light"] .card-front .card-image-placeholder {
   color: #4a3f6b;
+}
+
+/* ── Continue button ──────────────────────────────────────── */
+.continue-btn {
+  background: rgba(20, 22, 28, 0.95);
+  padding: 15px 50px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+[data-theme="light"] .continue-btn {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #3b0764 !important;
+  border: 1px solid #7c3aed !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15) !important;
+}
+
+/* ── Popup box ────────────────────────────────────────────── */
+.popup-box {
+  background: rgba(15, 12, 28, 0.97);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+[data-theme="light"] .popup-box {
+  background: rgba(248, 244, 255, 0.97) !important;
+  color: #2d2540 !important;
+  border: 1px solid #a78bfa !important;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2) !important;
+}
+
+[data-theme="light"] .popup-overlay {
+  background: rgba(200, 190, 240, 0.4) !important;
 }
 
 /* Card grid hover shadow fix */
