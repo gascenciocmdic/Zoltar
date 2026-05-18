@@ -1296,10 +1296,11 @@ function App() {
           {selectedCards.length > 0 && (
             <div className="fan-selected-tray">
               {selectedCards.map((card) => (
-                <div key={card.id} className="fan-tray-card">
+                <div key={card.id} className="fan-tray-card" title="Clic para devolver al abanico">
                   <Card
                     card={card}
                     isSelected={true}
+                    onSelect={handleSelectCard}
                     logoSrc={isLight ? logoClaro : logoDark}
                   />
                 </div>
@@ -1430,10 +1431,14 @@ function App() {
 
                   {tentCard && (
                     <div className="fan-selected-tray">
-                      <div className="fan-tray-card">
+                      <div className="fan-tray-card" title="Clic para devolver al abanico">
                         <Card
                           card={tentCard}
                           isSelected={true}
+                          onSelect={() => setClarifications(prev => ({
+                            ...prev,
+                            [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: null }
+                          }))}
                           logoSrc={isLight ? logoClaro : logoDark}
                         />
                       </div>

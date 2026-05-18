@@ -1693,49 +1693,68 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   justify-content: flex-start;
   overflow: hidden;
 
-  /* ── MESA DE MADERA VIEJA — vista desde arriba ──────────────────
-     Tablones verticales (van de frente a fondo), tono café-gris envejecido
+  /* ── MESA DE MADERA NATURAL — vista desde arriba ────────────────
+     Tablones con grano orgánico, juntas irregulares, nudos y veta
   ─────────────────────────────────────────────────────────────── */
   background-color: #4a3820;
   background-image:
-    /* Juntas entre tablones — líneas verticales oscuras */
+    /* Capa 1: ruido orgánico feTurbulence — da imperfección natural */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.022 0.72' numOctaves='6' seed='11' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='0.11'/%3E%3C/svg%3E"),
+    /* Capa 2: juntas principales — ancho variable para aspecto natural */
+    repeating-linear-gradient(
+      89.5deg,
+      rgba(0,0,0,0.48)  0px,  rgba(0,0,0,0.48)  1px,
+      rgba(10,5,1,0.28) 1px,  rgba(10,5,1,0.28) 4px,
+      transparent       4px,  transparent       83px,
+      rgba(0,0,0,0.35) 83px,  rgba(0,0,0,0.35) 85px,
+      rgba(12,6,1,0.20) 85px, rgba(12,6,1,0.20) 88px,
+      transparent       88px, transparent      175px,
+      rgba(0,0,0,0.42) 175px, rgba(0,0,0,0.42) 177px,
+      rgba(8,4,1,0.25) 177px, rgba(8,4,1,0.25) 180px,
+      transparent      180px, transparent      270px
+    ),
+    /* Capa 3: veta interna — líneas diagonales sutiles e irregulares */
+    repeating-linear-gradient(
+      177.5deg,
+      transparent        0px,
+      rgba(0,0,0,0.06)   1px,  transparent        3px,
+      transparent        8px,
+      rgba(200,155,70,0.045) 9px, transparent       11px,
+      transparent        19px,
+      rgba(0,0,0,0.04)  20px,  transparent        22px,
+      transparent        31px
+    ),
+    /* Capa 4: segunda veta — ángulo ligeramente distinto para más naturalidad */
+    repeating-linear-gradient(
+      180.8deg,
+      transparent       0px,
+      rgba(0,0,0,0.03)  2px, transparent        4px,
+      transparent       13px,
+      rgba(180,130,50,0.035) 14px, transparent      16px,
+      transparent       27px
+    ),
+    /* Capa 5: alternancia de tono entre tablones */
     repeating-linear-gradient(
       90deg,
-      rgba(0,0,0,0.40) 0px, rgba(0,0,0,0.40) 2px,
-      rgba(15,8,2,0.22) 2px, rgba(15,8,2,0.22) 5px,
-      transparent      5px, transparent      96px,
-      rgba(0,0,0,0.32) 96px, rgba(0,0,0,0.32) 98px,
-      rgba(15,8,2,0.18) 98px, rgba(15,8,2,0.18) 101px,
-      transparent      101px, transparent    192px
+      rgba(12,6,1,0.24)   0px,  rgba(12,6,1,0.24)  44px,
+      rgba(80,52,16,0.11) 44px, rgba(80,52,16,0.11) 88px,
+      rgba(6,3,0,0.30)    88px, rgba(6,3,0,0.30)   132px,
+      rgba(65,40,12,0.13) 132px,rgba(65,40,12,0.13) 176px,
+      rgba(14,8,2,0.20)  176px, rgba(14,8,2,0.20)  220px,
+      rgba(75,50,18,0.10) 220px,rgba(75,50,18,0.10) 264px
     ),
-    /* Veta de la madera — líneas casi horizontales dentro de cada tablón */
-    repeating-linear-gradient(
-      178deg,
-      transparent 0px,
-      rgba(0,0,0,0.05) 1px, transparent 3px,
-      transparent 9px,
-      rgba(200,160,80,0.04) 10px, transparent 12px,
-      transparent 22px
-    ),
-    /* Variación de tono entre tablones — alternancia cálida/fría */
-    repeating-linear-gradient(
-      90deg,
-      rgba(12,6,1,0.22)  0px,  rgba(12,6,1,0.22)  48px,
-      rgba(90,60,20,0.1) 48px, rgba(90,60,20,0.1)  96px,
-      rgba(6,3,0,0.28)   96px, rgba(6,3,0,0.28)   144px,
-      rgba(70,45,15,0.12) 144px, rgba(70,45,15,0.12) 192px
-    ),
-    /* Nudo de madera izquierdo */
-    radial-gradient(ellipse 6% 4% at 22% 60%, rgba(20,10,2,0.45) 0%, rgba(30,18,6,0.2) 60%, transparent 100%),
-    /* Nudo derecho */
-    radial-gradient(ellipse 5% 3% at 74% 38%, rgba(20,10,2,0.35) 0%, rgba(25,15,5,0.15) 55%, transparent 100%),
-    /* Vignette lateral y superior para profundidad */
-    radial-gradient(ellipse 110% 90% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%),
-    /* Tono general: café-gris envejecido */
+    /* Capa 6: nudos de madera — irregulares en posición */
+    radial-gradient(ellipse 7% 5%  at 19% 58%, rgba(18,9,2,0.50)  0%, rgba(28,16,5,0.22) 55%, transparent 100%),
+    radial-gradient(ellipse 4% 3%  at 61% 27%, rgba(15,7,1,0.40)  0%, rgba(22,12,4,0.18) 50%, transparent 100%),
+    radial-gradient(ellipse 5% 4%  at 82% 73%, rgba(20,10,2,0.38) 0%, rgba(26,14,4,0.16) 52%, transparent 100%),
+    radial-gradient(ellipse 3% 2%  at 38% 85%, rgba(14,7,1,0.30)  0%, transparent 100%),
+    /* Capa 7: vignette suave en bordes */
+    radial-gradient(ellipse 110% 90% at 50% 50%, transparent 45%, rgba(0,0,0,0.58) 100%),
+    /* Capa 8: tono general café envejecido, con variación vertical sutil */
     linear-gradient(173deg,
-      #42301c 0%,  #5a4228 12%, #6b5234 25%,
-      #4e3c22 38%, #5c4830 50%, #65503a 62%,
-      #4a3820 75%, #564230 87%, #48361e 100%
+      #3e2c18 0%,  #564028 10%, #6a5032 22%,
+      #4c3a20 34%, #5a4630 46%, #635032 58%,
+      #4a3820 70%, #55412e 82%, #4a3720 92%, #3c2c16 100%
     );
 }
 
@@ -1845,11 +1864,17 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   pointer-events: none; /* permite clic en cartas del abanico debajo */
 }
 
-/* Cada carta del tray sí recibe clicks */
+/* Cada carta del tray sí recibe clicks — clic devuelve al abanico */
 .fan-tray-card {
   pointer-events: auto;
+  cursor: pointer;
   animation: cardRiseFromFan 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
   filter: drop-shadow(0 16px 32px rgba(0,0,0,0.85)) drop-shadow(0 0 20px rgba(255,215,0,0.6));
+  transition: filter 0.25s ease;
+}
+
+.fan-tray-card:hover {
+  filter: drop-shadow(0 16px 32px rgba(0,0,0,0.85)) drop-shadow(0 0 28px rgba(255,120,80,0.7));
 }
 
 /* Anular el translateY del .selected en el tray — ya están posicionadas absolutamente */
@@ -1923,40 +1948,57 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   margin: 20px 0;
   padding: 32px 16px 40px;
 
-  /* Misma mesa de madera que el abanico */
+  /* Misma mesa de madera natural que el abanico — seed distinto para variedad */
   background-color: #4a3820;
   background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.022 0.72' numOctaves='6' seed='17' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='0.10'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(
+      90.4deg,
+      rgba(0,0,0,0.46)  0px,  rgba(0,0,0,0.46)  1px,
+      rgba(10,5,1,0.26) 1px,  rgba(10,5,1,0.26) 4px,
+      transparent       4px,  transparent       79px,
+      rgba(0,0,0,0.38) 79px,  rgba(0,0,0,0.38) 81px,
+      rgba(12,6,1,0.22) 81px, rgba(12,6,1,0.22) 84px,
+      transparent       84px, transparent      170px,
+      rgba(0,0,0,0.40) 170px, rgba(0,0,0,0.40) 172px,
+      rgba(8,4,1,0.24) 172px, rgba(8,4,1,0.24) 175px,
+      transparent      175px, transparent      264px
+    ),
+    repeating-linear-gradient(
+      178.2deg,
+      transparent        0px,
+      rgba(0,0,0,0.058)  1px, transparent        3px,
+      transparent        9px,
+      rgba(195,150,65,0.042) 10px, transparent       12px,
+      transparent        21px,
+      rgba(0,0,0,0.038) 22px,  transparent        24px,
+      transparent        33px
+    ),
+    repeating-linear-gradient(
+      180.6deg,
+      transparent       0px,
+      rgba(0,0,0,0.032) 2px, transparent        4px,
+      transparent       14px,
+      rgba(175,125,45,0.032) 15px, transparent      17px,
+      transparent       28px
+    ),
     repeating-linear-gradient(
       90deg,
-      rgba(0,0,0,0.40) 0px, rgba(0,0,0,0.40) 2px,
-      rgba(15,8,2,0.22) 2px, rgba(15,8,2,0.22) 5px,
-      transparent      5px, transparent      96px,
-      rgba(0,0,0,0.32) 96px, rgba(0,0,0,0.32) 98px,
-      rgba(15,8,2,0.18) 98px, rgba(15,8,2,0.18) 101px,
-      transparent      101px, transparent    192px
+      rgba(12,6,1,0.22)   0px,  rgba(12,6,1,0.22)  42px,
+      rgba(85,55,18,0.12) 42px, rgba(85,55,18,0.12) 84px,
+      rgba(6,3,0,0.28)    84px, rgba(6,3,0,0.28)   126px,
+      rgba(68,42,14,0.14) 126px,rgba(68,42,14,0.14) 168px,
+      rgba(14,8,2,0.20)  168px, rgba(14,8,2,0.20)  210px,
+      rgba(72,48,16,0.11) 210px,rgba(72,48,16,0.11) 252px
     ),
-    repeating-linear-gradient(
-      178deg,
-      transparent 0px,
-      rgba(0,0,0,0.05) 1px, transparent 3px,
-      transparent 9px,
-      rgba(200,160,80,0.04) 10px, transparent 12px,
-      transparent 22px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(12,6,1,0.22)   0px,  rgba(12,6,1,0.22)   48px,
-      rgba(90,60,20,0.1)  48px, rgba(90,60,20,0.1)   96px,
-      rgba(6,3,0,0.28)    96px, rgba(6,3,0,0.28)    144px,
-      rgba(70,45,15,0.12) 144px, rgba(70,45,15,0.12) 192px
-    ),
-    radial-gradient(ellipse 6% 4% at 18% 55%, rgba(20,10,2,0.45) 0%, transparent 100%),
-    radial-gradient(ellipse 5% 3% at 78% 35%, rgba(20,10,2,0.35) 0%, transparent 100%),
-    radial-gradient(ellipse 110% 90% at 50% 50%, transparent 50%, rgba(0,0,0,0.5) 100%),
+    radial-gradient(ellipse 6% 4%  at 24% 62%, rgba(18,9,2,0.48)  0%, rgba(28,15,4,0.20) 55%, transparent 100%),
+    radial-gradient(ellipse 5% 3%  at 72% 30%, rgba(15,7,1,0.38)  0%, rgba(22,11,3,0.16) 50%, transparent 100%),
+    radial-gradient(ellipse 3% 2%  at 48% 80%, rgba(14,7,1,0.28)  0%, transparent 100%),
+    radial-gradient(ellipse 110% 90% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%),
     linear-gradient(173deg,
-      #42301c 0%, #5a4228 12%, #6b5234 25%,
-      #4e3c22 38%, #5c4830 50%, #65503a 62%,
-      #4a3820 75%, #564230 87%, #48361e 100%
+      #3e2c18 0%,  #564028 10%, #6a5032 22%,
+      #4c3a20 34%, #5a4630 46%, #635032 58%,
+      #4a3820 70%, #55412e 82%, #4a3720 92%, #3c2c16 100%
     );
 }
 
