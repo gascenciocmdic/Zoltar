@@ -26,6 +26,8 @@ import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
+import seleccionaManos from './assets/Selecciona_cartas.jpeg';
+import mostrarManos from './assets/Mostrar_seleccionadas.jpeg';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -1287,27 +1289,33 @@ function App() {
           <>
             <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>{translations.ui.card_selection_subtitle} ({selectedCards.length}/3).</p>
             
-            <div className="card-grid" style={{ position: 'relative' }}>
-              <Dragonfly visible={true} />
-              {shuffledDeck.map((card, index) => {
-                const seed = index * 137.5;
-                const spreadX = Math.sin(seed) * 40;
-                const spreadY = Math.cos(seed) * 30;
-                const rotation = Math.sin(seed * 2) * 18;
-                
-                return (
-                  <Card
-                    key={card.id}
-                    card={card}
-                    isSelected={selectedCards.find(c => c.id === card.id)}
-                    onSelect={handleSelectCard}
-                    logoSrc={isLight ? logoClaro : logoDark}
-                    style={{
-                      '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
-                    }}
-                  />
-                );
-              })}
+            <div className="synchrony-table">
+              <div
+                className="synchrony-hands"
+                style={{ backgroundImage: `url(${seleccionaManos})` }}
+              />
+              <div className="card-grid" style={{ position: 'relative' }}>
+                <Dragonfly visible={true} />
+                {shuffledDeck.map((card, index) => {
+                  const seed = index * 137.5;
+                  const spreadX = Math.sin(seed) * 40;
+                  const spreadY = Math.cos(seed) * 30;
+                  const rotation = Math.sin(seed * 2) * 18;
+
+                  return (
+                    <Card
+                      key={card.id}
+                      card={card}
+                      isSelected={selectedCards.find(c => c.id === card.id)}
+                      onSelect={handleSelectCard}
+                      logoSrc={isLight ? logoClaro : logoDark}
+                      style={{
+                        '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
+                      }}
+                    />
+                  );
+                })}
+              </div>
             </div>
             
             {selectedCards.length === 3 && (

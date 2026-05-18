@@ -1561,3 +1561,49 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 [data-theme="light"] .card-grid {
   filter: none;
 }
+
+/* ── Synchrony table (mesa de tarot) ─────────────────────── */
+.synchrony-table {
+  background: linear-gradient(135deg, #2c1a08 0%, #3d2510 50%, #1a0c04 100%);
+  border-radius: 18px;
+  padding: 28px 16px 20px;
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 200, 100, 0.1);
+}
+
+.synchrony-hands {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38%;
+  background-size: cover;
+  background-position: center bottom;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 50%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 50%, black 100%);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.synchrony-table .card-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.synchrony-table .card-grid .card-wrapper {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
+}
+
+@media (max-width: 480px) {
+  .synchrony-table {
+    padding: 18px 8px 14px;
+    border-radius: 12px;
+  }
+  .synchrony-hands {
+    height: 30%;
+  }
+}
