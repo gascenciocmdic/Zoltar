@@ -1678,3 +1678,194 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 [data-theme="light"] .action-button-reveal:not(:disabled) {
   animation: buttonFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards, relaxPulseLight 3s 1.2s infinite ease-in-out;
 }
+
+/* ══════════════════════════════════════════════════════════
+   FAN SCENE — Selección de cartas en abanico
+══════════════════════════════════════════════════════════ */
+.fan-scene {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.fan-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(8, 3, 18, 0.88) 0%,
+    rgba(8, 3, 18, 0.55) 35%,
+    rgba(8, 3, 18, 0.72) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="light"] .fan-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(20, 5, 40, 0.80) 0%,
+    rgba(20, 5, 40, 0.45) 35%,
+    rgba(20, 5, 40, 0.65) 100%
+  );
+}
+
+.fan-header {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 40px 20px 20px;
+  pointer-events: none;
+}
+
+.fan-title {
+  font-size: 1.4rem;
+  color: #ffd700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  margin: 0 0 8px 0;
+}
+
+[data-theme="light"] .fan-title {
+  color: #f0d060;
+  text-shadow: 0 0 16px rgba(240, 208, 96, 0.4), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.fan-subtitle {
+  font-size: 0.82rem;
+  color: rgba(196, 181, 253, 0.75);
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Contenedor del abanico — pivot point */
+.fan-deck {
+  position: absolute;
+  bottom: -420px; /* pivot oculto bajo el contenedor */
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 5;
+}
+
+/* Cada slot gira alrededor del pivot */
+.fan-slot {
+  position: absolute;
+  left: -70px;   /* centrar la carta de 140px */
+  top: -640px;   /* las cartas aparecen 640px arriba del pivot */
+  width: 140px;
+  height: 220px;
+  transform-origin: 70px 640px; /* centro-x de la carta, 640px = distancia al pivot */
+  transition: z-index 0.1s, filter 0.3s;
+  cursor: pointer;
+}
+
+.fan-slot:hover {
+  z-index: 200;
+}
+
+.fan-slot-selected {
+  z-index: 100;
+}
+
+/* Botón continuar flotante */
+.fan-continue {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: 100%;
+  max-width: 300px;
+  padding: 0 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .fan-slot {
+    left: -55px;
+    top: -530px;
+    width: 110px;
+    height: 172px;
+    transform-origin: 55px 530px;
+  }
+
+  .fan-deck {
+    bottom: -340px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REVELATION CLOTH SCENE — Cartas sobre tela mística
+══════════════════════════════════════════════════════════ */
+.revelation-cloth-scene {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  margin: 20px 0;
+  padding: 32px 16px 40px;
+}
+
+.revelation-cloth-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(25, 8, 52, 0.82) 0%,
+    rgba(40, 15, 80, 0.70) 40%,
+    rgba(20, 6, 44, 0.85) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .revelation-cloth-overlay {
+  background: linear-gradient(
+    160deg,
+    rgba(46, 16, 101, 0.78) 0%,
+    rgba(76, 29, 149, 0.65) 40%,
+    rgba(30, 8, 68, 0.82) 100%
+  );
+}
+
+.revelation-cards-spread {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+/* Cartas más dramáticas en esta escena */
+.revelation-cloth-scene .card-wrapper {
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 12px rgba(124, 58, 237, 0.4));
+  transform: scale(1.05);
+}
+
+.revelation-cloth-scene .card-wrapper.face-up {
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(167, 139, 250, 0.5));
+  transform: scale(1.08);
+}
+
+@media (max-width: 480px) {
+  .revelation-cloth-scene {
+    padding: 20px 8px 28px;
+    border-radius: 12px;
+  }
+  .revelation-cards-spread {
+    gap: 14px;
+  }
+}

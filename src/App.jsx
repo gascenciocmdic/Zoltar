@@ -1284,48 +1284,53 @@ function App() {
       )}
 
       {phase === 'synchrony' && (
-        <div className="synchrony-content">
-          <h2 className="phase-title">{translations.ui.synchrony_title}</h2>
-          <>
-            <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '30px' }}>{translations.ui.card_selection_subtitle} ({selectedCards.length}/3).</p>
-            
-            <div className="synchrony-table">
-              <div
-                className="synchrony-hands"
-                style={{ backgroundImage: `url(${seleccionaManos})` }}
-              />
-              <div className="card-grid" style={{ position: 'relative' }}>
-                <Dragonfly visible={true} />
-                {shuffledDeck.map((card, index) => {
-                  const seed = index * 137.5;
-                  const spreadX = Math.sin(seed) * 40;
-                  const spreadY = Math.cos(seed) * 30;
-                  const rotation = Math.sin(seed * 2) * 18;
+        <div className="fan-scene" style={{ backgroundImage: `url(${seleccionaManos})`, backgroundSize: 'cover', backgroundPosition: 'center bottom' }}>
+          {/* Overlay atmosférico */}
+          <div className="fan-overlay" />
 
-                  return (
-                    <Card
-                      key={card.id}
-                      card={card}
-                      isSelected={selectedCards.find(c => c.id === card.id)}
-                      onSelect={handleSelectCard}
-                      logoSrc={isLight ? logoClaro : logoDark}
-                      style={{
-                        '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
-                      }}
-                    />
-                  );
-                })}
-              </div>
+          {/* Título flotante */}
+          <div className="fan-header">
+            <h2 className="fan-title">{translations.ui.synchrony_title}</h2>
+            <p className="fan-subtitle">{translations.ui.card_selection_subtitle} ({selectedCards.length}/3)</p>
+          </div>
+
+          {/* Abanico de cartas */}
+          <div className="fan-deck">
+            <Dragonfly visible={true} />
+            {shuffledDeck.map((card, index) => {
+              const total = shuffledDeck.length;
+              const spread = 130;
+              const angle = -spread / 2 + (index / (total - 1)) * spread;
+              const isSelected = !!selectedCards.find(c => c.id === card.id);
+              return (
+                <div
+                  key={card.id}
+                  className={`fan-slot${isSelected ? ' fan-slot-selected' : ''}`}
+                  style={{ transform: `rotate(${angle}deg)` }}
+                >
+                  <Card
+                    card={card}
+                    isSelected={isSelected}
+                    onSelect={handleSelectCard}
+                    logoSrc={isLight ? logoClaro : logoDark}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Botón continuar */}
+          {selectedCards.length === 3 && (
+            <div className="fan-continue">
+              <button
+                className="start-button blinking-button continue-btn"
+                onClick={handleGoToAstralAlignment}
+                disabled={loading}
+              >
+                {translations.ui.continue}
+              </button>
             </div>
-            
-            {selectedCards.length === 3 && (
-              <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '100%', maxWidth: '300px' }}>
-                <button className="start-button blinking-button continue-btn" onClick={handleGoToAstralAlignment} disabled={loading} style={{ display: 'block', margin: '0 auto', width: '100%' }}>
-                  {translations.ui.continue}
-                </button>
-              </div>
-            )}
-          </>
+          )}
         </div>
       )}
 
@@ -1447,28 +1452,31 @@ function App() {
             return (
               <>
                 <div
-                  className="selected-cards-display revelation-cloth"
-                  style={{ position: 'relative', backgroundImage: `url(${mostrarManos})` }}
+                  className="revelation-cloth-scene"
+                  style={{ backgroundImage: `url(${mostrarManos})` }}
                 >
-                  <Dragonfly visible={cardsFlippedCount < 3} />
-                  {selectedCards.map((card, index) => {
-                    const clar = clarifications[card.id];
-                    const cardI18n = translations.cards[card.id] || card;
-                    const translatedCard = { ...card, name: cardI18n.name, info: cardI18n.info };
-                    
-                    return (
-                    <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`} style={{ position: 'relative' }}>
-                      <div style={{ position: 'relative', zIndex: 2 }}>
-                        <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} logoSrc={isLight ? logoClaro : logoDark} />
-                      </div>
-                      
-                      {clar?.extraCard && (
-                        <div className="clarification-card-wrapper fade-in-text">
-                          <Card card={{...clar.extraCard, name: translations.cards[clar.extraCard.id]?.name || clar.extraCard.name}} isSelected={false} isFaceUp={true} />
+                  <div className="revelation-cloth-overlay" />
+                  <div className="revelation-cards-spread">
+                    <Dragonfly visible={cardsFlippedCount < 3} />
+                    {selectedCards.map((card, index) => {
+                      const clar = clarifications[card.id];
+                      const cardI18n = translations.cards[card.id] || card;
+                      const translatedCard = { ...card, name: cardI18n.name, info: cardI18n.info };
+
+                      return (
+                      <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`} style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative', zIndex: 2 }}>
+                          <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} logoSrc={isLight ? logoClaro : logoDark} />
                         </div>
-                      )}
-                    </div>
-                  )})}
+
+                        {clar?.extraCard && (
+                          <div className="clarification-card-wrapper fade-in-text">
+                            <Card card={{...clar.extraCard, name: translations.cards[clar.extraCard.id]?.name || clar.extraCard.name}} isSelected={false} isFaceUp={true} />
+                          </div>
+                        )}
+                      </div>
+                    )})}
+                  </div>
                 </div>
                 
                 {loading ? (
