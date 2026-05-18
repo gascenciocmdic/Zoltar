@@ -1015,7 +1015,7 @@ function App() {
               mixBlendMode: isLight ? 'multiply' : 'screen',
             }}
           />
-          <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '45px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{I18N.es.ui.title}</h2>
+          <h2 style={{color: isLight ? '#3b0764' : '#ffd700', letterSpacing: '3px', marginBottom: '45px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{I18N.es.ui.title}</h2>
           <div className="language-buttons">
             <button className="language-button" onClick={() => handleSelectLanguage('es')}>
               <span className="flag-icon">🇪🇸</span> ESPAÑOL
@@ -1133,7 +1133,7 @@ function App() {
               
               <div style={{ marginTop: '30px' }}>
                 <button 
-                  style={{ background: 'transparent', border: 'none', color: '#ffd700', opacity: 0.5, fontSize: '0.85rem', textDecoration: 'underline', cursor: 'pointer', fontStyle: 'italic', letterSpacing: '1px', transition: 'opacity 0.3s ease' }}
+                  style={{ background: 'transparent', border: 'none', color: isLight ? '#7c3aed' : '#ffd700', opacity: 0.5, fontSize: '0.85rem', textDecoration: 'underline', cursor: 'pointer', fontStyle: 'italic', letterSpacing: '1px', transition: 'opacity 0.3s ease' }}
                   onMouseEnter={(e) => e.target.style.opacity = 0.9}
                   onMouseLeave={(e) => e.target.style.opacity = 0.5}
                   onClick={() => setShowInfoPopup(true)}

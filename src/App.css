@@ -1653,3 +1653,16 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     border-radius: 12px;
   }
 }
+
+/* ── Popup text light mode ────────────────────────────────── */
+[data-theme="light"] .popup-box h3 {
+  color: #3b0764 !important;
+}
+[data-theme="light"] .popup-box p {
+  color: #4a3a6e !important;
+}
+
+/* ── action-button-reveal light mode ─────────────────────── */
+[data-theme="light"] .action-button-reveal:not(:disabled) {
+  animation: buttonFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards, relaxPulseLight 3s 1.2s infinite ease-in-out;
+}
