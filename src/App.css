@@ -30,11 +30,8 @@
   transform: translateX(-50%);
   width: 500px;
   height: 200px;
-  background-image: url('/zoltar-logo.jpg');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  mix-blend-mode: screen; /* Strips black background */
+  object-fit: contain;
+  mix-blend-mode: screen;
   z-index: 1000;
   pointer-events: none;
   animation: fadeIn 3s ease;
@@ -280,10 +277,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   width: 100%;
   max-width: 500px;
   height: 200px;
-  background-image: url('/zoltar-logo.jpg');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
+  object-fit: contain;
   mix-blend-mode: screen;
   z-index: 1000;
   pointer-events: none;
@@ -1119,7 +1113,6 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
 [data-theme="light"] .global-logo {
   mix-blend-mode: multiply;
-  filter: hue-rotate(200deg) saturate(0.7) brightness(0.85);
   opacity: 0.9;
 }
 

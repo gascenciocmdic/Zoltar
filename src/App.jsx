@@ -24,6 +24,8 @@ import ToastContainer, { showToast } from './components/Toast';
 import LandingScreen from './components/LandingScreen';
 import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
+import logoDark from './assets/Logo_Zoltar_oscuro.png';
+import logoClaro from './assets/Logo_Zoltar_claro.png';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -982,7 +984,13 @@ function App() {
       <VortexCanvas vibe={vibe} theme={theme} />
       
       {/* Global Logo - Persistent unless in specific high-z-index phases */}
-      {phase !== 'landing' && phase !== 'languageSelection' && phase !== 'portalEntrance' && <div className="global-logo" />}
+      {phase !== 'landing' && phase !== 'languageSelection' && phase !== 'portalEntrance' && (
+        <img
+          className="global-logo"
+          src={isLight ? logoClaro : logoDark}
+          alt="Zoltar"
+        />
+      )}
 
       {phase === 'landing' && (
         <LandingScreen onEnter={() => setPhase('languageSelection')} />
@@ -994,7 +1002,17 @@ function App() {
           background: 'transparent', backdropFilter: 'blur(30px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 99999
         }}>
-          <div style={{ width: '280px', height: '150px', backgroundImage: "url('/zoltar-logo.jpg')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', marginBottom: '20px', mixBlendMode: 'screen' }} />
+          <img
+            src={isLight ? logoClaro : logoDark}
+            alt="Zoltar"
+            style={{
+              width: '280px',
+              height: '150px',
+              objectFit: 'contain',
+              marginBottom: '20px',
+              mixBlendMode: isLight ? 'multiply' : 'screen',
+            }}
+          />
           <h2 style={{color: '#ffd700', letterSpacing: '3px', marginBottom: '45px', textTransform: 'uppercase', fontSize: '1.8rem', textAlign: 'center'}}>{I18N.es.ui.title}</h2>
           <div className="language-buttons">
             <button className="language-button" onClick={() => handleSelectLanguage('es')}>
