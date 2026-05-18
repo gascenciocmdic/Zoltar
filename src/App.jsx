@@ -1228,8 +1228,9 @@ function App() {
 
       {showInfoPopup && (
         <div className={`popup-overlay ${isInfoFading ? 'fade-out-text' : 'fade-in-text'}`} style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: isLight ? 'rgba(200,190,240,0.4)' : 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
           <div className="popup-box" style={{
@@ -1256,8 +1257,9 @@ function App() {
 
       {showSynchronyPopup && phase === 'synchrony' && (
         <div className={`popup-overlay ${isPopupFading ? 'fade-out-text' : 'fade-in-text'}`} style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: isLight ? 'rgba(200,190,240,0.4)' : 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
           <div className="popup-box" style={{
