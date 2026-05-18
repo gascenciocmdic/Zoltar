@@ -1293,8 +1293,10 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
 /* ── Constellation wrapper ────────────────────────────────── */
 [data-theme="light"] .constellation-wrapper {
-  background: radial-gradient(circle, rgba(13,13,26,0.95) 0%, rgba(13,13,26,0.7) 70%);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #1a0e2e 0%, #0d0a1a 40%, #1a1040 100%);
+  box-shadow: 0 4px 24px rgba(46, 8, 84, 0.35), inset 0 0 40px rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.2);
 }
 
 /* ── Auth / modals ────────────────────────────────────────── */
