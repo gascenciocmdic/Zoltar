@@ -72,6 +72,21 @@ export default async function handler(req, res) {
       .single();
 
     if (error) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    // ── Cuenta UAT: siempre reinicia con 100 créditos al abrir la app ──
+    const UAT_ACCOUNT = 'ascencio.gustavo@gmail.com';
+    const UAT_CREDITS = 100;
+    if (user.email === UAT_ACCOUNT) {
+      await sb.from('profiles').update({ credits: UAT_CREDITS }).eq('id', user.id);
+      await sb.from('credit_ledger').insert({
+        user_id: user.id,
+        amount: UAT_CREDITS,
+        reason: 'uat_session_reset',
+        meta: { previous_credits: data.credits, reset_at: new Date().toISOString() },
+      });
+      return res.status(200).json({ credits: UAT_CREDITS, uat_reset: true });
+    }
+
     return res.status(200).json({ credits: data.credits });
   }
 
@@ -96,15 +111,20 @@ export default async function handler(req, res) {
         .eq('id', user.id)
         .single();
 
-      // Si ya está inicializado, retornar sin cambios (salvo cuenta de prueba en nuevo registro)
+      // Si ya está inicializado, retornar sin cambios (salvo cuenta UAT: siempre 100)
       const TEST_ACCOUNT = 'ascencio.gustavo@gmail.com';
+      const UAT_CREDITS  = 100;
       if (existing?.signup_bonus_given) {
-        if (user.email === TEST_ACCOUNT && isNewRegistration) {
-          // Reset solo en re-registro explícito, no en cada login
-          const resetCredits = 40;
-          await sb.from('profiles').update({ credits: resetCredits }).eq('id', user.id);
-          await sb.from('credit_ledger').insert({ user_id: user.id, amount: resetCredits, reason: 'signup_bonus', meta: { test_reset: true } });
-          return res.status(200).json({ credits: resetCredits, test_reset: true });
+        if (user.email === TEST_ACCOUNT) {
+          // Cuenta UAT: siempre resetear a 100 créditos al inicializar sesión
+          await sb.from('profiles').update({ credits: UAT_CREDITS }).eq('id', user.id);
+          await sb.from('credit_ledger').insert({
+            user_id: user.id,
+            amount: UAT_CREDITS,
+            reason: 'uat_session_reset',
+            meta: { test_reset: true, reset_at: new Date().toISOString() },
+          });
+          return res.status(200).json({ credits: UAT_CREDITS, uat_reset: true });
         }
         return res.status(200).json({ credits: existing.credits, already_initialized: true });
       }
