@@ -1,11 +1,11 @@
 import React from 'react';
 import './Card.css';
 
-const Card = ({ card, isSelected, onSelect, isFaceUp, style }) => {
+const Card = ({ card, isSelected, onSelect, isFaceUp, style, className, logoSrc }) => {
   return (
-    <div 
-      className={`card-wrapper ${isSelected ? 'selected' : ''} ${isFaceUp ? 'face-up' : 'face-down'}`}
-      onClick={() => !isFaceUp && onSelect(card)}
+    <div
+      className={`card-wrapper ${isSelected ? 'selected' : ''} ${isFaceUp ? 'face-up' : 'face-down'} ${className || ''}`}
+      onClick={() => !isFaceUp && onSelect && onSelect(card)}
       style={style}
     >
       <div className="card-inner">
@@ -19,7 +19,11 @@ const Card = ({ card, isSelected, onSelect, isFaceUp, style }) => {
           )}
         </div>
         <div className="card-back">
-          <div className="card-pattern"></div>
+          {logoSrc ? (
+            <img src={logoSrc} alt="Zoltar" className="card-loading-logo" />
+          ) : (
+            <div className="card-pattern"></div>
+          )}
         </div>
       </div>
     </div>

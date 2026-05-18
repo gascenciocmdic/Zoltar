@@ -90,3 +90,17 @@
   object-fit: cover;
   border-radius: 12px;
 }
+
+@keyframes cardShimmer {
+  0%   { opacity: 0.45; }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0.45; }
+}
+
+.card-loading-logo {
+  width: 65%;
+  height: auto;
+  max-height: 55%;
+  object-fit: contain;
+  animation: cardShimmer 2.2s ease-in-out infinite;
+}

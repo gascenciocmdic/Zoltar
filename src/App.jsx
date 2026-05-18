@@ -1296,11 +1296,12 @@ function App() {
                 const rotation = Math.sin(seed * 2) * 18;
                 
                 return (
-                  <Card 
-                    key={card.id} 
-                    card={card} 
+                  <Card
+                    key={card.id}
+                    card={card}
                     isSelected={selectedCards.find(c => c.id === card.id)}
                     onSelect={handleSelectCard}
+                    logoSrc={isLight ? logoClaro : logoDark}
                     style={{
                       '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
                     }}
@@ -1407,14 +1408,15 @@ function App() {
                       const isTentativelySelected = clarifications[clarifyingCardId]?.tentativeCard?.id === c.id;
 
                       return (
-                        <Card 
-                          key={c.id} 
-                          card={c} 
+                        <Card
+                          key={c.id}
+                          card={c}
                           isSelected={isTentativelySelected}
                           onSelect={() => setClarifications(prev => ({
                             ...prev,
                             [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
                           }))}
+                          logoSrc={isLight ? logoClaro : logoDark}
                           style={{
                             '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
                           }}
