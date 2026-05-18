@@ -26,7 +26,6 @@ import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
-import seleccionaManos from './assets/Selecciona_cartas.jpeg';
 import mostrarManos from './assets/Mostrar_seleccionadas.jpeg';
 
 const splitFirstSentence = (text) => {
@@ -1284,7 +1283,7 @@ function App() {
       )}
 
       {phase === 'synchrony' && (
-        <div className="fan-scene" style={{ backgroundImage: `url(${seleccionaManos})`, backgroundSize: 'cover', backgroundPosition: 'center bottom' }}>
+        <div className="fan-scene">
           {/* Overlay atmosférico */}
           <div className="fan-overlay" />
 
@@ -1294,7 +1293,22 @@ function App() {
             <p className="fan-subtitle">{translations.ui.card_selection_subtitle} ({selectedCards.length}/3)</p>
           </div>
 
-          {/* Abanico de cartas */}
+          {/* Tray superior: cartas ya seleccionadas, extraídas del abanico */}
+          {selectedCards.length > 0 && (
+            <div className="fan-selected-tray">
+              {selectedCards.map((card) => (
+                <div key={card.id} className="fan-tray-card">
+                  <Card
+                    card={card}
+                    isSelected={true}
+                    logoSrc={isLight ? logoClaro : logoDark}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Abanico de cartas — las seleccionadas quedan como placeholder invisible */}
           <div className="fan-deck">
             <Dragonfly visible={true} />
             {shuffledDeck.map((card, index) => {
@@ -1305,13 +1319,13 @@ function App() {
               return (
                 <div
                   key={card.id}
-                  className={`fan-slot${isSelected ? ' fan-slot-selected' : ''}`}
+                  className={`fan-slot${isSelected ? ' fan-slot-extracted' : ''}`}
                   style={{ transform: `rotate(${angle}deg)` }}
                 >
                   <Card
                     card={card}
-                    isSelected={isSelected}
-                    onSelect={handleSelectCard}
+                    isSelected={false}
+                    onSelect={isSelected ? undefined : handleSelectCard}
                     logoSrc={isLight ? logoClaro : logoDark}
                   />
                 </div>
@@ -1404,43 +1418,57 @@ function App() {
             const clarifyingCardId = Object.keys(clarifications).find(id => clarifications[id]?.step === 'selectCard');
             
             if (clarifyingCardId) {
+              const deepenDeck = shuffledDeck.filter(c => !selectedCards.find(sc => sc.id === c.id));
+              const deepenTotal = deepenDeck.length;
+              const deepenSpread = 130;
+              const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
-                <div style={{ animation: 'fadeIn 1s ease' }}>
-                  <p className="subtitle" style={{ fontSize: '1.2rem', color: '#ffd700', marginBottom: '30px' }}>
-                    {translations.ui.deepen_loading}
-                  </p>
-                  <div className="card-grid" style={{ position: 'relative' }}>
-                    <Dragonfly visible={true} />
-                    {shuffledDeck.map((c, i) => {
-                      if (selectedCards.find(sc => sc.id === c.id)) return null; // Exclude already selected
-                      
-                      const seed = i * 137.5;
-                      const spreadX = Math.sin(seed) * 40;
-                      const spreadY = Math.cos(seed) * 30;
-                      const rotation = Math.sin(seed * 2) * 18;
-                      const isTentativelySelected = clarifications[clarifyingCardId]?.tentativeCard?.id === c.id;
+                <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease' }}>
+                  <div className="fan-overlay" />
+                  <div className="fan-header">
+                    <h2 className="fan-title">{translations.ui.deepen_loading}</h2>
+                  </div>
 
-                      return (
+                  {tentCard && (
+                    <div className="fan-selected-tray">
+                      <div className="fan-tray-card">
                         <Card
-                          key={c.id}
-                          card={c}
-                          isSelected={isTentativelySelected}
-                          onSelect={() => setClarifications(prev => ({
-                            ...prev,
-                            [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
-                          }))}
+                          card={tentCard}
+                          isSelected={true}
                           logoSrc={isLight ? logoClaro : logoDark}
-                          style={{
-                            '--scatter-transform': `translate(${spreadX}px, ${spreadY}px) rotate(${rotation}deg)`
-                          }}
-                          className={isTentativelySelected ? 'selected-card-glow' : ''}
                         />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="fan-deck">
+                    <Dragonfly visible={true} />
+                    {deepenDeck.map((c, index) => {
+                      const angle = -deepenSpread / 2 + (index / (deepenTotal - 1)) * deepenSpread;
+                      const isTentativelySelected = tentCard?.id === c.id;
+                      return (
+                        <div
+                          key={c.id}
+                          className={`fan-slot${isTentativelySelected ? ' fan-slot-extracted' : ''}`}
+                          style={{ transform: `rotate(${angle}deg)` }}
+                        >
+                          <Card
+                            card={c}
+                            isSelected={false}
+                            onSelect={isTentativelySelected ? undefined : () => setClarifications(prev => ({
+                              ...prev,
+                              [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
+                            }))}
+                            logoSrc={isLight ? logoClaro : logoDark}
+                          />
+                        </div>
                       );
                     })}
                   </div>
-                  {clarifications[clarifyingCardId]?.tentativeCard && (
-                    <div style={{ marginTop: '40px' }}>
-                       <button className="start-button blinking-button" onClick={() => submitDeepenCardSelect(parseInt(clarifyingCardId), clarifications[clarifyingCardId].tentativeCard)}>
+
+                  {tentCard && (
+                    <div className="fan-continue">
+                      <button className="start-button blinking-button continue-btn" onClick={() => submitDeepenCardSelect(parseInt(clarifyingCardId), tentCard)}>
                         {translations.ui.continue}
                       </button>
                     </div>
@@ -1707,7 +1735,7 @@ function App() {
                         <div className="anchor-block decree-box">
                           <div className="mystic-ornament-top"></div>
                           <p className="mystic-title">{translations.ui.healing_decree}</p>
-                          <p style={{ fontSize: '1.25rem', letterSpacing: '0.5px', color: '#fff', textShadow: '0 0 10px rgba(255,215,0,0.3)' }}>
+                          <p style={{ fontSize: '1.25rem', letterSpacing: '0.5px', color: isLight ? '#2d1854' : '#fff', textShadow: isLight ? 'none' : '0 0 10px rgba(255,215,0,0.3)' }}>
                             <span className="reveal-text" style={{ animationDelay: '0.5s' }}>&#8220;{interpretation.decreto}&#8221;</span>
                           </p>
                           <div className="mystic-ornament-bottom"></div>
@@ -1715,7 +1743,7 @@ function App() {
                         <div className="anchor-block task-box">
                           <div className="mystic-ornament-top"></div>
                           <p className="mystic-title">{translations.ui.earthly_task}</p>
-                          <p style={{ color: '#eaeaea', lineHeight: '1.6' }}><span className="reveal-text" style={{ animationDelay: '1.5s' }}>{interpretation.tarea_terrenal}</span></p>
+                          <p style={{ color: isLight ? '#2d1854' : '#eaeaea', lineHeight: '1.6' }}><span className="reveal-text" style={{ animationDelay: '1.5s' }}>{interpretation.tarea_terrenal}</span></p>
                           <div className="mystic-ornament-bottom"></div>
                         </div>
                       </div>

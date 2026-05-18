@@ -1691,28 +1691,40 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
+  /* Fondo místico inventado: mesa oscura con velas y aura violeta */
+  background:
+    /* Destellos estelares */
+    radial-gradient(1px 1px at 15% 12%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 44% 22%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 18%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 6%  35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 93% 42%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 31% 5%,  rgba(255,240,180,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 15%, rgba(200,180,255,0.4) 0%, transparent 100%),
+    /* Vela izquierda */
+    radial-gradient(ellipse 25% 55% at 8% 88%,  rgba(220, 140, 40, 0.22) 0%, transparent 80%),
+    /* Vela derecha */
+    radial-gradient(ellipse 25% 55% at 92% 88%, rgba(220, 140, 40, 0.18) 0%, transparent 80%),
+    /* Aura central violeta desde abajo */
+    radial-gradient(ellipse 80% 45% at 50% 100%, rgba(120, 50, 180, 0.35) 0%, transparent 70%),
+    /* Halo índigo medio */
+    radial-gradient(ellipse 100% 55% at 50% 80%, rgba(60, 20, 120, 0.4) 0%, transparent 65%),
+    /* Niebla lateral izquierda */
+    radial-gradient(ellipse 50% 40% at 0% 65%, rgba(40, 10, 80, 0.3) 0%, transparent 100%),
+    /* Niebla lateral derecha */
+    radial-gradient(ellipse 50% 40% at 100% 65%, rgba(30, 8, 80, 0.25) 0%, transparent 100%),
+    /* Base: noche profunda con mesa */
+    linear-gradient(180deg, #060312 0%, #0e0620 25%, #160a30 55%, #0f0820 80%, #080410 100%);
 }
 
 .fan-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(8, 3, 18, 0.88) 0%,
-    rgba(8, 3, 18, 0.55) 35%,
-    rgba(8, 3, 18, 0.72) 100%
-  );
+  /* Sutil vignette para profundidad — sin imagen de fondo no hace falta oscurecer */
+  background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0,0,0,0.45) 0%, transparent 70%);
   pointer-events: none;
   z-index: 1;
-}
-
-[data-theme="light"] .fan-overlay {
-  background: linear-gradient(
-    to top,
-    rgba(20, 5, 40, 0.80) 0%,
-    rgba(20, 5, 40, 0.45) 35%,
-    rgba(20, 5, 40, 0.65) 100%
-  );
 }
 
 .fan-header {
@@ -1770,8 +1782,41 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   z-index: 200;
 }
 
-.fan-slot-selected {
-  z-index: 100;
+/* Las card-wrapper dentro del abanico deben ocupar el slot completo sin margin */
+.fan-slot .card-wrapper {
+  width: 140px;
+  height: 220px;
+  margin: 0;
+  transform: var(--scatter-transform, none); /* anular scatter heredado */
+}
+
+/* Carta extraída del abanico — ocupa espacio (mantiene arco) pero invisible */
+.fan-slot-extracted {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* ── Tray superior: cartas elegidas flotando sobre el abanico ── */
+.fan-selected-tray {
+  position: relative;
+  z-index: 15;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 18px;
+  padding: 16px 20px 0;
+  margin-top: 4px;
+}
+
+.fan-tray-card {
+  animation: cardRiseFromFan 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.75)) drop-shadow(0 0 18px rgba(255,215,0,0.55));
+}
+
+@keyframes cardRiseFromFan {
+  from { transform: translateY(60px) scale(0.75); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
 }
 
 /* Botón continuar flotante */
@@ -1785,6 +1830,14 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   max-width: 300px;
   padding: 0 20px;
   animation: fadeIn 0.5s ease;
+}
+
+/* Versión del fan-scene embebida en revelation (profundizar) */
+.fan-scene-deepening {
+  border-radius: 20px;
+  min-height: 75vh;
+  margin: -20px -16px 0;
+  width: calc(100% + 32px);
 }
 
 /* Mobile */
