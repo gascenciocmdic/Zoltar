@@ -26,7 +26,6 @@ import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
-import mostrarManos from './assets/Mostrar_seleccionadas.jpeg';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -1313,7 +1312,7 @@ function App() {
             <Dragonfly visible={true} />
             {shuffledDeck.map((card, index) => {
               const total = shuffledDeck.length;
-              const spread = 130;
+              const spread = 115;
               const angle = -spread / 2 + (index / (total - 1)) * spread;
               const isSelected = !!selectedCards.find(c => c.id === card.id);
               return (
@@ -1420,7 +1419,7 @@ function App() {
             if (clarifyingCardId) {
               const deepenDeck = shuffledDeck.filter(c => !selectedCards.find(sc => sc.id === c.id));
               const deepenTotal = deepenDeck.length;
-              const deepenSpread = 130;
+              const deepenSpread = 115;
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
                 <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease' }}>
@@ -1481,7 +1480,6 @@ function App() {
               <>
                 <div
                   className="revelation-cloth-scene"
-                  style={{ backgroundImage: `url(${mostrarManos})` }}
                 >
                   <div className="revelation-cloth-overlay" />
                   <div className="revelation-cards-spread">
