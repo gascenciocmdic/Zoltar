@@ -1459,7 +1459,7 @@ function App() {
                     return (
                     <div key={index} className={`revelation-card-block ${revealedStage === index + 1 ? 'active-reveal' : revealedStage > 0 ? 'dimmed' : ''}`} style={{ position: 'relative' }}>
                       <div style={{ position: 'relative', zIndex: 2 }}>
-                        <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} />
+                        <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} logoSrc={isLight ? logoClaro : logoDark} />
                       </div>
                       
                       {clar?.extraCard && (

@@ -1654,6 +1654,16 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   }
 }
 
+/* ── Card back tema claro ─────────────────────────────────── */
+[data-theme="light"] .card-back {
+  background: linear-gradient(45deg, #e8e0f8, #d4c8f0);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+[data-theme="light"] .card-front,
+[data-theme="light"] .card-back {
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
 /* ── Popup text light mode ────────────────────────────────── */
 [data-theme="light"] .popup-box h3 {
   color: #3b0764 !important;
