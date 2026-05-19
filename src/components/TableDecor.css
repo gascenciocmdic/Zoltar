@@ -1,0 +1,98 @@
+/* ════════════════════════════════════════════════════════════
+   TableDecor — elementos sobre la mesa de tarot (vista cenital)
+   Vela encendida · Amatista · Amuleto Ojo de Ra
+   ════════════════════════════════════════════════════════════ */
+
+.table-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* En la escena de revelación, detrás de las cartas */
+.revelation-cloth-scene .table-decor {
+  z-index: 0;
+}
+
+.td-item {
+  position: absolute;
+}
+
+/* ── Posicionamiento de cada elemento ───────────────────── */
+.td-candle {
+  left: 4%;
+  top: 24%;
+}
+
+.td-amethyst {
+  right: 3%;
+  top: 16%;
+}
+
+.td-amulet {
+  right: 3%;
+  bottom: 14%;
+}
+
+/* ── Ajuste en móvil: escalar un poco ────────────────────── */
+@media (max-width: 480px) {
+  .td-candle   { transform: scale(0.72); transform-origin: top left; }
+  .td-amethyst { transform: scale(0.68); transform-origin: top right; }
+  .td-amulet   { transform: scale(0.65); transform-origin: bottom right; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   VELA — animaciones de llama
+   ════════════════════════════════════════════════════════════ */
+
+/* Resplandor en la mesa — pulso lento y suave */
+@keyframes candleGlowPulse {
+  0%,  100% { opacity: 0.80; transform: scale(1);    }
+  22%        { opacity: 0.58; transform: scale(0.91) translate( 0.6px,-0.4px); }
+  45%        { opacity: 0.92; transform: scale(1.08) translate(-0.3px, 0.2px); }
+  68%        { opacity: 0.65; transform: scale(0.95) translate(-0.5px, 0.5px); }
+}
+
+/* Brillo de la llama — parpadeo medio */
+@keyframes flameGlowFlicker {
+  0%,  100% { opacity: 0.88; transform: scale(1)    translate(0,   0); }
+  18%        { opacity: 0.65; transform: scale(0.87) translate( 1.0px,-0.5px); }
+  36%        { opacity: 0.95; transform: scale(1.12) translate(-0.4px, 0.3px); }
+  54%        { opacity: 0.72; transform: scale(0.93) translate( 0.7px, 0.4px); }
+  74%        { opacity: 0.90; transform: scale(1.07) translate(-0.6px,-0.2px); }
+}
+
+/* Núcleo blanco — parpadeo rápido */
+@keyframes flameCoreFlicker {
+  0%,  100% { opacity: 0.95; transform: scale(1);    }
+  30%        { opacity: 0.72; transform: scale(0.82) translate( 0.8px, 0); }
+  60%        { opacity: 0.90; transform: scale(1.15) translate(-0.5px,-0.4px); }
+}
+
+/* Halo cálido en la madera */
+.candle-table-glow {
+  animation: candleGlowPulse 3.1s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Nube de llama */
+.flame-glow {
+  animation: flameGlowFlicker 1.9s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Punto brillante central */
+.flame-core {
+  animation: flameCoreFlicker 1.1s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.flame-inner {
+  animation: flameCoreFlicker 0.75s ease-in-out infinite reverse;
+  transform-box: fill-box;
+  transform-origin: center;
+}

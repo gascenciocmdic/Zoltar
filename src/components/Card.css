@@ -45,7 +45,7 @@
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 12px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -59,6 +59,12 @@
   background: linear-gradient(135deg, rgba(60, 60, 60, 0.9), rgba(20, 20, 20, 0.9));
   color: #ffd700;
   font-family: 'Playfair Display', serif;
+}
+
+[data-theme="light"] .card-front {
+  background: linear-gradient(135deg, rgba(255,250,235,0.96), rgba(245,230,195,0.96));
+  color: #2d1854;
+  border-color: rgba(184, 132, 30, 0.35);
 }
 
 .card-back {
@@ -81,38 +87,57 @@
     inset 0 0 50px rgba(30, 15, 70, 0.15);
 }
 
-/* ── LIGHT MODE: lino/pergamino para bordado ── */
+/* ── LIGHT MODE: pergamino ornamentado para bordado ── */
 [data-theme="light"] .card-back {
   background:
-    /* Trama de lino: líneas cruzadas muy tenues */
-    repeating-linear-gradient(  0deg, transparent, transparent 3px, rgba(184,132,30,0.055) 3px, rgba(184,132,30,0.055) 4px),
-    repeating-linear-gradient( 90deg, transparent, transparent 3px, rgba(124,58,237,0.040) 3px, rgba(124,58,237,0.040) 4px),
-    /* Halo central suave */
-    radial-gradient(circle 54px at center, rgba(184,132,30,0.08) 0%, transparent 100%),
-    /* Base: pergamino cálido */
-    linear-gradient(145deg, #fdf4e3 0%, #f7ebcf 40%, #f0e2c0 70%, #f5e8cd 100%);
+    /* Trama de lino — líneas cruzadas muy tenues */
+    repeating-linear-gradient(  0deg, transparent, transparent 3px, rgba(184,132,30,0.06) 3px, rgba(184,132,30,0.06) 4px),
+    repeating-linear-gradient( 90deg, transparent, transparent 3px, rgba(124,58,237,0.04) 3px, rgba(124,58,237,0.04) 4px),
+    /* Rosas diagonales suaves — motivo de bordado de fondo */
+    repeating-linear-gradient( 45deg, transparent, transparent 18px, rgba(184,132,30,0.025) 18px, rgba(184,132,30,0.025) 19px),
+    repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(124,58,237,0.020) 18px, rgba(124,58,237,0.020) 19px),
+    /* Rosa central ornamental */
+    radial-gradient(circle 62px at center, rgba(184,132,30,0.07) 58px, transparent 64px),
+    radial-gradient(circle 46px at center, rgba(124,58,237,0.05) 42px, transparent 48px),
+    radial-gradient(circle 28px at center, rgba(184,132,30,0.06) 24px, transparent 30px),
+    /* Puntos de acento en esquinas (nudos de bordado) */
+    radial-gradient(circle 6px at  9%  10%, rgba(184,132,30,0.22) 0%, transparent 100%),
+    radial-gradient(circle 6px at 91%  10%, rgba(184,132,30,0.22) 0%, transparent 100%),
+    radial-gradient(circle 6px at  9%  90%, rgba(184,132,30,0.20) 0%, transparent 100%),
+    radial-gradient(circle 6px at 91%  90%, rgba(184,132,30,0.20) 0%, transparent 100%),
+    /* Tonos cálidos — pergamino envejecido */
+    radial-gradient(ellipse 80% 80% at center, rgba(184,132,30,0.06) 0%, transparent 70%),
+    /* Base: pergamino / lino cálido */
+    linear-gradient(155deg, #fef8ea 0%, #f8ecd2 30%, #f0e0b8 55%, #f4e8cc 78%, #fdf4e2 100%);
 
-  border: 1px solid rgba(184, 132, 30, 0.38);
+  border: 1px solid rgba(184, 132, 30, 0.45);
   box-shadow:
-    inset 0 0 18px rgba(120, 80, 20, 0.08),
-    inset 0 0 40px rgba(100, 60, 10, 0.05);
+    inset 0 0 18px rgba(120, 80, 20, 0.10),
+    inset 0 0 40px rgba(100, 60, 10, 0.06),
+    0 0 0 0.5px rgba(124, 58, 237, 0.08);
 }
 
 /* Marco interior doble */
 .card-back::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  inset: 7px;
   border: 1px solid rgba(136, 152, 188, 0.2);
-  border-radius: 8px;
+  border-radius: 14px;
   pointer-events: none;
   box-shadow: inset 0 0 0 3px rgba(136, 152, 188, 0.06);
   z-index: 0;
 }
 
 [data-theme="light"] .card-back::before {
-  border-color: rgba(184, 132, 30, 0.28);
-  box-shadow: inset 0 0 0 3px rgba(184, 132, 30, 0.07);
+  inset: 7px;
+  border: 1.5px solid rgba(184, 132, 30, 0.42);
+  border-radius: 14px;
+  box-shadow:
+    inset  0  0  0  2px rgba(184, 132, 30, 0.12),
+    inset  0  0  0  4px rgba(124,  58, 237, 0.06),
+    inset  0  0  0  6px rgba(184, 132, 30, 0.07),
+    0 0 0 1px rgba(124, 58, 237, 0.08);
 }
 
 /* Ornamento: SVG ahora maneja los ornamentos — ocultar el ::after */
@@ -167,7 +192,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 20px;
 }
 
 @keyframes cardShimmer {

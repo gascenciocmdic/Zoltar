@@ -26,6 +26,7 @@ import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
+import TableDecor from './components/TableDecor';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -1286,6 +1287,9 @@ function App() {
           {/* Overlay atmosférico */}
           <div className="fan-overlay" />
 
+          {/* Elementos sobre la mesa */}
+          <TableDecor uid="fan" />
+
           {/* Título flotante */}
           <div className="fan-header">
             <h2 className="fan-title">{translations.ui.synchrony_title}</h2>
@@ -1425,6 +1429,7 @@ function App() {
               return (
                 <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease' }}>
                   <div className="fan-overlay" />
+                  <TableDecor uid="dep" />
                   <div className="fan-header">
                     <h2 className="fan-title">{translations.ui.deepen_loading}</h2>
                   </div>
@@ -1487,6 +1492,7 @@ function App() {
                   className="revelation-cloth-scene"
                 >
                   <div className="revelation-cloth-overlay" />
+                  <TableDecor uid="rev" />
                   <div className="revelation-cards-spread">
                     <Dragonfly visible={cardsFlippedCount < 3} />
                     {selectedCards.map((card, index) => {
