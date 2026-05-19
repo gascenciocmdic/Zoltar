@@ -953,33 +953,10 @@ function App() {
   const handleNewConsultation = () => {
     stopSpeech();
     stopAmbient();
-    setPhase('threshold');
-    setVibe('healing_blue');
-    setSelectedCards([]);
-    setLoading(false);
-    setInterpretation(null);
-    setIntrospectionMessage('');
-    setIsFading(false);
-    setShowSynchronyPopup(false);
-    setShowInfoPopup(false);
-    setClarifications({});
-    setRevealedStage(0);
-    setThresholdStep(0);
-    setUserName('');
-    setBirthDate({ day: '', month: '', year: '' });
-    setBirthNarrative(null);
-    setVisitReason('');
-    setDichotomousChoice('');
-    setCardsFlippedCount(0);
-    setAutoRevealStarted(false);
-    setRevelationReady(false);
-    setCanProceed(false);
-    setSynthEmailState('idle');
-    setDeepeningActive(null);
-    setAnchoringLoading(false);
-    setConsultTier(null);
-    setShowUnlockModal(false);
-    setLastDebug(null);
+    // Reload the page for a completely fresh session — guarantees speech
+    // recognition permissions and all browser APIs reset correctly on
+    // iOS / Android where in-session resets leave the mic in a bad state.
+    window.location.reload();
   };
 
   return (

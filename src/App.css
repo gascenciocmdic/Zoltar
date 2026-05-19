@@ -7,6 +7,7 @@
 .app-container {
   width: 100%;
   min-height: 100vh;
+  overflow-x: hidden; /* evita scroll horizontal por sombras del marco */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,6 +36,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 500px;
+  max-width: 92vw;     /* nunca se sale del viewport en ningún tamaño */
   height: 200px;
   object-fit: contain;
   mix-blend-mode: screen;
@@ -1223,6 +1225,31 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   color: #b8860b;
 }
 
+/* ── Zodiacal / Astral bubbles — contraste en modo claro ── */
+/* Las inline styles usan colores claros (#e5e4e7, #c084fc) invisibles
+   sobre fondo blanco. Forzamos con !important. */
+[data-theme="light"] .astral-bubble {
+  background: rgba(100, 80, 160, 0.08) !important;
+  border-left-color: #6b4fa0 !important;
+}
+[data-theme="light"] .astral-bubble p,
+[data-theme="light"] .astral-bubble span,
+[data-theme="light"] .astral-bubble .reveal-text {
+  color: #2d1f50 !important;
+}
+[data-theme="light"] .astral-bubble .narrative-meta {
+  color: #5a3d90 !important;
+}
+[data-theme="light"] .brain-bubble.narrative p,
+[data-theme="light"] .brain-bubble.narrative span {
+  color: #2d1f50 !important;
+}
+/* Texto "espera" y subtítulos en astral phase */
+[data-theme="light"] .astral-content .welcome-text,
+[data-theme="light"] .astral-content .subtitle {
+  color: #3a2860 !important;
+}
+
 /* ── Inputs ───────────────────────────────────────────────── */
 [data-theme="light"] .soul-input {
   border-bottom: 1px solid rgba(124, 111, 160, 0.4);
@@ -1812,28 +1839,29 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   animation: energyPortal 7s ease-in-out infinite;
 }
 
-/* ── Marco: ventana de madera (modo claro) ──────────────── */
+/* ── Marco: madera vieja y deteriorada (modo claro) ─────── */
 [data-theme="light"] .fan-scene {
-  border-radius: 20px;
+  border-radius: 14px;
   border: none;
   animation: none;
   box-shadow:
-    /* Vignette interior gris frío — funde la foto con el marco */
-    inset 0 0 65px rgba(48,46,44,0.42),
-    inset 0 0 28px rgba(55,53,50,0.24),
-    /* Marco de madera decolorada/grisácea — tonos de la mesa_claro.png */
-    0 0 0  1px #3a3835,          /* línea oscura interior */
-    0 0 0  5px #9e9b96,          /* madera gris media */
-    0 0 0  6px #d4d1cc,          /* canto iluminado gris claro */
-    0 0 0 10px #6e6c68,          /* ranura oscura */
-    0 0 0 11px #e6e4e0,          /* canto brillante casi blanco */
-    0 0 0 15px #8e8c88,          /* segunda banda madera */
-    0 0 0 16px #4a4846,          /* surco oscuro */
-    0 0 0 20px #b8b5b0,          /* reborde exterior madera */
-    0 0 0 24px #2e2c2a,          /* borde final oscuro */
-    /* Sombra de profundidad fría */
-    0 16px 55px rgba(20,19,18,0.60),
-    0  5px 16px rgba(0,0,0,0.38);
+    /* Oscuridad interior — funde el PNG con el marco */
+    inset 0 0 90px rgba(8,6,4,0.62),
+    inset 0 0 40px rgba(12,9,5,0.40),
+    /* Marco deteriorado: capas que simulan madera podrida/astillada */
+    0 0 0  1px #0c0a08,     /* rendija casi negra (junta podrida) */
+    0 0 0  5px #2e2622,     /* madera oscura húmeda */
+    0 0 0  6px #5e524a,     /* astilla expuesta — más clara */
+    0 0 0  9px #1a1410,     /* zona de humedad profunda */
+    0 0 0 10px #3c3028,     /* madera envejecida */
+    0 0 0 14px #544844,     /* rasguño / erosión de uso */
+    0 0 0 15px #100e0c,     /* grieta profunda */
+    0 0 0 19px #2c2420,     /* segunda capa de madera negra */
+    0 0 0 20px #4a403a,     /* borde exterior desgastado */
+    0 0 0 24px #0e0c0a,     /* contorno final, casi negro */
+    /* Sombra de peso — da sensación de grosor real */
+    0 22px 65px rgba(0,0,0,0.80),
+    0  6px 20px rgba(0,0,0,0.55);
 }
 
 .fan-overlay {
@@ -1849,11 +1877,11 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 [data-theme="light"] .fan-overlay {
-  /* ── Modo claro: difuminado cálido de bordes (madera hacia interior) ── */
+  /* ── Modo claro: difuminado oscuro de bordes (madera deteriorada hacia interior) ── */
   background:
-    linear-gradient(to right,  rgba(40,38,36,0.28) 0%, transparent 12%, transparent 88%, rgba(40,38,36,0.28) 100%),
-    linear-gradient(to bottom, rgba(40,38,36,0.25) 0%, transparent 12%, transparent 82%, rgba(40,38,36,0.35) 100%),
-    radial-gradient(ellipse 108% 82% at 50% 50%, transparent 42%, rgba(22,21,20,0.35) 100%);
+    linear-gradient(to right,  rgba(8,6,4,0.38) 0%, transparent 14%, transparent 86%, rgba(8,6,4,0.38) 100%),
+    linear-gradient(to bottom, rgba(8,6,4,0.32) 0%, transparent 14%, transparent 80%, rgba(8,6,4,0.48) 100%),
+    radial-gradient(ellipse 108% 82% at 50% 50%, transparent 40%, rgba(5,4,3,0.45) 100%);
 }
 
 .fan-header {
@@ -2067,6 +2095,27 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   .revelation-cloth-scene .card-wrapper.face-up {
     transform: scale(1.0);
   }
+
+  /* ── Frame en modo claro: reducir spread exterior para no salirse del viewport ── */
+  [data-theme="light"] .fan-scene,
+  [data-theme="light"] .revelation-cloth-scene {
+    border-radius: 12px;
+    box-shadow:
+      inset 0 0 60px rgba(8,6,4,0.58),
+      inset 0 0 28px rgba(12,9,5,0.36),
+      0 0 0 1px #0c0a08,
+      0 0 0 4px #2e2622,
+      0 0 0 5px #5e524a,
+      0 0 0 8px #1a1410,
+      0 0 0 9px #3c3028,
+      0 0 0 12px #0e0c0a,
+      0 14px 40px rgba(0,0,0,0.75);
+  }
+  /* Frame modo oscuro: reducir glow exterior en móvil */
+  .fan-scene,
+  .revelation-cloth-scene {
+    border-radius: 16px;
+  }
 }
 
 /* ── Teléfono pequeño ≤ 375 px ──────────────────────────── */
@@ -2130,6 +2179,23 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     height: 144px !important;
     margin: 4px;
   }
+
+  /* ── Frame en modo claro: muy compacto en pantallas mini ── */
+  [data-theme="light"] .fan-scene,
+  [data-theme="light"] .revelation-cloth-scene {
+    border-radius: 10px;
+    box-shadow:
+      inset 0 0 50px rgba(8,6,4,0.55),
+      0 0 0 1px #0c0a08,
+      0 0 0 3px #2e2622,
+      0 0 0 4px #5e524a,
+      0 0 0 7px #0e0c0a,
+      0 10px 30px rgba(0,0,0,0.70);
+  }
+  .fan-scene,
+  .revelation-cloth-scene {
+    border-radius: 12px;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2158,26 +2224,30 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   border: 1.5px solid rgba(95,30,185,0.55);
   animation: energyPortal 7s ease-in-out infinite;
   animation-delay: -2s; /* desfase para que no pulse sincronizado */
+  /* Espacio para que el título REVELACIÓN no quede tapado por el marco */
+  margin-top: 28px;
 }
 
 [data-theme="light"] .revelation-cloth-scene {
-  border-radius: 20px;
+  border-radius: 14px;
   border: none;
   animation: none;
+  margin-top: 28px; /* espacio para título REVELACIÓN */
   box-shadow:
-    inset 0 0 65px rgba(48,46,44,0.42),
-    inset 0 0 28px rgba(55,53,50,0.24),
-    0 0 0  1px #3a3835,
-    0 0 0  5px #9e9b96,
-    0 0 0  6px #d4d1cc,
-    0 0 0 10px #6e6c68,
-    0 0 0 11px #e6e4e0,
-    0 0 0 15px #8e8c88,
-    0 0 0 16px #4a4846,
-    0 0 0 20px #b8b5b0,
-    0 0 0 24px #2e2c2a,
-    0 16px 55px rgba(20,19,18,0.60),
-    0  5px 16px rgba(0,0,0,0.38);
+    inset 0 0 90px rgba(8,6,4,0.62),
+    inset 0 0 40px rgba(12,9,5,0.40),
+    0 0 0  1px #0c0a08,
+    0 0 0  5px #2e2622,
+    0 0 0  6px #5e524a,
+    0 0 0  9px #1a1410,
+    0 0 0 10px #3c3028,
+    0 0 0 14px #544844,
+    0 0 0 15px #100e0c,
+    0 0 0 19px #2c2420,
+    0 0 0 20px #4a403a,
+    0 0 0 24px #0e0c0a,
+    0 22px 65px rgba(0,0,0,0.80),
+    0  6px 20px rgba(0,0,0,0.55);
 }
 
 .revelation-cloth-overlay {
