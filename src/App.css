@@ -1768,22 +1768,22 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   border: none;
   animation: none;
   box-shadow:
-    /* Vignette interior cálido */
-    inset 0 0 65px rgba(45,22,5,0.50),
-    inset 0 0 28px rgba(65,30,7,0.28),
-    /* Marco de madera — varias bandas de color para efecto biselado */
-    0 0 0  1px #1c0d02,          /* línea oscura interior */
-    0 0 0  5px #7a481a,          /* madera principal */
-    0 0 0  6px #b87e34,          /* canto iluminado */
-    0 0 0 10px #59300c,          /* ranura oscura */
-    0 0 0 11px #d4a050,          /* canto exterior brillante */
-    0 0 0 15px #6a3c10,          /* segunda banda madera */
-    0 0 0 16px #3a1c05,          /* surco oscuro */
-    0 0 0 20px #8c5c22,          /* reborde exterior madera */
-    0 0 0 24px #281204,          /* borde final oscuro */
-    /* Sombra de profundidad */
-    0 16px 55px rgba(25,12,2,0.70),
-    0  5px 16px rgba(0,0,0,0.45);
+    /* Vignette interior gris frío — funde la foto con el marco */
+    inset 0 0 65px rgba(48,46,44,0.42),
+    inset 0 0 28px rgba(55,53,50,0.24),
+    /* Marco de madera decolorada/grisácea — tonos de la mesa_claro.png */
+    0 0 0  1px #3a3835,          /* línea oscura interior */
+    0 0 0  5px #9e9b96,          /* madera gris media */
+    0 0 0  6px #d4d1cc,          /* canto iluminado gris claro */
+    0 0 0 10px #6e6c68,          /* ranura oscura */
+    0 0 0 11px #e6e4e0,          /* canto brillante casi blanco */
+    0 0 0 15px #8e8c88,          /* segunda banda madera */
+    0 0 0 16px #4a4846,          /* surco oscuro */
+    0 0 0 20px #b8b5b0,          /* reborde exterior madera */
+    0 0 0 24px #2e2c2a,          /* borde final oscuro */
+    /* Sombra de profundidad fría */
+    0 16px 55px rgba(20,19,18,0.60),
+    0  5px 16px rgba(0,0,0,0.38);
 }
 
 .fan-overlay {
@@ -1801,9 +1801,9 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 [data-theme="light"] .fan-overlay {
   /* ── Modo claro: difuminado cálido de bordes (madera hacia interior) ── */
   background:
-    linear-gradient(to right,  rgba(38,18,4,0.30) 0%, transparent 12%, transparent 88%, rgba(38,18,4,0.30) 100%),
-    linear-gradient(to bottom, rgba(38,18,4,0.28) 0%, transparent 12%, transparent 82%, rgba(38,18,4,0.38) 100%),
-    radial-gradient(ellipse 108% 82% at 50% 50%, transparent 42%, rgba(20,10,2,0.38) 100%);
+    linear-gradient(to right,  rgba(40,38,36,0.28) 0%, transparent 12%, transparent 88%, rgba(40,38,36,0.28) 100%),
+    linear-gradient(to bottom, rgba(40,38,36,0.25) 0%, transparent 12%, transparent 82%, rgba(40,38,36,0.35) 100%),
+    radial-gradient(ellipse 108% 82% at 50% 50%, transparent 42%, rgba(22,21,20,0.35) 100%);
 }
 
 .fan-header {
@@ -2007,19 +2007,19 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   border: none;
   animation: none;
   box-shadow:
-    inset 0 0 65px rgba(45,22,5,0.50),
-    inset 0 0 28px rgba(65,30,7,0.28),
-    0 0 0  1px #1c0d02,
-    0 0 0  5px #7a481a,
-    0 0 0  6px #b87e34,
-    0 0 0 10px #59300c,
-    0 0 0 11px #d4a050,
-    0 0 0 15px #6a3c10,
-    0 0 0 16px #3a1c05,
-    0 0 0 20px #8c5c22,
-    0 0 0 24px #281204,
-    0 16px 55px rgba(25,12,2,0.70),
-    0  5px 16px rgba(0,0,0,0.45);
+    inset 0 0 65px rgba(48,46,44,0.42),
+    inset 0 0 28px rgba(55,53,50,0.24),
+    0 0 0  1px #3a3835,
+    0 0 0  5px #9e9b96,
+    0 0 0  6px #d4d1cc,
+    0 0 0 10px #6e6c68,
+    0 0 0 11px #e6e4e0,
+    0 0 0 15px #8e8c88,
+    0 0 0 16px #4a4846,
+    0 0 0 20px #b8b5b0,
+    0 0 0 24px #2e2c2a,
+    0 16px 55px rgba(20,19,18,0.60),
+    0  5px 16px rgba(0,0,0,0.38);
 }
 
 .revelation-cloth-overlay {
