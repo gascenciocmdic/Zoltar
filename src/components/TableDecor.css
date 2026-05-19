@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════════════════
    TableDecor — elementos sobre la mesa de tarot (vista cenital)
-   Vela encendida · Amatista · Amuleto Ojo de Ra
+   Vela · Amatista · Amuleto
    ════════════════════════════════════════════════════════════ */
 
 .table-decor {
@@ -10,7 +10,6 @@
   z-index: 3;
 }
 
-/* En la escena de revelación, detrás de las cartas */
 .revelation-cloth-scene .table-decor {
   z-index: 0;
 }
@@ -19,80 +18,105 @@
   position: absolute;
 }
 
-/* ── Posicionamiento de cada elemento ───────────────────── */
+/* ── Posicionamiento ─────────────────────────────────────── */
 .td-candle {
-  left: 4%;
-  top: 24%;
+  left: 3%;
+  top: 20%;
 }
 
 .td-amethyst {
-  right: 3%;
-  top: 16%;
+  right: 2%;
+  top: 14%;
 }
 
 .td-amulet {
-  right: 3%;
-  bottom: 14%;
+  right: 2%;
+  bottom: 10%;
 }
 
-/* ── Ajuste en móvil: escalar un poco ────────────────────── */
-@media (max-width: 480px) {
-  .td-candle   { transform: scale(0.72); transform-origin: top left; }
-  .td-amethyst { transform: scale(0.68); transform-origin: top right; }
-  .td-amulet   { transform: scale(0.65); transform-origin: bottom right; }
+/* ── Móvil ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .td-candle   { transform: scale(0.65); transform-origin: top left; }
+  .td-amethyst { transform: scale(0.62); transform-origin: top right; }
+  .td-amulet   { transform: scale(0.58); transform-origin: bottom right; }
 }
 
 /* ════════════════════════════════════════════════════════════
-   VELA — animaciones de llama
+   ANIMACIONES — VELA
    ════════════════════════════════════════════════════════════ */
 
-/* Resplandor en la mesa — pulso lento y suave */
+/* Halo en la mesa — pulso muy lento */
 @keyframes candleGlowPulse {
-  0%,  100% { opacity: 0.80; transform: scale(1);    }
-  22%        { opacity: 0.58; transform: scale(0.91) translate( 0.6px,-0.4px); }
-  45%        { opacity: 0.92; transform: scale(1.08) translate(-0.3px, 0.2px); }
-  68%        { opacity: 0.65; transform: scale(0.95) translate(-0.5px, 0.5px); }
+  0%,  100% { opacity: 0.82; transform: scale(1.00); }
+  20%        { opacity: 0.60; transform: scale(0.90) translate( 0.8px,-0.5px); }
+  42%        { opacity: 0.94; transform: scale(1.10) translate(-0.4px, 0.3px); }
+  65%        { opacity: 0.66; transform: scale(0.94) translate(-0.6px, 0.6px); }
+  84%        { opacity: 0.88; transform: scale(1.05) translate( 0.3px,-0.2px); }
 }
 
-/* Brillo de la llama — parpadeo medio */
+/* Concentración interior — pulso medio */
+@keyframes candleMidGlow {
+  0%,  100% { opacity: 0.75; transform: scale(1.00); }
+  28%        { opacity: 0.55; transform: scale(0.92) translate( 0.6px,-0.3px); }
+  55%        { opacity: 0.88; transform: scale(1.08) translate(-0.3px, 0.2px); }
+}
+
+/* Nube exterior de llama — parpadeo */
 @keyframes flameGlowFlicker {
-  0%,  100% { opacity: 0.88; transform: scale(1)    translate(0,   0); }
-  18%        { opacity: 0.65; transform: scale(0.87) translate( 1.0px,-0.5px); }
-  36%        { opacity: 0.95; transform: scale(1.12) translate(-0.4px, 0.3px); }
-  54%        { opacity: 0.72; transform: scale(0.93) translate( 0.7px, 0.4px); }
-  74%        { opacity: 0.90; transform: scale(1.07) translate(-0.6px,-0.2px); }
+  0%,  100% { opacity: 0.90; transform: scale(1.00) translate(0,0); }
+  16%        { opacity: 0.66; transform: scale(0.86) translate( 1.2px,-0.6px); }
+  34%        { opacity: 0.97; transform: scale(1.14) translate(-0.5px, 0.3px); }
+  52%        { opacity: 0.70; transform: scale(0.91) translate( 0.8px, 0.5px); }
+  72%        { opacity: 0.92; transform: scale(1.08) translate(-0.7px,-0.3px); }
 }
 
-/* Núcleo blanco — parpadeo rápido */
+/* Capa media de llama */
+@keyframes flameMidFlicker {
+  0%,  100% { opacity: 0.94; transform: scale(1.00) translate(0,0); }
+  24%        { opacity: 0.72; transform: scale(0.88) translate( 0.9px,-0.4px); }
+  48%        { opacity: 0.99; transform: scale(1.12) translate(-0.4px, 0.2px); }
+  74%        { opacity: 0.78; transform: scale(0.94) translate( 0.5px, 0.4px); }
+}
+
+/* Núcleo brillante */
 @keyframes flameCoreFlicker {
-  0%,  100% { opacity: 0.95; transform: scale(1);    }
-  30%        { opacity: 0.72; transform: scale(0.82) translate( 0.8px, 0); }
-  60%        { opacity: 0.90; transform: scale(1.15) translate(-0.5px,-0.4px); }
+  0%,  100% { opacity: 0.96; transform: scale(1.00); }
+  28%        { opacity: 0.74; transform: scale(0.80) translate( 1.0px, 0.1px); }
+  58%        { opacity: 0.99; transform: scale(1.18) translate(-0.6px,-0.5px); }
 }
 
-/* Halo cálido en la madera */
 .candle-table-glow {
-  animation: candleGlowPulse 3.1s ease-in-out infinite;
+  animation: candleGlowPulse 3.4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* Nube de llama */
+.candle-mid-glow {
+  animation: candleMidGlow 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .flame-glow {
-  animation: flameGlowFlicker 1.9s ease-in-out infinite;
+  animation: flameGlowFlicker 2.0s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* Punto brillante central */
+.flame-mid {
+  animation: flameMidFlicker 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .flame-core {
-  animation: flameCoreFlicker 1.1s ease-in-out infinite;
+  animation: flameCoreFlicker 1.0s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 .flame-inner {
-  animation: flameCoreFlicker 0.75s ease-in-out infinite reverse;
+  animation: flameCoreFlicker 0.70s ease-in-out infinite reverse;
   transform-box: fill-box;
   transform-origin: center;
 }

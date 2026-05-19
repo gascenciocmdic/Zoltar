@@ -27,6 +27,7 @@ import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
 import TableDecor from './components/TableDecor';
+import WoodOverlay from './components/WoodOverlay';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -1284,6 +1285,9 @@ function App() {
 
       {phase === 'synchrony' && (
         <div className="fan-scene">
+          {/* Juntas y veta ondulada de la madera */}
+          <WoodOverlay uid="fan-w" />
+
           {/* Overlay atmosférico */}
           <div className="fan-overlay" />
 
@@ -1428,6 +1432,7 @@ function App() {
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
                 <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease' }}>
+                  <WoodOverlay uid="dep-w" />
                   <div className="fan-overlay" />
                   <TableDecor uid="dep" />
                   <div className="fan-header">
@@ -1491,6 +1496,7 @@ function App() {
                 <div
                   className="revelation-cloth-scene"
                 >
+                  <WoodOverlay uid="rev-w" />
                   <div className="revelation-cloth-overlay" />
                   <TableDecor uid="rev" />
                   <div className="revelation-cards-spread">
