@@ -1,3 +1,9 @@
+/* ── Resets táctiles iOS / Android ─────────────────────── */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .app-container {
   width: 100%;
   min-height: 100vh;
@@ -331,6 +337,35 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     padding: 25px !important;
     width: 90% !important;
   }
+
+  /* ── Abanico: geometría intermedia tablet ── */
+  .fan-slot {
+    left: -60px;
+    top: -420px;
+    width: 120px;
+    height: 188px;
+    transform-origin: 60px 420px;
+  }
+  .fan-slot .card-wrapper {
+    width: 120px;
+    height: 188px;
+  }
+  .fan-scene {
+    min-height: max(60vh, 520px);
+    border-radius: 20px;
+  }
+  .fan-selected-tray {
+    top: 90px;
+    gap: 18px;
+  }
+  /* Revelation cards en 3 columnas ajustadas */
+  .revelation-card-block {
+    max-width: 210px;
+    padding: 18px;
+  }
+  .revelation-cards-spread {
+    gap: 16px;
+  }
 }
 
 .clarification-card-wrapper {
@@ -634,6 +669,21 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   .start-button {
     padding: 12px 28px;
     font-size: 0.82rem;
+  }
+
+  /* Revelation cards: fila de 3 en móvil */
+  .revelation-card-block {
+    max-width: 180px;
+    padding: 12px;
+    gap: 12px;
+  }
+  .revelation-cards-spread {
+    gap: 10px;
+    padding: 8px 4px;
+  }
+  /* Texto narrativo */
+  .narrative-container {
+    padding: 0 12px;
   }
 }
 
@@ -1855,6 +1905,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   transform-origin: 70px 495px; /* eje de rotación en el pivot */
   transition: z-index 0.1s, filter 0.3s;
   cursor: pointer;
+  touch-action: none; /* evita scroll accidental al tocar cartas en móvil */
 }
 
 .fan-slot:hover {
@@ -1945,10 +1996,20 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   width: calc(100% + 32px);
 }
 
-/* Mobile */
+/* ── Teléfono grande 376–480 px ─────────────────────────── */
 @media (max-width: 480px) {
+  .global-logo {
+    height: 80px;
+    top: 6px;
+    width: 320px;
+  }
+  .app-container {
+    padding: 96px 10px 24px 10px;
+  }
+
   .fan-scene {
-    min-height: max(55vh, 420px);
+    min-height: max(56vh, 440px);
+    border-radius: 16px;
   }
 
   .fan-slot {
@@ -1958,19 +2019,116 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     height: 172px;
     transform-origin: 55px 370px;
   }
-
   .fan-slot .card-wrapper {
     width: 110px;
     height: 172px;
   }
-
   .fan-deck {
     bottom: -20px;
   }
-
   .fan-selected-tray {
-    top: 80px;
-    gap: 14px;
+    top: 74px;
+    gap: 12px;
+  }
+  .fan-header {
+    padding: 28px 16px 12px;
+  }
+  .fan-title {
+    font-size: 1.05rem;
+    letter-spacing: 2px;
+  }
+  .fan-subtitle {
+    font-size: 0.72rem;
+  }
+  .fan-continue {
+    bottom: 22px;
+    max-width: 240px;
+  }
+
+  /* Revelation */
+  .revelation-cloth-scene {
+    border-radius: 16px;
+    min-height: max(48vh, 360px);
+    padding: 16px 8px 24px;
+  }
+  .revelation-card-block {
+    max-width: 148px;
+    padding: 10px 8px;
+    gap: 8px;
+  }
+  .revelation-cards-spread {
+    gap: 8px;
+    padding: 6px 2px;
+  }
+  /* Cartas en revelation: sin escala extra en móvil */
+  .revelation-cloth-scene .card-wrapper {
+    transform: scale(1.0);
+  }
+  .revelation-cloth-scene .card-wrapper.face-up {
+    transform: scale(1.0);
+  }
+}
+
+/* ── Teléfono pequeño ≤ 375 px ──────────────────────────── */
+@media (max-width: 375px) {
+  .global-logo {
+    height: 68px;
+    width: 270px;
+  }
+  .app-container {
+    padding: 84px 8px 20px 8px;
+  }
+
+  .fan-scene {
+    min-height: max(54vh, 400px);
+    border-radius: 14px;
+  }
+  .fan-slot {
+    left: -46px;
+    top: -300px;
+    width: 92px;
+    height: 144px;
+    transform-origin: 46px 300px;
+  }
+  .fan-slot .card-wrapper {
+    width: 92px;
+    height: 144px;
+  }
+  .fan-deck {
+    bottom: -18px;
+  }
+  .fan-selected-tray {
+    top: 64px;
+    gap: 8px;
+  }
+  .fan-header {
+    padding: 22px 12px 8px;
+  }
+  .fan-title {
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+  }
+
+  /* Revelation */
+  .revelation-cloth-scene {
+    border-radius: 14px;
+    min-height: max(46vh, 330px);
+    padding: 12px 6px 20px;
+  }
+  .revelation-card-block {
+    max-width: 126px;
+    padding: 8px 6px;
+    gap: 6px;
+  }
+  .revelation-cards-spread {
+    gap: 6px;
+  }
+
+  /* card-wrapper pequeño */
+  .card-wrapper {
+    width: 92px !important;
+    height: 144px !important;
+    margin: 4px;
   }
 }
 
@@ -2065,12 +2223,4 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   transform: scale(1.08);
 }
 
-@media (max-width: 480px) {
-  .revelation-cloth-scene {
-    padding: 20px 8px 28px;
-    min-height: max(50vh, 380px);
-  }
-  .revelation-cards-spread {
-    gap: 14px;
-  }
-}
+/* (revelation 480px handled in the consolidated fan-scene block above) */
