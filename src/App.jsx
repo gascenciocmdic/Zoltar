@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import VortexCanvas from './vortex/VortexCanvas';
 import { useTheme } from './lib/themeContext';
@@ -94,6 +94,17 @@ function App() {
 
   const [vibe, setVibe] = useState('healing_blue');
   const [selectedCards, setSelectedCards] = useState([]);
+
+  // ── Zoom & drag del abanico ──────────────────────────────────────────────
+  const FAN_ZOOM_MIN  = 0.55;
+  const FAN_ZOOM_MAX  = 2.5;
+  const FAN_ZOOM_STEP = 0.25;
+  const [fanZoom, setFanZoom] = useState(1.0);
+  // dragState: { card, cardId, startX, startY, currentX, currentY }
+  const [dragState, setDragState] = useState(null);
+  const pinchRef = useRef({ active: false, startDist: 0, startZoom: 1 });
+  // ────────────────────────────────────────────────────────────────────────
+
   const [loading, setLoading] = useState(false);
   const [interpretation, setInterpretation] = useState(null);
   const [introspectionMessage, setIntrospectionMessage] = useState('');
@@ -553,6 +564,86 @@ function App() {
       setIsFading(false);
     }, Math.floor(Math.random() * 2000) + 3000); 
   };
+
+  // ── Drag global listeners ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!dragState) return;
+    const onMove = (e) => {
+      const pt = e.touches ? e.touches[0] : e;
+      setDragState(prev => prev ? { ...prev, currentX: pt.clientX, currentY: pt.clientY } : null);
+    };
+    const onEnd = () => {
+      setDragState(prev => {
+        if (!prev) return null;
+        const dist = Math.hypot(prev.currentX - prev.startX, prev.currentY - prev.startY);
+        if (dist > 70) {
+          if (prev.isDeepen && deepenDragEndRef.current) {
+            deepenDragEndRef.current(prev.card);
+          } else {
+            setSelectedCards(cards => {
+              if (cards.find(c => c.id === prev.card.id)) return cards;
+              if (cards.length >= 3) return cards;
+              return [...cards, prev.card];
+            });
+          }
+        }
+        return null;
+      });
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [dragState?.cardId]);
+
+  // Drag start — called from each card slot (mouse & touch)
+  const handleCardDragStart = useCallback((card, clientX, clientY) => {
+    if (loading) return;
+    if (selectedCards.find(c => c.id === card.id)) return;
+    setDragState({ card, cardId: card.id, startX: clientX, startY: clientY, currentX: clientX, currentY: clientY });
+  }, [loading, selectedCards]);
+
+  // Deepening drag start — routes selection to tentative-card setter
+  const deepenDragEndRef = useRef(null);
+  const handleDeepenCardDragStart = useCallback((card, onSelect, clientX, clientY) => {
+    if (loading) return;
+    deepenDragEndRef.current = onSelect;
+    setDragState({ card, cardId: card.id, startX: clientX, startY: clientY, currentX: clientX, currentY: clientY, isDeepen: true });
+  }, [loading]);
+
+  // Pinch zoom on fan-scene
+  const handleFanTouchStart = useCallback((e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchRef.current = { active: true, startDist: dist, startZoom: fanZoom };
+    }
+  }, [fanZoom]);
+
+  const handleFanTouchMove = useCallback((e) => {
+    if (!pinchRef.current.active || e.touches.length !== 2) return;
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const newZoom = Math.min(FAN_ZOOM_MAX, Math.max(FAN_ZOOM_MIN,
+      pinchRef.current.startZoom * (dist / pinchRef.current.startDist)
+    ));
+    setFanZoom(newZoom);
+  }, []);
+
+  const handleFanTouchEnd = useCallback((e) => {
+    if (e.touches.length < 2) pinchRef.current.active = false;
+  }, []);
+  // ──────────────────────────────────────────────────────────────────────
 
   const handleSelectCard = (card) => {
     if (loading) return; // Prevent selection during transition
@@ -1262,7 +1353,13 @@ function App() {
       )}
 
       {phase === 'synchrony' && (
-        <div className="fan-scene" style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}>
+        <div
+          className="fan-scene"
+          style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
+          onTouchStart={handleFanTouchStart}
+          onTouchMove={handleFanTouchMove}
+          onTouchEnd={handleFanTouchEnd}
+        >
           {/* Overlay atmosférico */}
           <div className="fan-overlay" />
 
@@ -1291,30 +1388,68 @@ function App() {
             </div>
           )}
 
-          {/* Abanico de cartas — las seleccionadas quedan como placeholder invisible */}
-          <div className="fan-deck">
+          {/* Controles de zoom — sólo visible en escritorio (CSS lo oculta en móvil) */}
+          <div className="fan-zoom-controls">
+            <button
+              className="fan-zoom-btn"
+              onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}
+              aria-label="Acercar"
+            >＋</button>
+            <button
+              className="fan-zoom-btn"
+              onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}
+              aria-label="Alejar"
+            >－</button>
+          </div>
+
+          {/* Abanico de cartas — escala con fanZoom desde el pivote inferior */}
+          <div
+            className="fan-deck"
+            style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}
+          >
             <Dragonfly visible={true} />
             {shuffledDeck.map((card, index) => {
               const total = shuffledDeck.length;
               const spread = 115;
               const angle = -spread / 2 + (index / (total - 1)) * spread;
               const isSelected = !!selectedCards.find(c => c.id === card.id);
+              const isDragging = dragState?.cardId === card.id;
               return (
                 <div
                   key={card.id}
-                  className={`fan-slot${isSelected ? ' fan-slot-extracted' : ''}`}
-                  style={{ transform: `rotate(${angle}deg)` }}
+                  className={`fan-slot${isSelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}`}
+                  style={{
+                    transform: `rotate(${angle}deg)`,
+                    opacity: isDragging ? 0.25 : 1,
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                  }}
+                  onMouseDown={isSelected ? undefined : (e) => { e.preventDefault(); handleCardDragStart(card, e.clientX, e.clientY); }}
+                  onTouchStart={isSelected ? undefined : (e) => { handleCardDragStart(card, e.touches[0].clientX, e.touches[0].clientY); }}
+                  onClick={isSelected ? undefined : (e) => { if (dragState === null) handleSelectCard(card); }}
                 >
                   <Card
                     card={card}
                     isSelected={false}
-                    onSelect={isSelected ? undefined : handleSelectCard}
+                    onSelect={undefined}
                     logoSrc={isLight ? logoClaro : logoDark}
                   />
                 </div>
               );
             })}
           </div>
+
+          {/* Carta flotante que sigue al dedo/cursor durante el arrastre */}
+          {dragState && !dragState.isDeepen && (
+            <div
+              className="fan-drag-ghost"
+              style={{
+                left: dragState.currentX,
+                top: dragState.currentY,
+              }}
+            >
+              <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
+            </div>
+          )}
 
           {/* Botón continuar */}
           {selectedCards.length === 3 && (
@@ -1406,7 +1541,13 @@ function App() {
               const deepenSpread = 115;
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
-                <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease', backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}>
+                <div
+                  className="fan-scene fan-scene-deepening"
+                  style={{ animation: 'fadeIn 1s ease', backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
+                  onTouchStart={handleFanTouchStart}
+                  onTouchMove={handleFanTouchMove}
+                  onTouchEnd={handleFanTouchEnd}
+                >
                   <div className="fan-overlay" />
                   <TableProps />
                   <div className="fan-header">
@@ -1429,30 +1570,58 @@ function App() {
                     </div>
                   )}
 
-                  <div className="fan-deck">
+                  {/* Controles de zoom — sólo escritorio */}
+                  <div className="fan-zoom-controls">
+                    <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}>＋</button>
+                    <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}>－</button>
+                  </div>
+
+                  <div
+                    className="fan-deck"
+                    style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}
+                  >
                     <Dragonfly visible={true} />
                     {deepenDeck.map((c, index) => {
                       const angle = -deepenSpread / 2 + (index / (deepenTotal - 1)) * deepenSpread;
                       const isTentativelySelected = tentCard?.id === c.id;
+                      const isDragging = dragState?.cardId === c.id;
+                      const deepenSelectFn = () => setClarifications(prev => ({
+                        ...prev,
+                        [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
+                      }));
                       return (
                         <div
                           key={c.id}
-                          className={`fan-slot${isTentativelySelected ? ' fan-slot-extracted' : ''}`}
-                          style={{ transform: `rotate(${angle}deg)` }}
+                          className={`fan-slot${isTentativelySelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}`}
+                          style={{
+                            transform: `rotate(${angle}deg)`,
+                            opacity: isDragging ? 0.25 : 1,
+                            cursor: isDragging ? 'grabbing' : 'grab',
+                          }}
+                          onMouseDown={isTentativelySelected ? undefined : (e) => { e.preventDefault(); handleDeepenCardDragStart(c, deepenSelectFn, e.clientX, e.clientY); }}
+                          onTouchStart={isTentativelySelected ? undefined : (e) => { handleDeepenCardDragStart(c, deepenSelectFn, e.touches[0].clientX, e.touches[0].clientY); }}
+                          onClick={isTentativelySelected ? undefined : (e) => { if (dragState === null) deepenSelectFn(); }}
                         >
                           <Card
                             card={c}
                             isSelected={false}
-                            onSelect={isTentativelySelected ? undefined : () => setClarifications(prev => ({
-                              ...prev,
-                              [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
-                            }))}
+                            onSelect={undefined}
                             logoSrc={isLight ? logoClaro : logoDark}
                           />
                         </div>
                       );
                     })}
                   </div>
+
+                  {/* Carta flotante arrastre deepening */}
+                  {dragState?.isDeepen && (
+                    <div
+                      className="fan-drag-ghost"
+                      style={{ left: dragState.currentX, top: dragState.currentY }}
+                    >
+                      <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
+                    </div>
+                  )}
 
                   {tentCard && (
                     <div className="fan-continue">

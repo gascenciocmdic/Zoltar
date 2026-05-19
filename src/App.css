@@ -1931,13 +1931,20 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   width: 140px;
   height: 220px;
   transform-origin: 70px 495px; /* eje de rotación en el pivot */
-  transition: z-index 0.1s, filter 0.3s;
-  cursor: pointer;
+  transition: z-index 0.1s, filter 0.3s, opacity 0.2s;
+  cursor: grab;
   touch-action: none; /* evita scroll accidental al tocar cartas en móvil */
+  user-select: none;
 }
 
 .fan-slot:hover {
   z-index: 200;
+  cursor: grab;
+}
+
+.fan-slot:active,
+.fan-slot.fan-slot-dragging {
+  cursor: grabbing;
 }
 
 /* Las card-wrapper dentro del abanico: tamaño completo, sin margin */
@@ -1946,6 +1953,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   height: 220px;
   margin: 0;
   transform: none; /* el fan-slot maneja toda la transformación */
+  cursor: inherit;
 }
 
 /* El hover/selected en las cartas del abanico no usa translateY (ya están en el arco) */
@@ -1960,9 +1968,63 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
 /* Carta extraída del abanico — ocupa espacio (mantiene arco) pero invisible */
 .fan-slot-extracted {
-  opacity: 0;
+  opacity: 0 !important;
   pointer-events: none;
   transition: opacity 0.35s ease;
+}
+
+/* ── Controles de zoom del abanico ──────────────────────────────────────── */
+.fan-zoom-controls {
+  position: absolute;
+  bottom: 18px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+
+.fan-zoom-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  background: rgba(20, 12, 40, 0.70);
+  backdrop-filter: blur(6px);
+  color: #ffd700;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+.fan-zoom-btn:hover  { background: rgba(80, 30, 140, 0.80); transform: scale(1.1); }
+.fan-zoom-btn:active { transform: scale(0.92); }
+
+/* Ocultar botones en móvil — el usuario usa pinch */
+@media (max-width: 768px) {
+  .fan-zoom-controls { display: none; }
+}
+
+/* ── Carta fantasma que sigue al puntero/dedo durante el arrastre ───────── */
+.fan-drag-ghost {
+  position: fixed;           /* relativo al viewport */
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -130%) scale(1.18);
+  transform-origin: center bottom;
+  filter:
+    drop-shadow(0 20px 40px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 18px rgba(180, 100, 255, 0.55));
+  transition: transform 0.05s;
+}
+
+.fan-drag-ghost .card-wrapper {
+  width: 110px;
+  height: 172px;
+  margin: 0;
 }
 
 /* ── Tray superior: cartas elegidas flotando SOBRE el abanico ── */
