@@ -2059,7 +2059,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     gap: 12px;
   }
   .fan-header {
-    padding: 28px 16px 12px;
+    padding: 68px 16px 12px; /* talisman llega hasta ~64 px del borde: deja título libre */
   }
   .fan-title {
     font-size: 1.05rem;
@@ -2151,7 +2151,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     gap: 8px;
   }
   .fan-header {
-    padding: 22px 12px 8px;
+    padding: 52px 12px 8px; /* talisman llega hasta ~48 px del borde a 375 px: título libre */
   }
   .fan-title {
     font-size: 0.95rem;

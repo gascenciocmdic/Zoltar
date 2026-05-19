@@ -62,13 +62,13 @@
 /* ── Teléfono grande (376 – 480 px) ─────────────────────── */
 @media (max-width: 480px) {
   .tp-velas    { width: 118px; top: -1%; }
-  .tp-cuarzo   { width: 108px; top:  0%; }
-  .tp-talisman { width: 114px; top: -2%; } /* sale más del borde para no tapar el header */
+  .tp-cuarzo   { width: 94px;  top:  0%; }   /* ~80 % de velas — mismo ratio que desktop */
+  .tp-talisman { width: 100px; top: -7%; }   /* más arriba para no solapar el título */
 }
 
 /* ── Teléfono pequeño (≤ 375 px) ────────────────────────── */
 @media (max-width: 375px) {
   .tp-velas    { width: 84px;  left: -1%; top: -1%; }
-  .tp-cuarzo   { width: 78px;  right: -1%; }
-  .tp-talisman { width: 82px;  top: -3%; } /* más arriba para no solapar el header */
+  .tp-cuarzo   { width: 67px;  right: -1%; }  /* ~80 % de velas */
+  .tp-talisman { width: 72px;  top: -7%; }    /* más arriba para no solapar el título */
 }
