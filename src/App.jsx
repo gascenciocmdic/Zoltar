@@ -26,8 +26,9 @@ import InviteWidget from './components/InviteWidget';
 import { trackEvent, identifyUser } from './lib/analytics';
 import logoDark from './assets/Logo_Zoltar_oscuro.png';
 import logoClaro from './assets/Logo_Zoltar_claro.png';
-import TableDecor from './components/TableDecor';
-import WoodOverlay from './components/WoodOverlay';
+import TableProps from './components/TableProps';
+import mesaOscuro from './assets/mesa_oscuro.png';
+import mesaClaro  from './assets/mesa_claro.png';
 
 const splitFirstSentence = (text) => {
   if (!text) return null;
@@ -1284,15 +1285,12 @@ function App() {
       )}
 
       {phase === 'synchrony' && (
-        <div className="fan-scene">
-          {/* Juntas y veta ondulada de la madera */}
-          <WoodOverlay uid="fan-w" />
-
+        <div className="fan-scene" style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}>
           {/* Overlay atmosférico */}
           <div className="fan-overlay" />
 
           {/* Elementos sobre la mesa */}
-          <TableDecor uid="fan" />
+          <TableProps />
 
           {/* Título flotante */}
           <div className="fan-header">
@@ -1431,10 +1429,9 @@ function App() {
               const deepenSpread = 115;
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
-                <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease' }}>
-                  <WoodOverlay uid="dep-w" />
+                <div className="fan-scene fan-scene-deepening" style={{ animation: 'fadeIn 1s ease', backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}>
                   <div className="fan-overlay" />
-                  <TableDecor uid="dep" />
+                  <TableProps />
                   <div className="fan-header">
                     <h2 className="fan-title">{translations.ui.deepen_loading}</h2>
                   </div>
@@ -1495,10 +1492,10 @@ function App() {
               <>
                 <div
                   className="revelation-cloth-scene"
+                  style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
                 >
-                  <WoodOverlay uid="rev-w" />
                   <div className="revelation-cloth-overlay" />
-                  <TableDecor uid="rev" />
+                  <TableProps />
                   <div className="revelation-cards-spread">
                     <Dragonfly visible={cardsFlippedCount < 3} />
                     {selectedCards.map((card, index) => {
