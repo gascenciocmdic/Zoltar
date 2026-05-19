@@ -102,7 +102,11 @@ function App() {
   const [fanZoom, setFanZoom] = useState(1.0);
   // dragState: { card, cardId, startX, startY, currentX, currentY }
   const [dragState, setDragState] = useState(null);
+  // activatedCardId: carta "elegida" en escritorio (click = activa, luego drag = selecciona)
+  const [activatedCardId, setActivatedCardId] = useState(null);
   const pinchRef = useRef({ active: false, startDist: 0, startZoom: 1 });
+  // Detecta si el dispositivo usa mouse (pointer: fine) vs táctil
+  const isMouseDevice = useRef(typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches);
   // ────────────────────────────────────────────────────────────────────────
 
   const [loading, setLoading] = useState(false);
@@ -589,6 +593,7 @@ function App() {
         }
         return null;
       });
+      setActivatedCardId(null); // siempre desactiva al soltar
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('touchmove', onMove, { passive: true });
@@ -1353,28 +1358,10 @@ function App() {
       )}
 
       {phase === 'synchrony' && (
-        <div
-          className="fan-scene"
-          style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
-          onTouchStart={handleFanTouchStart}
-          onTouchMove={handleFanTouchMove}
-          onTouchEnd={handleFanTouchEnd}
-        >
-          {/* Overlay atmosférico */}
-          <div className="fan-overlay" />
-
-          {/* Elementos sobre la mesa */}
-          <TableProps />
-
-          {/* Título flotante */}
-          <div className="fan-header">
-            <h2 className="fan-title">{translations.ui.synchrony_title}</h2>
-            <p className="fan-subtitle">{translations.ui.card_selection_subtitle} ({selectedCards.length}/3)</p>
-          </div>
-
-          {/* Tray superior: cartas ya seleccionadas, extraídas del abanico */}
+        <div className="fan-layout-wrapper">
+          {/* ── Cartas seleccionadas — FUERA del fan-scene para no tapar el arco ── */}
           {selectedCards.length > 0 && (
-            <div className="fan-selected-tray">
+            <div className="fan-selected-row">
               {selectedCards.map((card) => (
                 <div key={card.id} className="fan-tray-card" title="Clic para devolver al abanico">
                   <Card
@@ -1388,77 +1375,79 @@ function App() {
             </div>
           )}
 
-          {/* Controles de zoom — sólo visible en escritorio (CSS lo oculta en móvil) */}
-          <div className="fan-zoom-controls">
-            <button
-              className="fan-zoom-btn"
-              onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}
-              aria-label="Acercar"
-            >＋</button>
-            <button
-              className="fan-zoom-btn"
-              onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}
-              aria-label="Alejar"
-            >－</button>
-          </div>
-
-          {/* Abanico de cartas — escala con fanZoom desde el pivote inferior */}
+          {/* ── Mesa / Abanico ───────────────────────────────────────────────── */}
           <div
-            className="fan-deck"
-            style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}
+            className="fan-scene"
+            style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
+            onTouchStart={handleFanTouchStart}
+            onTouchMove={handleFanTouchMove}
+            onTouchEnd={handleFanTouchEnd}
           >
-            <Dragonfly visible={true} />
-            {shuffledDeck.map((card, index) => {
-              const total = shuffledDeck.length;
-              const spread = 115;
-              const angle = -spread / 2 + (index / (total - 1)) * spread;
-              const isSelected = !!selectedCards.find(c => c.id === card.id);
-              const isDragging = dragState?.cardId === card.id;
-              return (
-                <div
-                  key={card.id}
-                  className={`fan-slot${isSelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}`}
-                  style={{
-                    transform: `rotate(${angle}deg)`,
-                    opacity: isDragging ? 0.25 : 1,
-                    cursor: isDragging ? 'grabbing' : 'grab',
-                  }}
-                  onMouseDown={isSelected ? undefined : (e) => { e.preventDefault(); handleCardDragStart(card, e.clientX, e.clientY); }}
-                  onTouchStart={isSelected ? undefined : (e) => { handleCardDragStart(card, e.touches[0].clientX, e.touches[0].clientY); }}
-                  onClick={isSelected ? undefined : (e) => { if (dragState === null) handleSelectCard(card); }}
-                >
-                  <Card
-                    card={card}
-                    isSelected={false}
-                    onSelect={undefined}
-                    logoSrc={isLight ? logoClaro : logoDark}
-                  />
-                </div>
-              );
-            })}
+            <div className="fan-overlay" />
+            <TableProps />
+
+            <div className="fan-header">
+              <h2 className="fan-title">{translations.ui.synchrony_title}</h2>
+              <p className="fan-subtitle">{translations.ui.card_selection_subtitle} ({selectedCards.length}/3)</p>
+            </div>
+
+            {/* Controles de zoom — sólo escritorio */}
+            <div className="fan-zoom-controls">
+              <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}>＋</button>
+              <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}>－</button>
+            </div>
+
+            <div className="fan-deck" style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}>
+              <Dragonfly visible={true} />
+              {shuffledDeck.map((card, index) => {
+                const total = shuffledDeck.length;
+                const spread = 115;
+                const angle = -spread / 2 + (index / (total - 1)) * spread;
+                const isSelected = !!selectedCards.find(c => c.id === card.id);
+                const isDragging = dragState?.cardId === card.id;
+                const isActivated = activatedCardId === card.id;
+                return (
+                  <div
+                    key={card.id}
+                    className={`fan-slot${isSelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}${isActivated ? ' fan-slot-activated' : ''}`}
+                    style={{
+                      transform: `rotate(${angle}deg)`,
+                      opacity: isDragging ? 0.25 : 1,
+                      cursor: isDragging ? 'grabbing' : isActivated ? 'grab' : 'default',
+                      zIndex: isActivated ? 300 : undefined,
+                    }}
+                    /* Desktop: click activa, mousedown desde activado arrastra */
+                    onMouseDown={isSelected ? undefined : (e) => {
+                      if (!isMouseDevice.current) return;
+                      if (isActivated) { e.preventDefault(); handleCardDragStart(card, e.clientX, e.clientY); }
+                    }}
+                    onClick={isSelected ? undefined : () => {
+                      if (isMouseDevice.current) setActivatedCardId(prev => prev === card.id ? null : card.id);
+                    }}
+                    /* Móvil: touch inmediatamente activa y prepara drag */
+                    onTouchStart={isSelected ? undefined : (e) => {
+                      setActivatedCardId(card.id);
+                      handleCardDragStart(card, e.touches[0].clientX, e.touches[0].clientY);
+                    }}
+                  >
+                    <Card card={card} isSelected={false} onSelect={undefined} logoSrc={isLight ? logoClaro : logoDark} />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Carta fantasma que sigue al puntero/dedo */}
+            {dragState && !dragState.isDeepen && (
+              <div className="fan-drag-ghost" style={{ left: dragState.currentX, top: dragState.currentY }}>
+                <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
+              </div>
+            )}
           </div>
 
-          {/* Carta flotante que sigue al dedo/cursor durante el arrastre */}
-          {dragState && !dragState.isDeepen && (
-            <div
-              className="fan-drag-ghost"
-              style={{
-                left: dragState.currentX,
-                top: dragState.currentY,
-              }}
-            >
-              <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
-            </div>
-          )}
-
-          {/* Botón continuar */}
+          {/* ── Botón continuar — debajo del abanico ────────────────────────── */}
           {selectedCards.length === 3 && (
-            <div className="fan-continue">
-              <button
-                className="start-button blinking-button continue-btn"
-                onClick={handleGoToAstralAlignment}
-                disabled={loading}
-              >
+            <div className="fan-continue-outer">
+              <button className="start-button blinking-button continue-btn" onClick={handleGoToAstralAlignment} disabled={loading}>
                 {translations.ui.continue}
               </button>
             </div>
@@ -1541,21 +1530,10 @@ function App() {
               const deepenSpread = 115;
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
-                <div
-                  className="fan-scene fan-scene-deepening"
-                  style={{ animation: 'fadeIn 1s ease', backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
-                  onTouchStart={handleFanTouchStart}
-                  onTouchMove={handleFanTouchMove}
-                  onTouchEnd={handleFanTouchEnd}
-                >
-                  <div className="fan-overlay" />
-                  <TableProps />
-                  <div className="fan-header">
-                    <h2 className="fan-title">{translations.ui.deepen_loading}</h2>
-                  </div>
-
+                <div className="fan-layout-wrapper" style={{ animation: 'fadeIn 1s ease' }}>
+                  {/* Carta tentativa — fuera de la escena para no tapar el arco */}
                   {tentCard && (
-                    <div className="fan-selected-tray">
+                    <div className="fan-selected-row">
                       <div className="fan-tray-card" title="Clic para devolver al abanico">
                         <Card
                           card={tentCard}
@@ -1570,61 +1548,72 @@ function App() {
                     </div>
                   )}
 
-                  {/* Controles de zoom — sólo escritorio */}
-                  <div className="fan-zoom-controls">
-                    <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}>＋</button>
-                    <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}>－</button>
-                  </div>
-
                   <div
-                    className="fan-deck"
-                    style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}
+                    className="fan-scene fan-scene-deepening"
+                    style={{ backgroundImage: `url(${isLight ? mesaClaro : mesaOscuro})` }}
+                    onTouchStart={handleFanTouchStart}
+                    onTouchMove={handleFanTouchMove}
+                    onTouchEnd={handleFanTouchEnd}
                   >
-                    <Dragonfly visible={true} />
-                    {deepenDeck.map((c, index) => {
-                      const angle = -deepenSpread / 2 + (index / (deepenTotal - 1)) * deepenSpread;
-                      const isTentativelySelected = tentCard?.id === c.id;
-                      const isDragging = dragState?.cardId === c.id;
-                      const deepenSelectFn = () => setClarifications(prev => ({
-                        ...prev,
-                        [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
-                      }));
-                      return (
-                        <div
-                          key={c.id}
-                          className={`fan-slot${isTentativelySelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}`}
-                          style={{
-                            transform: `rotate(${angle}deg)`,
-                            opacity: isDragging ? 0.25 : 1,
-                            cursor: isDragging ? 'grabbing' : 'grab',
-                          }}
-                          onMouseDown={isTentativelySelected ? undefined : (e) => { e.preventDefault(); handleDeepenCardDragStart(c, deepenSelectFn, e.clientX, e.clientY); }}
-                          onTouchStart={isTentativelySelected ? undefined : (e) => { handleDeepenCardDragStart(c, deepenSelectFn, e.touches[0].clientX, e.touches[0].clientY); }}
-                          onClick={isTentativelySelected ? undefined : (e) => { if (dragState === null) deepenSelectFn(); }}
-                        >
-                          <Card
-                            card={c}
-                            isSelected={false}
-                            onSelect={undefined}
-                            logoSrc={isLight ? logoClaro : logoDark}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Carta flotante arrastre deepening */}
-                  {dragState?.isDeepen && (
-                    <div
-                      className="fan-drag-ghost"
-                      style={{ left: dragState.currentX, top: dragState.currentY }}
-                    >
-                      <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
+                    <div className="fan-overlay" />
+                    <TableProps />
+                    <div className="fan-header">
+                      <h2 className="fan-title">{translations.ui.deepen_loading}</h2>
                     </div>
-                  )}
+
+                    <div className="fan-zoom-controls">
+                      <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.min(FAN_ZOOM_MAX, parseFloat((z + FAN_ZOOM_STEP).toFixed(2))))}>＋</button>
+                      <button className="fan-zoom-btn" onClick={() => setFanZoom(z => Math.max(FAN_ZOOM_MIN, parseFloat((z - FAN_ZOOM_STEP).toFixed(2))))}>－</button>
+                    </div>
+
+                    <div className="fan-deck" style={{ transform: `scale(${fanZoom})`, transformOrigin: '0 0' }}>
+                      <Dragonfly visible={true} />
+                      {deepenDeck.map((c, index) => {
+                        const angle = -deepenSpread / 2 + (index / (deepenTotal - 1)) * deepenSpread;
+                        const isTentativelySelected = tentCard?.id === c.id;
+                        const isDragging = dragState?.cardId === c.id;
+                        const isActivated = activatedCardId === c.id;
+                        const deepenSelectFn = () => setClarifications(prev => ({
+                          ...prev,
+                          [clarifyingCardId]: { ...prev[clarifyingCardId], tentativeCard: c }
+                        }));
+                        return (
+                          <div
+                            key={c.id}
+                            className={`fan-slot${isTentativelySelected ? ' fan-slot-extracted' : ''}${isDragging ? ' fan-slot-dragging' : ''}${isActivated ? ' fan-slot-activated' : ''}`}
+                            style={{
+                              transform: `rotate(${angle}deg)`,
+                              opacity: isDragging ? 0.25 : 1,
+                              cursor: isDragging ? 'grabbing' : isActivated ? 'grab' : 'default',
+                              zIndex: isActivated ? 300 : undefined,
+                            }}
+                            onMouseDown={isTentativelySelected ? undefined : (e) => {
+                              if (!isMouseDevice.current) return;
+                              if (isActivated) { e.preventDefault(); handleDeepenCardDragStart(c, deepenSelectFn, e.clientX, e.clientY); }
+                            }}
+                            onClick={isTentativelySelected ? undefined : () => {
+                              if (isMouseDevice.current) setActivatedCardId(prev => prev === c.id ? null : c.id);
+                            }}
+                            onTouchStart={isTentativelySelected ? undefined : (e) => {
+                              setActivatedCardId(c.id);
+                              handleDeepenCardDragStart(c, deepenSelectFn, e.touches[0].clientX, e.touches[0].clientY);
+                            }}
+                          >
+                            <Card card={c} isSelected={false} onSelect={undefined} logoSrc={isLight ? logoClaro : logoDark} />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {dragState?.isDeepen && (
+                      <div className="fan-drag-ghost" style={{ left: dragState.currentX, top: dragState.currentY }}>
+                        <Card card={dragState.card} isSelected={false} logoSrc={isLight ? logoClaro : logoDark} />
+                      </div>
+                    )}
+                  </div>
 
                   {tentCard && (
-                    <div className="fan-continue">
+                    <div className="fan-continue-outer">
                       <button className="start-button blinking-button continue-btn" onClick={() => submitDeepenCardSelect(parseInt(clarifyingCardId), tentCard)}>
                         {translations.ui.continue}
                       </button>
