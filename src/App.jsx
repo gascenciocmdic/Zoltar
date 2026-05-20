@@ -1428,10 +1428,16 @@ function App() {
                     onClick={isSelected ? undefined : () => {
                       if (isMouseDevice.current) setActivatedCardId(prev => prev === card.id ? null : card.id);
                     }}
-                    /* Móvil: touch inmediatamente activa y prepara drag */
+                    /* Móvil: 1.er touch → ilumina; touch sobre carta ya iluminada → arrastra */
                     onTouchStart={isSelected ? undefined : (e) => {
-                      setActivatedCardId(card.id);
-                      handleCardDragStart(card, e.touches[0].clientX, e.touches[0].clientY);
+                      if (activatedCardId === card.id) {
+                        // Ya iluminada: iniciar arrastre
+                        e.preventDefault();
+                        handleCardDragStart(card, e.touches[0].clientX, e.touches[0].clientY);
+                      } else {
+                        // Primera pulsación: solo iluminar contorno
+                        setActivatedCardId(card.id);
+                      }
                     }}
                   >
                     <Card card={card} isSelected={false} onSelect={undefined} logoSrc={isLight ? logoClaro : logoDark} />
@@ -1598,9 +1604,16 @@ function App() {
                             onClick={isTentativelySelected ? undefined : () => {
                               if (isMouseDevice.current) setActivatedCardId(prev => prev === c.id ? null : c.id);
                             }}
+                            /* Móvil: 1.er touch → ilumina; touch sobre carta ya iluminada → arrastra */
                             onTouchStart={isTentativelySelected ? undefined : (e) => {
-                              setActivatedCardId(c.id);
-                              handleDeepenCardDragStart(c, deepenSelectFn, e.touches[0].clientX, e.touches[0].clientY);
+                              if (activatedCardId === c.id) {
+                                // Ya iluminada: iniciar arrastre
+                                e.preventDefault();
+                                handleDeepenCardDragStart(c, deepenSelectFn, e.touches[0].clientX, e.touches[0].clientY);
+                              } else {
+                                // Primera pulsación: solo iluminar contorno
+                                setActivatedCardId(c.id);
+                              }
                             }}
                           >
                             <Card card={c} isSelected={false} onSelect={undefined} logoSrc={isLight ? logoClaro : logoDark} />

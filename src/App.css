@@ -1966,15 +1966,15 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   transition: filter 0.2s ease;
 }
 
-/* Carta activada (click en escritorio / tap en móvil): levantada + glow fuerte */
+/* Carta activada (click / tap): SOLO ilumina el contorno — la carta NO sale de la baraja */
 .fan-slot-activated .card-wrapper {
-  transform: scale(1.18) translateY(-12px) !important;
+  transform: none !important;
   filter:
-    drop-shadow(0 0 10px rgba(255, 220, 0, 1.0))
-    drop-shadow(0 0 24px rgba(255, 165, 0, 0.80))
-    drop-shadow(0 0 40px rgba(255, 100, 0, 0.45))
-    drop-shadow(0 20px 32px rgba(0,0,0,0.85));
-  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease;
+    drop-shadow(0 0 8px rgba(255, 220, 0, 1.0))
+    drop-shadow(0 0 20px rgba(255, 170, 0, 0.85))
+    drop-shadow(0 0 38px rgba(255, 100, 0, 0.50))
+    drop-shadow(0 0 56px rgba(200,  80, 0, 0.25));
+  transition: filter 0.18s ease;
 }
 
 .fan-slot .card-wrapper.selected {
