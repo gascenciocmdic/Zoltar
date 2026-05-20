@@ -1405,7 +1405,7 @@ function App() {
               <Dragonfly visible={true} />
               {shuffledDeck.map((card, index) => {
                 const total = shuffledDeck.length;
-                const spread = 115;
+                const spread = 130;
                 const angle = -spread / 2 + (index / (total - 1)) * spread;
                 const isSelected = !!selectedCards.find(c => c.id === card.id);
                 const isDragging = dragState?.cardId === card.id;
@@ -1418,7 +1418,7 @@ function App() {
                       transform: `rotate(${angle}deg)`,
                       opacity: isDragging ? 0.25 : 1,
                       cursor: isDragging ? 'grabbing' : isActivated ? 'grab' : 'default',
-                      zIndex: isActivated ? 300 : undefined,
+                      /* Sin zIndex extra al activar: la carta no debe salir de la baraja */
                     }}
                     /* Desktop: click activa, mousedown desde activado arrastra */
                     onMouseDown={isSelected ? undefined : (e) => {
@@ -1537,7 +1537,7 @@ function App() {
             if (clarifyingCardId) {
               const deepenDeck = shuffledDeck.filter(c => !selectedCards.find(sc => sc.id === c.id));
               const deepenTotal = deepenDeck.length;
-              const deepenSpread = 115;
+              const deepenSpread = 130;
               const tentCard = clarifications[clarifyingCardId]?.tentativeCard;
               return (
                 <div className="fan-layout-wrapper" style={{ animation: 'fadeIn 1s ease' }}>
@@ -1595,7 +1595,7 @@ function App() {
                               transform: `rotate(${angle}deg)`,
                               opacity: isDragging ? 0.25 : 1,
                               cursor: isDragging ? 'grabbing' : isActivated ? 'grab' : 'default',
-                              zIndex: isActivated ? 300 : undefined,
+                              /* Sin zIndex extra al activar: la carta no debe salir de la baraja */
                             }}
                             onMouseDown={isTentativelySelected ? undefined : (e) => {
                               if (!isMouseDevice.current) return;

@@ -1938,8 +1938,8 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .fan-slot:hover {
-  z-index: 200;
   cursor: grab;
+  /* Sin z-index: la carta no salta visualmente sobre la baraja al hacer hover */
 }
 
 .fan-slot:active,
