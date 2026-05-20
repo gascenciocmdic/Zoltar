@@ -2137,8 +2137,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   }
 
   .fan-scene {
-    min-height: max(56vh, 440px);
+    min-height: max(68vh, 500px);  /* mismo alto que deepening */
     border-radius: 16px;
+    /* borde a borde: compensa el padding de app-container (10px cada lado) */
+    margin-left: -10px;
+    margin-right: -10px;
+    width: calc(100% + 20px);
   }
 
   .fan-slot {
@@ -2233,8 +2237,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   }
 
   .fan-scene {
-    min-height: max(54vh, 400px);
+    min-height: max(66vh, 460px);  /* mismo alto que deepening */
     border-radius: 14px;
+    /* borde a borde: compensa el padding de app-container (8px cada lado) */
+    margin-left: -8px;
+    margin-right: -8px;
+    width: calc(100% + 16px);
   }
   .fan-slot {
     left: -46px;
@@ -2401,3 +2409,45 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 /* (revelation 480px handled in the consolidated fan-scene block above) */
+
+/* ════════════════════════════════════════════════════════════
+   Móvil — Revelación carta a carta: una sola carta visible
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Cuando hay una carta activa, el spread pasa a columna centrada */
+  .revelation-cloth-scene
+    .revelation-cards-spread:has(.active-reveal) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 8px 0;
+  }
+
+  /* Cartas difuminadas desaparecen en móvil durante la revelación */
+  .revelation-cloth-scene
+    .revelation-cards-spread:has(.active-reveal)
+    .revelation-card-block.dimmed {
+    display: none;
+  }
+
+  /* La carta activa ocupa todo el espacio disponible, centrada */
+  .revelation-cloth-scene
+    .revelation-cards-spread:has(.active-reveal)
+    .revelation-card-block.active-reveal {
+    transform: scale(1.0);         /* sin escala extra — ya es la única */
+    max-width: 260px;
+    width: 100%;
+    padding: 20px 20px 12px;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.35);
+  }
+
+  /* Sin active-reveal (vista previa o síntesis) → todas las cartas visibles */
+  .revelation-cloth-scene
+    .revelation-cards-spread:not(:has(.active-reveal))
+    .revelation-card-block {
+    display: flex;               /* restaurar si estaban ocultas */
+    transform: scale(1.0);
+    max-width: 160px;
+    padding: 12px 10px;
+  }
+}
