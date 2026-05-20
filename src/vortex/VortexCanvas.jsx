@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { VortexShader } from './VortexShader';
+import PetalCanvas from './PetalCanvas';
 
 // Dark mode: electric, vivid (additive blending on dark bg)
 const VIBE_COLORS_DARK = {
@@ -76,15 +77,18 @@ const VortexField = ({ vibe = 'healing_blue', theme = 'dark' }) => {
 };
 
 const VortexCanvas = ({ vibe, theme = 'dark' }) => {
-  const bg = theme === 'light' ? '#f5f0ff' : '#050505';
+  /* Modo claro: pétalos 2D orgánicos en lugar del vórtex WebGL */
+  if (theme === 'light') {
+    return <PetalCanvas />;
+  }
+
   return (
     <div
       className="vortex-container"
       style={{
         position: 'fixed', top: 0, left: 0,
         width: '100vw', height: '100vh',
-        zIndex: 0, background: bg, pointerEvents: 'none',
-        transition: 'background 1s ease',
+        zIndex: 0, background: '#050505', pointerEvents: 'none',
       }}
     >
       <Canvas camera={{ position: [0, 0, 2.5], fov: 75 }} dpr={[1, 1.5]}>

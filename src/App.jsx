@@ -99,7 +99,11 @@ function App() {
   const FAN_ZOOM_MIN  = 0.55;
   const FAN_ZOOM_MAX  = 2.5;
   const FAN_ZOOM_STEP = 0.25;
-  const [fanZoom, setFanZoom] = useState(1.0);
+  const [fanZoom, setFanZoom] = useState(() => {
+    // En móvil arranca con el zoom mínimo para ver el abanico completo
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) return FAN_ZOOM_MIN;
+    return 1.0;
+  });
   // dragState: { card, cardId, startX, startY, currentX, currentY }
   const [dragState, setDragState] = useState(null);
   // activatedCardId: carta "elegida" en escritorio (click = activa, luego drag = selecciona)
