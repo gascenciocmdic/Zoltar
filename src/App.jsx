@@ -30,6 +30,8 @@ import TableProps from './components/TableProps';
 import mesaOscuro from './assets/mesa_oscuro.png';
 import mesaClaro  from './assets/mesa_claro.png';
 
+const ZOLTAR_USER_KEY = 'zoltar_user';
+
 const splitFirstSentence = (text) => {
   if (!text) return null;
   let idx = text.indexOf('. ');
@@ -216,6 +218,13 @@ function App() {
     }
   }, [phase, loading]);
 
+  // Scroll to top when a new card revelation stage begins
+  useEffect(() => {
+    if (phase === 'revelation' && revealedStage > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [revealedStage, phase]);
+
   // ── Auth: inicializar sesión, URL params, listener ───────
   useEffect(() => {
     const params    = new URLSearchParams(window.location.search);
@@ -251,7 +260,7 @@ function App() {
         if (s.consultCount)          setConsultCount(s.consultCount);
         if (s.autoRevealStarted)     setAutoRevealStarted(s.autoRevealStarted);
         // Restaurar canProceed para fases que necesitan el botón inmediatamente
-        if (s.phase === 'portalEntrance' || s.phase === 'revelation') setCanProceed(true);
+        if (s.phase === 'revelation') setCanProceed(true);
         sessionStorage.removeItem('zoltar_purchase_snapshot');
         return s;
       } catch(e) { console.warn('State restore error:', e); return null; }
@@ -396,7 +405,8 @@ function App() {
       const action = pendingAction;
       setPendingAction(null);
       if (action.type === 'start_consultation') {
-        setTimeout(() => _doEnterPortal(), 300);
+        // Skip portalEntrance — go directly to threshold step 1
+        setTimeout(() => { setPhase('threshold'); setThresholdStep(1); setCanProceed(true); }, 300);
       } else if (action.type === 'unlock' || action.type === 'purchase_reading') {
         // Re-abrir UnlockModal — ahora el usuario está autenticado y puede elegir tier
         setShowUnlockModal(true);
@@ -405,27 +415,6 @@ function App() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAction, urlRef]);
-
-  // Lógica interna de entrada al portal (sin gate)
-  const _doEnterPortal = useCallback(() => {
-    initSpeech(language);
-    startAmbientMusic();
-    setIsFading(true);
-    setTimeout(() => {
-      setPhase('threshold');
-      setIsFading(false);
-      setTimeout(() => {
-        setCanProceed(false);
-        speakText(sessionTexts.greeting, language, () => setCanProceed(true));
-      }, 600);
-    }, Math.floor(Math.random() * 2000) + 3000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language, sessionTexts]);
-
-  // Portal es libre — sin cobro ni verificación de créditos
-  const handleEnterPortalGated = useCallback(() => {
-    _doEnterPortal();
-  }, [_doEnterPortal]);
 
   const flashCredit = useCallback((amount) => {
     setCreditFlash({ amount, id: Date.now() });
@@ -485,68 +474,75 @@ function App() {
 
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
-    setPhase('portalEntrance');
-    setCanProceed(false);
     trackEvent('session_started', { language: lang, is_guest: !authSession }, authSession);
+    // Speak greeting as ambient — don't block UI on it
     const welcomeMsg = I18N[lang].greetings[Math.floor(Math.random() * I18N[lang].greetings.length)];
-    speakText(welcomeMsg, lang, () => setCanProceed(true));
-  };
+    speakText(welcomeMsg, lang);
 
-  const handleStart = async () => {
+    // Handle credit deduction (previously done in handleStart after step 0)
     const cost = CREDIT_COSTS.consultation;
-
     if (authSession && (credits ?? 0) >= cost) {
-      // Usuario logueado con créditos suficientes: cobrar ahora y mostrar lectura completa
-      let result;
-      try {
-        result = await deductCredits(authSession, 'consultation');
-        console.log('[handleStart] deductCredits result:', JSON.stringify(result));
-      } catch (e) {
-        console.error('[handleStart] deductCredits exception:', e);
-        showToast(`Error al procesar el pago: ${e.message}`);
-        return;
-      }
-      if (result.ok) {
-        setCredits(result.credits);
-        flashCredit(-cost);
-        setConsultTier('standard');
-      } else {
-        const errMsg = result.error === 'insufficient_credits'
-          ? `Créditos insuficientes (tienes ${result.credits ?? 0}, necesitas ${cost}).`
-          : `Error al descontar créditos: ${result.error || 'desconocido'}`;
-        showToast(errMsg);
-        return;
-      }
+      deductCredits(authSession, 'consultation').then(result => {
+        if (result.ok) {
+          setCredits(result.credits);
+          flashCredit(-cost);
+          setConsultTier('standard');
+        } else {
+          setConsultTier(null);
+        }
+      }).catch(() => setConsultTier(null));
     } else {
-      // Sin sesión o créditos insuficientes: flujo libre con teaser y unlock posterior
       setConsultTier(null);
     }
 
-    setIsFading(true);
-    speakText(sessionTexts.askName, language);
-    setTimeout(() => {
-      setThresholdStep(1);
-      setIsFading(false);
-    }, Math.floor(Math.random() * 2000) + 3000);
+    // Load saved user data from a previous "Nueva consulta"
+    let startStep = 1;
+    try {
+      const saved = JSON.parse(localStorage.getItem(ZOLTAR_USER_KEY) || 'null');
+      if (saved?.userName) {
+        setUserName(saved.userName);
+        if (saved.birthDate?.day) {
+          setBirthDate(saved.birthDate);
+          if (saved.birthNarrative) setBirthNarrative(saved.birthNarrative);
+          startStep = 3; // skip name + birth date → go directly to reason
+        } else {
+          startStep = 2; // skip name only → go to birth date
+        }
+      }
+    } catch (e) { /* ignore storage errors */ }
+
+    // Skip portalEntrance and threshold step 0 — go directly to the form
+    setPhase('threshold');
+    setThresholdStep(startStep);
+    setCanProceed(true);
   };
 
   const handleNextThreshold = () => {
     if (thresholdStep === 1 && !userName) { showToast(translations.ui.your_name_placeholder, 'warning'); return; }
     if (thresholdStep === 2) {
       const { day, month, year } = birthDate;
-      if (!day || !month || !year) { showToast(translations.ui.birthdate_placeholder || 'Ingresa tu fecha de nacimiento completa', 'warning'); return; }
-      const d = Number(day), m = Number(month), y = Number(year);
-      if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > new Date().getFullYear()) {
-        showToast('Fecha inválida. Verifica día (1-31), mes (1-12) y año.', 'warning'); return;
+      const hasAnyField = day || month || year;
+      if (hasAnyField) {
+        // Partially filled — validate fully
+        if (!day || !month || !year) {
+          showToast(translations.ui.birthdate_placeholder || 'Ingresa tu fecha de nacimiento completa', 'warning');
+          return;
+        }
+        const d = Number(day), m = Number(month), y = Number(year);
+        if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > new Date().getFullYear()) {
+          showToast('Fecha inválida. Verifica día (1-31), mes (1-12) y año.', 'warning');
+          return;
+        }
+        // Valid date — generate astrological narrative
+        const narrative = generateBirthNarrative(d, m, y, language);
+        setBirthNarrative(narrative);
       }
-      // Generar narrativa astrológica una sola vez
-      const narrative = generateBirthNarrative(d, m, y, language);
-      setBirthNarrative(narrative);
+      // If all fields are empty: user skipped — birthNarrative stays null, that's valid
     }
     if (thresholdStep === 3 && !visitReason) { showToast(translations.ui.what_inquires_you, 'warning'); return; }
-    
+
     setIsFading(true);
-    
+
     // Narradores
     setCanProceed(false);
     if (thresholdStep === 1) {
@@ -555,14 +551,13 @@ function App() {
       speakText(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 3) {
       speakText(sessionTexts.askDichotomy, language, () => setCanProceed(true));
-    } else if (thresholdStep === 4) {
-      speakText(sessionTexts.askQuestion, language);
     }
 
     setTimeout(() => {
-      if (thresholdStep < 5) {
+      if (thresholdStep < 4) {
         setThresholdStep(thresholdStep + 1);
       } else {
+        // After dichotomy (step 4), go directly to synchrony — no intermediate step 5
         setPhase('synchrony');
         setVibe('revelation_gold');
         setShowSynchronyPopup(true);
@@ -570,7 +565,24 @@ function App() {
         speakText(translations.ui.call_p1.replace(/"/g, ''), language, () => setCanProceed(true));
       }
       setIsFading(false);
-    }, Math.floor(Math.random() * 2000) + 3000); 
+    }, Math.floor(Math.random() * 2000) + 3000);
+  };
+
+  // Handle user explicitly skipping birth date
+  const handleSkipBirthDate = () => {
+    setBirthDate({ day: '', month: '', year: '' });
+    setBirthNarrative(null);
+    setIsFading(true);
+    setCanProceed(false);
+    speakText(
+      (sessionTexts.askReason || '').replace('{name}', userName),
+      language,
+      () => setCanProceed(true)
+    );
+    setTimeout(() => {
+      setThresholdStep(3);
+      setIsFading(false);
+    }, Math.floor(Math.random() * 2000) + 3000);
   };
 
   // ── Drag global listeners ──────────────────────────────────────────────
@@ -665,8 +677,13 @@ function App() {
   };
 
   const handleGoToAstralAlignment = async () => {
+    // If user skipped birth date, skip astral alignment entirely
+    if (!birthDate.day) {
+      handleStartRevelation();
+      return;
+    }
     setLoading(true);
-    setVibe('karmic_red'); 
+    setVibe('karmic_red');
     speakText(sessionTexts.waitMsg, language);
     try {
        const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
@@ -1053,9 +1070,18 @@ function App() {
   const handleNewConsultation = () => {
     stopSpeech();
     stopAmbient();
-    // Reload the page for a completely fresh session — guarantees speech
-    // recognition permissions and all browser APIs reset correctly on
-    // iOS / Android where in-session resets leave the mic in a bad state.
+    // Persist user identity so next consultation skips name + birth date steps
+    try {
+      if (userName) {
+        localStorage.setItem(ZOLTAR_USER_KEY, JSON.stringify({
+          userName,
+          birthDate: birthDate.day ? birthDate : null,
+          birthNarrative: birthDate.day ? birthNarrative : null,
+        }));
+      }
+    } catch (e) { /* storage not available */ }
+    // Reload for a fresh session — guarantees speech recognition permissions
+    // reset correctly on iOS/Android where in-session resets leave the mic in a bad state.
     window.location.reload();
   };
 
@@ -1064,7 +1090,7 @@ function App() {
       <VortexCanvas vibe={vibe} theme={theme} />
       
       {/* Global Logo - Persistent unless in specific high-z-index phases */}
-      {phase !== 'landing' && phase !== 'languageSelection' && phase !== 'portalEntrance' && (
+      {phase !== 'landing' && phase !== 'languageSelection' && (
         <img
           className="global-logo"
           src={isLight ? logoClaro : logoDark}
@@ -1105,19 +1131,6 @@ function App() {
               <span className="flag-icon">🇧🇷</span> PORTUGUÊS
             </button>
           </div>
-        </div>
-      ) : phase === 'portalEntrance' ? (
-        <div className="portal-entrance-content transparent-layer" style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh'
-        }}>
-          <p className="welcome-text">
-            <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
-          </p>
-          {canProceed && (
-            <button className="start-button blinking-button action-button-reveal" onClick={handleEnterPortalGated}>
-              {translations.ui.enter_portal}
-            </button>
-          )}
         </div>
       ) : null}
 
@@ -1191,37 +1204,6 @@ function App() {
 
       {phase === 'threshold' && (
         <div className="threshold-content">
-          {thresholdStep === 0 && (
-            <>
-              <p className="welcome-text">
-                <TypewriterText text={`"${sessionTexts.greeting}"`} speed={45} />
-              </p>
-              {canProceed && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  {supabase && authSession && (
-                    <p style={{ color: 'rgba(255,215,0,0.6)', fontSize: '0.82rem', letterSpacing: '1px', margin: 0 }}>
-                      💎 {consultCount === 0 ? CREDIT_COSTS.consultation : CREDIT_COSTS.reconsultation} {translations.ui.credits_label || 'créditos'}
-                    </p>
-                  )}
-                  <button className="start-button blinking-button action-button-reveal" onClick={handleStart}>
-                    {translations.ui.allow}
-                  </button>
-                </div>
-              )}
-              
-              <div style={{ marginTop: '30px' }}>
-                <button 
-                  style={{ background: 'transparent', border: 'none', color: isLight ? '#7c3aed' : '#ffd700', opacity: 0.5, fontSize: '0.85rem', textDecoration: 'underline', cursor: 'pointer', fontStyle: 'italic', letterSpacing: '1px', transition: 'opacity 0.3s ease' }}
-                  onMouseEnter={(e) => e.target.style.opacity = 0.9}
-                  onMouseLeave={(e) => e.target.style.opacity = 0.5}
-                  onClick={() => setShowInfoPopup(true)}
-                >
-                  {translations.ui.what_is_oracle}
-                </button>
-              </div>
-            </>
-          )}
-
           {thresholdStep === 1 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askName}"`} speed={45} /></p>
@@ -1266,6 +1248,25 @@ function App() {
                 />
               </div>
               <button className="start-button" onClick={handleNextThreshold}>{translations.ui.continue}</button>
+              <button
+                onClick={handleSkipBirthDate}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: isLight ? 'rgba(124,58,237,0.45)' : 'rgba(255,215,0,0.45)',
+                  fontSize: '0.8rem',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontStyle: 'italic',
+                  letterSpacing: '0.5px',
+                  marginTop: '8px',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => { e.target.style.color = isLight ? 'rgba(124,58,237,0.8)' : 'rgba(255,215,0,0.8)'; }}
+                onMouseLeave={(e) => { e.target.style.color = isLight ? 'rgba(124,58,237,0.45)' : 'rgba(255,215,0,0.45)'; }}
+              >
+                {translations.ui.skip_birth_date}
+              </button>
             </>
           )}
 
@@ -1294,15 +1295,6 @@ function App() {
             </>
           )}
 
-          {thresholdStep === 5 && (
-            <>
-              <p className="welcome-text">
-                <TypewriterText text={`"${sessionTexts.askQuestion}"`} speed={45} />
-              </p>
-              
-              <button className="start-button" onClick={handleNextThreshold} style={{ marginTop: '2rem' }}>{translations.ui.choose_cards}</button>
-            </>
-          )}
         </div>
       )}
 

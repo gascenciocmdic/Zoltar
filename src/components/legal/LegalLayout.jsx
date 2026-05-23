@@ -1,4 +1,26 @@
+import { useEffect } from 'react';
+
 export default function LegalLayout({ title, children }) {
+  useEffect(() => {
+    // The global CSS sets body overflow:hidden for the app canvas.
+    // Legal pages are standalone routes that need normal scroll.
+    document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    const root = document.getElementById('root');
+    if (root) {
+      root.style.height = 'auto';
+      root.style.overflowY = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+      if (root) {
+        root.style.height = '';
+        root.style.overflowY = '';
+      }
+    };
+  }, []);
+
   return (
     <div style={{
       minHeight: '100vh',
