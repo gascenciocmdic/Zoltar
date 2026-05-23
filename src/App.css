@@ -662,6 +662,42 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     margin: 0 8px;
     width: calc(100% - 16px);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Center text in revelation bubbles on mobile */
+  .interpretation-bubbles {
+    text-align: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .brain-bubble.narrative p,
+  .brain-bubble.narrative span,
+  .brain-bubble p,
+  .brain-bubble span {
+    text-align: center;
+  }
+
+  /* Welcome / phase title text */
+  .welcome-text {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Narrative container inside threshold */
+  .narrative-container {
+    text-align: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Anchoring cards grid: keep items centered */
+  .anchoring-grid {
+    justify-items: center;
   }
 
   .soul-input {
