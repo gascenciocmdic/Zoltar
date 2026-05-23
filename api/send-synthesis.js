@@ -29,7 +29,8 @@ async function getUser(req) {
 
 const LABELS = {
   es: {
-    subject: '🌟 Tu Síntesis del Oráculo de Vidas Pasadas',
+    subject: '✦ Tu Síntesis del Oráculo de Vidas Pasadas',
+    tagline: 'Oráculo de Vidas Pasadas',
     intro: 'Tu lectura de cartas ha sido completada. Aquí tienes tu síntesis completa:',
     cards_title: 'Las Cartas de tu Destino',
     conclusion: 'Conclusión Final',
@@ -42,7 +43,8 @@ const LABELS = {
     birth_title: 'Tu Constelación de Nacimiento',
   },
   en: {
-    subject: '🌟 Your Past Lives Oracle Synthesis',
+    subject: '✦ Your Past Lives Oracle Synthesis',
+    tagline: 'Past Lives Oracle',
     intro: 'Your card reading is complete. Here is your full synthesis:',
     cards_title: 'The Cards of Your Destiny',
     conclusion: 'Final Conclusion',
@@ -55,7 +57,8 @@ const LABELS = {
     birth_title: 'Your Birth Constellation',
   },
   pt: {
-    subject: '🌟 Sua Síntese do Oráculo de Vidas Passadas',
+    subject: '✦ Sua Síntese do Oráculo de Vidas Passadas',
+    tagline: 'Oráculo de Vidas Passadas',
     intro: 'Sua leitura de cartas foi concluída. Aqui está sua síntese completa:',
     cards_title: 'As Cartas do Seu Destino',
     conclusion: 'Conclusão Final',
@@ -78,78 +81,86 @@ function buildHtml({ userName, selectedCards, interpretation, clarifications, bi
   const cardRows = (selectedCards || []).map((card, i) => {
     const clar = clarifications?.[card.id];
     const deepeningHtml = clar?.step === 'done' && clar.extraResponse
-      ? `<div style="margin-top:12px;padding:12px;border-left:3px solid #ffd700;background:rgba(255,215,0,0.06);">
-           <p style="color:#ffd700;font-size:0.78rem;margin:0 0 6px;letter-spacing:1px;">✦ ${L.deepening} ✦</p>
-           <p style="font-style:italic;color:#e5e4e7;margin:0;font-size:0.9rem;">${clar.extraResponse}</p>
+      ? `<div style="margin-top:12px;padding:10px 14px;border-left:3px solid #a78bfa;background:rgba(167,139,250,0.1);border-radius:0 8px 8px 0;">
+           <p style="color:#7c3aed;font-size:10px;margin:0 0 4px;letter-spacing:1px;">✦ ${L.deepening} ✦</p>
+           <p style="font-style:italic;color:#5b21b6;margin:0;font-size:12px;">${clar.extraResponse}</p>
          </div>`
       : '';
 
     return `
-      <div style="margin-bottom:24px;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;border-left:3px solid rgba(255,215,0,0.4);">
-        <p style="color:#ffd700;font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;margin:0 0 4px;">${L.origins[i] || ''}</p>
-        <p style="font-size:1rem;font-weight:700;color:#fff;margin:0 0 10px;">${card.name || card.id}</p>
-        <p style="color:#ccc;line-height:1.7;margin:0;font-size:0.93rem;">${narrativa[i] || ''}</p>
+      <div style="background:rgba(255,255,255,0.65);border:1px solid rgba(167,139,250,0.3);border-left:4px solid #7c3aed;border-radius:10px;padding:16px;margin-bottom:12px;">
+        <p style="color:#7c3aed;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 4px;">${L.origins[i] || ''}</p>
+        <p style="color:#3b0764;font-size:15px;font-weight:700;margin:0 0 8px;">${card.name || card.id}</p>
+        <p style="color:#4c1d95;line-height:1.7;margin:0;font-size:13px;">${narrativa[i] || ''}</p>
         ${deepeningHtml}
       </div>`;
   }).join('');
 
   const birthBlock = birthNarrative
-    ? `<div style="margin-bottom:28px;padding:20px;background:rgba(124,58,237,0.08);border-radius:12px;border-left:3px solid #c084fc;">
-         <p style="color:#c084fc;font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;margin:0 0 6px;">${L.birth_title} · ${birthNarrative.symbol} ${birthNarrative.sign}</p>
-         <p style="color:#e5e4e7;font-style:italic;line-height:1.7;margin:0;font-size:0.9rem;">${birthNarrative.narrative}</p>
+    ? `<div style="background:rgba(255,255,255,0.6);border:1px solid rgba(139,92,246,0.3);border-left:4px solid #8b5cf6;border-radius:10px;padding:18px;margin-bottom:20px;">
+         <p style="color:#6d28d9;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 6px;">${L.birth_title} · ${birthNarrative.symbol} ${birthNarrative.sign}</p>
+         <p style="color:#4c1d95;font-style:italic;line-height:1.7;margin:0;font-size:13px;">${birthNarrative.narrative}</p>
        </div>`
     : '';
 
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#0d0d1a;font-family:'Georgia',serif;">
-  <div style="max-width:600px;margin:0 auto;padding:32px 20px;">
+<body style="margin:0;padding:0;background:#ede9fe;font-family:'Georgia',serif;">
+<div style="max-width:600px;margin:0 auto;">
 
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#ffd700;font-size:1.8rem;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px;">✦ Zoltar ✦</h1>
-      <p style="color:rgba(255,255,255,0.45);font-size:0.85rem;letter-spacing:1px;margin:0;">Oráculo de Vidas Pasadas</p>
-    </div>
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#5b21b6,#7c3aed);padding:32px;text-align:center;">
+    <h1 style="color:#fff;font-size:20px;letter-spacing:4px;text-transform:uppercase;margin:0 0 6px;font-weight:900;">✦ Cosmic Guidance ✦</h1>
+    <p style="color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:2px;margin:0;text-transform:uppercase;">${L.tagline || 'Past Lives Oracle'}</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background:linear-gradient(180deg,#f5f3ff 0%,#ede9fe 100%);padding:28px;">
 
     <!-- Intro -->
-    <p style="color:rgba(255,255,255,0.65);font-size:0.95rem;text-align:center;margin-bottom:32px;line-height:1.7;">
-      ${L.intro}
-    </p>
+    <p style="color:#6b21a8;font-size:14px;text-align:center;line-height:1.7;margin:0 0 24px;">${L.intro}</p>
 
     <!-- Birth constellation -->
     ${birthBlock}
 
     <!-- Cards -->
-    <h2 style="color:#ffd700;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;border-bottom:1px solid rgba(255,215,0,0.2);padding-bottom:8px;">${L.cards_title}</h2>
+    <h2 style="color:#5b21b6;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;border-bottom:1px solid rgba(139,92,246,0.25);padding-bottom:8px;">${L.cards_title}</h2>
     ${cardRows}
 
     <!-- Conclusion -->
-    <div style="margin:28px 0;padding:24px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:14px;">
-      <p style="color:#ffd700;font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;">${L.conclusion}</p>
-      <p style="color:#e5e4e7;font-style:italic;line-height:1.8;margin:0;font-size:0.97rem;">${interpretation.conclusionFinal || ''}</p>
+    <div style="background:rgba(255,255,255,0.7);border:1px solid rgba(139,92,246,0.3);border-radius:14px;padding:20px;margin:20px 0;">
+      <p style="color:#6d28d9;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;">${L.conclusion}</p>
+      <p style="color:#3b0764;font-style:italic;line-height:1.8;margin:0;font-size:14px;">${interpretation.conclusionFinal || ''}</p>
     </div>
 
-    <!-- Decree & Task -->
-    <div style="display:grid;gap:16px;margin-bottom:28px;">
-      <div style="padding:20px;background:rgba(255,100,100,0.06);border-radius:12px;border-left:3px solid rgba(255,100,100,0.5);text-align:center;">
-        <p style="color:rgba(255,180,180,0.8);font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;">${L.decree}</p>
-        <p style="color:#fff;font-size:1.2rem;font-style:italic;margin:0;">&ldquo;${interpretation.decreto || ''}&rdquo;</p>
+    <!-- Decreto + Tarea -->
+    <div style="display:grid;gap:12px;margin-bottom:24px;">
+      <div style="background:rgba(239,209,255,0.3);border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:18px;text-align:center;">
+        <p style="color:#7c3aed;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;">${L.decree}</p>
+        <p style="color:#3b0764;font-size:16px;font-style:italic;font-weight:600;margin:0;">&ldquo;${interpretation.decreto || ''}&rdquo;</p>
       </div>
-      <div style="padding:20px;background:rgba(100,200,100,0.06);border-radius:12px;border-left:3px solid rgba(100,200,100,0.4);">
-        <p style="color:rgba(180,255,180,0.8);font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;">${L.task}</p>
-        <p style="color:#eaeaea;line-height:1.7;margin:0;font-size:0.93rem;">${interpretation.tarea_terrenal || ''}</p>
+      <div style="background:rgba(209,250,229,0.4);border:1px solid rgba(52,168,83,0.25);border-radius:12px;padding:18px;">
+        <p style="color:#065f46;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;">${L.task}</p>
+        <p style="color:#1e3a2f;line-height:1.7;margin:0;font-size:13px;">${interpretation.tarea_terrenal || ''}</p>
       </div>
     </div>
 
     <!-- CTA -->
-    <div style="text-align:center;margin-bottom:32px;">
-      <a href="${appUrl}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;letter-spacing:1px;font-size:0.95rem;">${L.cta} →</a>
+    <div style="text-align:center;margin-bottom:28px;">
+      <a href="${appUrl}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;text-decoration:none;border-radius:12px;font-weight:700;letter-spacing:1px;font-size:14px;box-shadow:0 4px 20px rgba(124,58,237,0.3);">${L.cta} →</a>
     </div>
 
-    <!-- Footer -->
-    <p style="color:rgba(255,255,255,0.25);font-size:0.78rem;text-align:center;line-height:1.6;">${L.footer}</p>
   </div>
+
+  <!-- Footer -->
+  <div style="border-top:1px solid rgba(167,139,250,0.2);padding:18px 28px;text-align:center;background:rgba(245,243,255,0.8);">
+    <p style="color:#8b5cf6;font-size:11px;letter-spacing:1px;margin:0 0 4px;text-transform:uppercase;">Cosmic Guidance</p>
+    <p style="color:#a78bfa;font-size:10px;margin:0 0 8px;">noreply@cosmic-guidance.com</p>
+    <p style="color:#c4b5fd;font-size:10px;line-height:1.6;margin:0;">${L.footer}</p>
+  </div>
+
+</div>
 </body>
 </html>`;
 }
@@ -196,8 +207,8 @@ export default async function handler(req, res) {
 
   // Sin dominio propio, onboarding@resend.dev solo entrega al email del dueño de la cuenta.
   // RESEND_TEST_EMAIL redirige todos los envíos a esa dirección para pruebas.
-  const toEmail = process.env.RESEND_TEST_EMAIL || user.email;
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Zoltar Oráculo <onboarding@resend.dev>';
+  const toEmail = user.email;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@cosmic-guidance.com';
 
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -206,11 +217,9 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: fromEmail,
+      from: `Cosmic Guidance <${fromEmail}>`,
       to: toEmail,
-      subject: process.env.RESEND_TEST_EMAIL
-        ? `[TEST → ${user.email}] ${L.subject}`
-        : L.subject,
+      subject: L.subject,
       html,
     }),
   });
