@@ -1375,9 +1375,19 @@ function App() {
           {thresholdStep === 4 && (
             <>
               <p className="welcome-text"><TypewriterText text={`"${sessionTexts.askDichotomy}"`} speed={45} /></p>
-              <div className="dichotomy-buttons">
-                <button className={`choice-button ${dichotomousChoice === 'direct' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('direct')}>{translations.ui.direct_truth}</button>
-                <button className={`choice-button ${dichotomousChoice === 'metaphor' ? 'selected' : ''}`} onClick={() => setDichotomousChoice('metaphor')}>{translations.ui.metaphoric_whisper}</button>
+              <div className="dichotomy-toggle">
+                <button
+                  className={`dichotomy-option${dichotomousChoice === 'direct' ? ' dichotomy-active' : ''}`}
+                  onClick={() => setDichotomousChoice('direct')}
+                >
+                  🔍 {translations.ui.direct_truth}
+                </button>
+                <button
+                  className={`dichotomy-option${dichotomousChoice === 'metaphor' ? ' dichotomy-active' : ''}`}
+                  onClick={() => setDichotomousChoice('metaphor')}
+                >
+                  🌸 {translations.ui.metaphoric_whisper}
+                </button>
               </div>
               <button className="start-button" onClick={handleNextThreshold} disabled={!dichotomousChoice}>{translations.ui.continue}</button>
             </>
