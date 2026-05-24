@@ -831,15 +831,20 @@ function App() {
 
   const handleStartRevelation = async ({ introspectionAnswer = '' } = {}) => {
     setLoading(true);
-    setVibe('karmic_red'); 
+    setVibe('karmic_red');
     speakText(sessionTexts.waitMsg, language);
-    
+
+    // Snapshot the tier the user already paid for BEFORE entering the async gap.
+    // handleStartRevelation must never silently overwrite a paid tier.
+    const paidTier = consultTier;
+
     setTimeout(async () => {
       setPhase('revelation');
       setRevealedStage(0);
       setCardsFlippedCount(0);
       setAutoRevealStarted(false);
-      setConsultTier(null);
+      // Do NOT reset consultTier here — if the user paid at the landing step
+      // (premium / full / standard) we must keep that tier through the whole flow.
       trackEvent('revelation_viewed', {
         cards: selectedCards.map(c => c.id),
         language,
@@ -850,7 +855,8 @@ function App() {
         const bdStr2 = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
         const userContext = { name: userName, birthDate: bdStr2, reason: visitReason, preference: dichotomousChoice, introspectionAnswer, tier: 'ancestral_ritual' };
 
-        // Fetch the full (ancestral) interpretation once — both standard and full tiers unblur this same text
+        // Fetch the full ancestral interpretation — same content regardless of tier;
+        // the tier only controls whether the text is visible or blurred in the UI.
         const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
         setInterpretation({
           ...result,
@@ -858,7 +864,15 @@ function App() {
           tarea_terrenal: result.tarea_terrenal || translations.ui.default_task
         });
 
-        setConsultTier(null); // It's free but blurred
+        // Restore the paid tier so the full reading is visible immediately,
+        // or show the blurred preview if no upfront payment was made.
+        if (paidTier !== null) {
+          setConsultTier(paidTier);   // paid at landing → full reading, no lock screen
+          setCanProceed(true);        // deepening available immediately
+        } else {
+          setConsultTier(null);       // guest / no upfront payment → blurred preview
+        }
+
         setVibe(result.vibe || 'healing_blue');
         setLoading(false);
       } catch (error) {
@@ -870,9 +884,11 @@ function App() {
           tarea_terrenal: translations.ui.default_task,
           vibe: 'healing_blue'
         });
+        // Also restore paid tier on error so the user isn't re-gated
+        if (paidTier !== null) setConsultTier(paidTier);
         setLoading(false);
       }
-    }, Math.floor(Math.random() * 2000) + 3000); 
+    }, Math.floor(Math.random() * 2000) + 3000);
   };
 
   const handlePurchaseReading = async (tier = 'consultation') => {
