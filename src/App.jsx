@@ -982,6 +982,15 @@ function App() {
             setLastDebug(finalSynthesis._debug || { error: "FALLBACK TRIGGERED (Anchoring failed)" });
             setShowDebug(true);
           }
+          // Build complete interpretation here (finalSynthesis + revelation data from closure)
+          // This avoids the stale-closure bug: handleSendSynthesis captures an old `interpretation`
+          // that lacks conclusionFinal/decreto/tarea_terrenal added by finalSynthesis.
+          const freshInterpretation = {
+            ...interpretation,  // revelation data: narrativaAncestral, arcanoSecreto, etc.
+            ...finalSynthesis,
+            decreto: finalSynthesis.decreto || interpretation.decreto || translations.ui.default_decree,
+            tarea_terrenal: finalSynthesis.tarea_terrenal || interpretation.tarea_terrenal || translations.ui.default_task,
+          };
           // Small pause so the transition from loading to content feels ceremonial
           const currentTier = consultTier; // capture before async gap
           setTimeout(() => {
@@ -990,9 +999,42 @@ function App() {
               ? `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`
               : `${translations.ui.great_synthesis.replace('{name}', userName)} ${(finalSynthesis.conclusionFinal || '').split('. ')[0]}.`;
             narrate(synthText, language);
-            // Auto-send email for Premium tier (no credit deduction, no user action needed)
+            // Auto-send email for Premium tier — call API directly with fresh data
+            // (avoids stale-closure bug that sent incomplete interpretation to server)
             if (currentTier === 'premium' && authSession) {
-              handleSendSynthesis({ silent: true });
+              setSynthEmailState('sending');
+              fetch('/api/send-synthesis', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${authSession.access_token}`,
+                },
+                body: JSON.stringify({
+                  language,
+                  userName,
+                  selectedCards,
+                  interpretation: freshInterpretation,
+                  clarifications,
+                  birthNarrative,
+                  skipCreditDeduction: true,
+                }),
+              })
+                .then(r => r.json())
+                .then(data => {
+                  if (data.ok) {
+                    setSynthEmailState('sent');
+                    showToast(`📧 ${translations.ui.synthesis_sent || '¡Síntesis enviada a tu correo!'}`);
+                  } else {
+                    console.error('[premium auto-email] API error:', data);
+                    showToast(`📧 ${translations.ui.synthesis_error || 'No se pudo enviar el email de síntesis'}`);
+                    setSynthEmailState('error');
+                  }
+                })
+                .catch(e => {
+                  console.error('[premium auto-email] Network error:', e);
+                  showToast(`📧 ${translations.ui.synthesis_error || 'No se pudo enviar el email de síntesis'}`);
+                  setSynthEmailState('error');
+                });
             }
           }, 500);
         })
