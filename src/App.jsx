@@ -1746,6 +1746,22 @@ function App() {
                           <Card card={translatedCard} isSelected={false} isFaceUp={cardsFlippedCount > index} logoSrc={isLight ? logoClaro : logoDark} />
                         </div>
 
+                        {cardsFlippedCount > index && (language === 'en' || language === 'pt') && (
+                          <p className="reveal-card-name fade-in-text" style={{
+                            textAlign: 'center',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '1.5px',
+                            textTransform: 'uppercase',
+                            color: isLight ? 'rgba(60,30,100,0.7)' : 'rgba(196,181,253,0.8)',
+                            margin: '6px 0 0',
+                            fontStyle: 'normal',
+                            lineHeight: 1.2,
+                          }}>
+                            {translatedCard.name}
+                          </p>
+                        )}
+
                         {clar?.extraCard && (
                           <div className="clarification-card-wrapper fade-in-text">
                             <Card card={{...clar.extraCard, name: translations.cards[clar.extraCard.id]?.name || clar.extraCard.name}} isSelected={false} isFaceUp={true} />
