@@ -10,11 +10,12 @@
 import { createClient } from '@supabase/supabase-js';
 
 const CREDIT_COSTS = {
-  consultation:    40,
+  consultation:     40,
   ancestral_ritual: 65,
-  deepening:       10,
-  reconsultation:  40,
-  synthesis_email: 10,
+  premium_ritual:  100,   // Full reading + ElevenLabs voice + auto email
+  deepening:        10,
+  reconsultation:   40,
+  synthesis_email:  10,
 };
 
 const SIGNUP_BONUS             = 100;
