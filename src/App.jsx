@@ -1007,7 +1007,7 @@ function App() {
   // -------------- DEEPENING FLOW HANDLERS --------------
   const initDeepening = async (cardId) => {
     // Full tier: deepening gratis para las 3 cartas
-    if (consultTier === 'full') {
+    if (consultTier === 'full' || consultTier === 'premium') {
       setClarifications(prev => ({
         ...prev,
         [cardId]: { step: 'question', question: '', extraCard: null, extraResponse: '' }
