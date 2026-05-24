@@ -1780,9 +1780,9 @@ function App() {
                                            💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
                                          </p>
                                        )}
-                                       {consultTier === 'full' && (
+                                       {(consultTier === 'full' || consultTier === 'premium') && (
                                          <p style={{ color: 'rgba(167,139,250,0.7)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
-                                           ✦ Profundización incluida
+                                           {translations.ui.deepening_included || '✦ Profundización incluida'}
                                          </p>
                                        )}
                                        <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} disabled={loading} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
@@ -2028,6 +2028,7 @@ function App() {
         credits={credits}
         onShowAuth={() => { setShowUnlockModal(false); setShowAuthModal(true); }}
         onShowPurchase={() => { setShowUnlockModal(false); setShowPurchaseModal(true); }}
+        translations={translations}
       />
       <AuthModal
         isOpen={showAuthModal}
