@@ -144,7 +144,8 @@ function App() {
   const [synthEmailState, setSynthEmailState] = useState('idle'); // idle | sending | sent | error
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
-  const [consultTier, setConsultTier] = useState(null); // null | 'standard' | 'full'
+  const [consultTier,  setConsultTier]  = useState(null); // null | 'standard' | 'full' | 'premium'
+  const [voiceProfile, setVoiceProfile] = useState(null); // null | 'masculine' | 'feminine'
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
@@ -437,38 +438,68 @@ function App() {
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
       clarifications, revealedStage, consultCount, autoRevealStarted, birthNarrative]);
 
-  const handleSendSynthesis = async () => {
-    if (!authSession || synthEmailState !== 'idle') return;
-    if ((credits ?? 0) < CREDIT_COSTS.synthesis_email) {
-      setPurchaseReason(`Necesitas ${CREDIT_COSTS.synthesis_email} créditos para enviar la síntesis.`);
-      setShowPurchaseModal(true);
-      return;
+  /**
+   * Dispatches narration to ElevenLabs (premium) or Web Speech API (all other tiers).
+   * Drop-in replacement for speakText() inside reading phases.
+   */
+  const narrate = useCallback((text, lang, onEnd) => {
+    if (consultTier === 'premium' && voiceProfile) {
+      speakPremium(text, voiceProfile, lang, onEnd);
+    } else {
+      speakText(text, lang, onEnd);
     }
+  }, [consultTier, voiceProfile]);
+
+  const handleSendSynthesis = async ({ silent = false } = {}) => {
+    if (!authSession || synthEmailState !== 'idle') return;
+
+    // For non-premium: check and deduct 10cr; for premium (silent): skip cost check
+    if (!silent) {
+      if ((credits ?? 0) < CREDIT_COSTS.synthesis_email) {
+        setPurchaseReason(`Necesitas ${CREDIT_COSTS.synthesis_email} créditos para enviar la síntesis.`);
+        setShowPurchaseModal(true);
+        return;
+      }
+    }
+
     setSynthEmailState('sending');
     try {
       const res = await fetch('/api/send-synthesis', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authSession.access_token}` },
-        body: JSON.stringify({ language, userName, selectedCards, interpretation, clarifications, birthNarrative }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({
+          language, userName, selectedCards, interpretation,
+          clarifications, birthNarrative,
+          skipCreditDeduction: silent,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        setCredits(data.credits);
-        flashCredit(-CREDIT_COSTS.synthesis_email);
+        if (!silent) {
+          setCredits(data.credits);
+          flashCredit(-CREDIT_COSTS.synthesis_email);
+        }
         setSynthEmailState('sent');
       } else if (data.error === 'insufficient_credits') {
-        setPurchaseReason(`Créditos insuficientes. Necesitas ${CREDIT_COSTS.synthesis_email}.`);
-        setShowPurchaseModal(true);
+        if (!silent) {
+          setPurchaseReason(`Créditos insuficientes. Necesitas ${CREDIT_COSTS.synthesis_email}.`);
+          setShowPurchaseModal(true);
+        }
         setSynthEmailState('idle');
       } else {
         const detail = data.resend_error || data.error || 'Error desconocido';
         console.error('[synthesis email] API error:', data);
-        showToast(`Error al enviar el correo: ${detail}`);
-        if (data.credits !== undefined) setCredits(data.credits);
+        if (!silent) showToast(`Error al enviar el correo: ${detail}`);
+        else showToast('📧 No se pudo enviar el email de síntesis');
+        if (data.credits !== undefined && !silent) setCredits(data.credits);
         setSynthEmailState('error');
       }
     } catch (e) {
       setSynthEmailState('error');
+      if (silent) showToast('📧 No se pudo enviar el email de síntesis');
     }
   };
 
