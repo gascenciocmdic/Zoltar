@@ -10,9 +10,9 @@ const FEATURES = [
     desc: 'Mazo propio inspirado en arquetipos de vidas pasadas. Cada carta abre una memoria diferente.',
   },
   {
-    icon: '🤖',
-    title: 'IA Personalizada',
-    desc: 'Gemini analiza tu nombre, fecha y pregunta para construir una narrativa única e irrepetible.',
+    icon: '✨',
+    title: 'Guía Espiritual IA',
+    desc: 'Una presencia sensible, empática y sanadora que construye una narrativa única para tu alma.',
   },
   {
     icon: '🔊',
@@ -33,6 +33,10 @@ export default function LandingScreen({ onEnter }) {
   const [taglineIdx, setTaglineIdx] = useState(0);
   const [taglineVisible, setTaglineVisible] = useState(true);
   const [entered, setEntered] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('en'); // default English
+  const [step, setStep] = useState('landing'); // 'landing' | 'configure'
+  const [selectedTier, setSelectedTier] = useState('standard');
+  const [selectedVoice, setSelectedVoice] = useState('feminine');
 
   useEffect(() => {
     const cycle = setInterval(() => {
@@ -46,8 +50,12 @@ export default function LandingScreen({ onEnter }) {
   }, []);
 
   function handleCTA() {
+    setStep('configure');
+  }
+
+  function handleBegin() {
     setEntered(true);
-    setTimeout(onEnter, 400);
+    setTimeout(() => onEnter({ language: selectedLang, tier: selectedTier, voiceProfile: selectedVoice }), 400);
   }
 
   // Theme-dependent tokens
@@ -95,23 +103,153 @@ export default function LandingScreen({ onEnter }) {
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        title={isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
-        style={{
-          position: 'absolute', top: 16, right: 16,
-          background: toggleBg,
-          border: `1px solid ${toggleBorder}`,
-          borderRadius: 50, width: 40, height: 40,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 18,
-          color: toggleColor,
-          transition: 'all 0.2s',
-        }}
-      >
-        {isLight ? '🌙' : '☀️'}
-      </button>
+      {/* Configure step — appears when user clicks Start */}
+      {step === 'configure' && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '80px 20px 32px',
+          background: bg, backdropFilter: 'blur(8px)',
+          overflowY: 'auto',
+        }}>
+          <button
+            onClick={() => setStep('landing')}
+            style={{
+              position: 'absolute', top: 16, left: 16,
+              background: 'transparent', border: 'none',
+              color: taglineColor, fontSize: 24, cursor: 'pointer', lineHeight: 1,
+            }}
+          >
+            ←
+          </button>
+
+          <h2 style={{
+            color: titleColor, fontSize: 'clamp(1rem, 3vw, 1.4rem)',
+            fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+            marginBottom: 24, fontFamily: 'Georgia, serif',
+          }}>
+            ✦ Configura tu experiencia
+          </h2>
+
+          <div style={{ width: '100%', maxWidth: 500, marginBottom: 20 }}>
+            <p style={{ color: taglineColor, fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700, textAlign: 'center' }}>
+              Lectura
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {[
+                { id: 'standard', label: 'Estándar', credits: '40 cr', desc: '3 cartas · voz del sistema' },
+                { id: 'full',     label: 'Completa',  credits: '65 cr', desc: '+ profundización · voz sistema' },
+                { id: 'premium',  label: 'Premium ✨', credits: '100 cr', desc: 'voz premium · email incluido' },
+              ].map(t => (
+                <div
+                  key={t.id}
+                  onClick={() => setSelectedTier(t.id)}
+                  style={{
+                    background: selectedTier === t.id
+                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
+                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
+                    border: `1.5px solid ${selectedTier === t.id
+                      ? (isLight ? 'rgba(124,111,160,0.7)' : 'rgba(167,139,250,0.7)')
+                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
+                    borderRadius: 14, padding: '12px 14px',
+                    cursor: 'pointer', textAlign: 'center',
+                    flex: '1 1 120px', maxWidth: 160, transition: 'all 0.2s',
+                  }}
+                >
+                  <div style={{ color: priceColor, fontWeight: 800, fontSize: 15 }}>{t.credits}</div>
+                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 12, margin: '4px 0 2px' }}>{t.label}</div>
+                  <div style={{ color: pillDescColor, fontSize: 10, lineHeight: 1.4 }}>{t.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ width: '100%', maxWidth: 500, marginBottom: 20 }}>
+            <p style={{ color: taglineColor, fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700, textAlign: 'center' }}>
+              Voz
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+              {[
+                { id: 'masculine', label: '🌌 Masculina', desc: 'Energías del universo' },
+                { id: 'feminine',  label: '🌸 Femenina',  desc: 'Espíritu ancestral' },
+              ].map(v => (
+                <div
+                  key={v.id}
+                  onClick={() => setSelectedVoice(v.id)}
+                  style={{
+                    background: selectedVoice === v.id
+                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
+                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
+                    border: `1.5px solid ${selectedVoice === v.id
+                      ? (isLight ? 'rgba(124,111,160,0.7)' : 'rgba(167,139,250,0.7)')
+                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
+                    borderRadius: 14, padding: '12px 20px',
+                    cursor: 'pointer', textAlign: 'center',
+                    flex: '1 1 140px', maxWidth: 200, transition: 'all 0.2s',
+                  }}
+                >
+                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 13 }}>{v.label}</div>
+                  <div style={{ color: pillDescColor, fontSize: 11, marginTop: 4 }}>{v.desc}</div>
+                </div>
+              ))}
+            </div>
+            {selectedTier !== 'premium' && (
+              <p style={{ color: taglineColor, fontSize: 10, fontStyle: 'italic', marginTop: 8, textAlign: 'center' }}>
+                La voz ElevenLabs se activa con el tier Premium
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={handleBegin}
+            style={{
+              background: ctaBg, border: `1px solid ${ctaBorder}`,
+              borderRadius: 50, padding: '14px 44px',
+              color: '#fff', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+              fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
+              boxShadow: ctaShadow, fontFamily: 'inherit',
+            }}
+          >
+            ✦ Comenzar
+          </button>
+        </div>
+      )}
+
+      {/* Top-right controls: language flags + theme toggle */}
+      <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+        {[{ code: 'es', flag: '🇪🇸' }, { code: 'en', flag: '🇺🇸' }, { code: 'pt', flag: '🇧🇷' }].map(({ code, flag }) => (
+          <button
+            key={code}
+            onClick={() => setSelectedLang(code)}
+            title={code.toUpperCase()}
+            style={{
+              background: selectedLang === code
+                ? (isLight ? 'rgba(124,111,160,0.25)' : 'rgba(124,58,237,0.3)')
+                : 'transparent',
+              border: selectedLang === code
+                ? `1px solid ${isLight ? 'rgba(124,111,160,0.5)' : 'rgba(167,139,250,0.5)'}`
+                : '1px solid transparent',
+              borderRadius: 8, width: 34, height: 34,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: 18, transition: 'all 0.2s',
+            }}
+          >
+            {flag}
+          </button>
+        ))}
+        <button
+          onClick={toggleTheme}
+          title={isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+          style={{
+            background: toggleBg, border: `1px solid ${toggleBorder}`,
+            borderRadius: 50, width: 34, height: 34,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', fontSize: 16, color: toggleColor, transition: 'all 0.2s',
+          }}
+        >
+          {isLight ? '🌙' : '☀️'}
+        </button>
+      </div>
 
       {/* Logo */}
       <div style={{ marginBottom: 8, lineHeight: 0 }}>
