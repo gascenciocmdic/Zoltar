@@ -50,7 +50,7 @@ export default function TermsPage() {
         <p>
           Los créditos adquiridos son no reembolsables una vez utilizados. Si experimentas
           un error técnico que resulta en el consumo incorrecto de créditos, contáctanos a
-          {' '}<a href="mailto:soporte@zoltar.app" style={{ color: '#ffd700' }}>soporte@zoltar.app</a>{' '}
+          {' '}<a href="mailto:soporte@cosmic-guidance.com" style={{ color: '#ffd700' }}>soporte@cosmic-guidance.com</a>{' '}
           dentro de los 7 días siguientes. Evaluaremos cada caso individualmente.
         </p>
         <p style={{ marginTop: 12 }}>
@@ -103,7 +103,7 @@ export default function TermsPage() {
       <Section title="9. Contacto">
         <p>
           Para consultas sobre estos Términos:{' '}
-          <a href="mailto:legal@zoltar.app" style={{ color: '#ffd700' }}>legal@zoltar.app</a>
+          <a href="mailto:legal@cosmic-guidance.com" style={{ color: '#ffd700' }}>legal@cosmic-guidance.com</a>
         </p>
       </Section>
 

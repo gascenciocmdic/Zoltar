@@ -7,7 +7,7 @@ export default function PrivacyPage() {
       <Section title="1. Responsable del tratamiento">
         <p>
           ZOLTAR — Oráculo de Vidas Pasadas. Para consultas sobre privacidad:
-          {' '}<a href="mailto:privacidad@zoltar.app" style={{ color: '#ffd700' }}>privacidad@zoltar.app</a>
+          {' '}<a href="mailto:privacidad@cosmic-guidance.com" style={{ color: '#ffd700' }}>privacidad@cosmic-guidance.com</a>
         </p>
       </Section>
 
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
         </ul>
         <p style={{ marginTop: 12 }}>
           Para ejercer estos derechos:{' '}
-          <a href="mailto:privacidad@zoltar.app" style={{ color: '#ffd700' }}>privacidad@zoltar.app</a>.
+          <a href="mailto:privacidad@cosmic-guidance.com" style={{ color: '#ffd700' }}>privacidad@cosmic-guidance.com</a>.
           Responderemos en un plazo máximo de 30 días.
         </p>
       </Section>
