@@ -824,7 +824,7 @@ function App() {
         setConsultTier('standard');
         setLoading(false);
         setVibe(interpretation?.vibe || 'healing_blue');
-        speakText(interpretation.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
+        narrate(interpretation.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
         return;
       }
 
@@ -850,7 +850,7 @@ function App() {
       setLoading(false);
       
       // Speak the new interpretation for the current stage
-      speakText(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
+      narrate(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
       
     } catch (error) {
       console.error("Error en la lectura pagada:", error);
@@ -962,7 +962,7 @@ function App() {
             ? prefix + textToRead
             : prefix + textToRead.split('. ')[0] + '.';
           setCanProceed(false);
-          speakText(audioText, language, () => setCanProceed(true));
+          narrate(audioText, language, () => setCanProceed(true));
         }
       }, Math.floor(Math.random() * 2000) + 3000);
     } else {
@@ -988,7 +988,11 @@ function App() {
             const synthText = consultTier !== null
               ? `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`
               : `${translations.ui.great_synthesis.replace('{name}', userName)} ${(finalSynthesis.conclusionFinal || '').split('. ')[0]}.`;
-            speakText(synthText, language);
+            narrate(synthText, language);
+            // Auto-send email for Premium tier (no credit deduction, no user action needed)
+            if (consultTier === 'premium' && authSession) {
+              handleSendSynthesis({ silent: true });
+            }
           }, 500);
         })
         .catch(error => {
@@ -1095,7 +1099,7 @@ function App() {
           setShowDebug(true);
         }
         // Voice reads: only the deepening whisper
-        speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
+        narrate(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
       } catch (e) {
         console.error("Deepening failed:", e);
         setDeepeningActive(null);
@@ -1103,7 +1107,7 @@ function App() {
           ...prev,
           [cardId]: { ...prev[cardId], extraResponse: translations.ui.oracle_misfire, step: 'done' }
         }));
-        speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
+        narrate(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
       }
     }
   };
