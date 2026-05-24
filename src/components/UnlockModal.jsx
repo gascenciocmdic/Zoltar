@@ -32,7 +32,6 @@ export default function UnlockModal({
     if (!isLoggedIn)    { onShowAuth(); return; }
     if (!canConfirm)    return;
 
-    const costMap = { standard: 'canAffordStandard', full: 'canAffordFull', premium: 'canAffordPremium' };
     const affordMap = { standard: canAffordStandard, full: canAffordFull, premium: canAffordPremium };
     if (!affordMap[selectedTier]) { onShowPurchase(); return; }
 
@@ -76,7 +75,6 @@ export default function UnlockModal({
 
     return (
       <button
-        key={tier}
         onClick={() => {
           if (!isLoggedIn) { onShowAuth(); return; }
           if (!affordable) { onShowPurchase(); return; }
@@ -115,7 +113,6 @@ export default function UnlockModal({
     const active = selectedVoice === voice;
     return (
       <button
-        key={voice}
         onClick={() => setSelectedVoice(voice)}
         style={{
           flex: 1, background: active ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'rgba(255,255,255,0.04)',
