@@ -519,6 +519,11 @@ function App() {
     setLanguage(lang);
     setVoiceProfile(vp);
 
+    // Initialise Web Speech API from within a user gesture (button click on landing)
+    initSpeech();
+    // Start hypnotic ambient loop — was previously tied to old "Entrar al Portal" button
+    startAmbientMusic();
+
     // Ambient greeting (same as handleSelectLanguage)
     const pool = I18N[lang] || I18N.es;
     const welcomeMsg = pool.greetings[Math.floor(Math.random() * pool.greetings.length)];
@@ -662,14 +667,14 @@ function App() {
 
     setIsFading(true);
 
-    // Narradores
+    // Narradores — use narrate() so premium tier gets ElevenLabs voice
     setCanProceed(false);
     if (thresholdStep === 1) {
-      speakText(sessionTexts.askBirthDate.replace('{name}', userName), language, () => setCanProceed(true));
+      narrate(sessionTexts.askBirthDate.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 2) {
-      speakText(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
+      narrate(sessionTexts.askReason.replace('{name}', userName), language, () => setCanProceed(true));
     } else if (thresholdStep === 3) {
-      speakText(sessionTexts.askDichotomy, language, () => setCanProceed(true));
+      narrate(sessionTexts.askDichotomy, language, () => setCanProceed(true));
     }
 
     setTimeout(() => {
@@ -681,7 +686,7 @@ function App() {
         setVibe('revelation_gold');
         setShowSynchronyPopup(true);
         setCanProceed(false);
-        speakText(translations.ui.call_p1.replace(/"/g, ''), language, () => setCanProceed(true));
+        narrate(translations.ui.call_p1.replace(/"/g, ''), language, () => setCanProceed(true));
       }
       setIsFading(false);
     }, Math.floor(Math.random() * 2000) + 3000);
@@ -693,7 +698,7 @@ function App() {
     setBirthNarrative(null);
     setIsFading(true);
     setCanProceed(false);
-    speakText(
+    narrate(
       (sessionTexts.askReason || '').replace('{name}', userName),
       language,
       () => setCanProceed(true)
@@ -818,7 +823,7 @@ function App() {
          setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (Astral failed)" });
          setShowDebug(true);
        }
-       speakText(result.mensajeAstral || result.mensajeGuia, language, () => setCanProceed(true));
+       narrate(result.mensajeAstral || result.mensajeGuia, language, () => setCanProceed(true));
     } catch (error) {
        console.error("Astral Error:", error);
        setIntrospectionMessage(translations.ui.oracle_misfire);
