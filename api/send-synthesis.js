@@ -196,6 +196,11 @@ export default async function handler(req, res) {
     await sb.from('credit_ledger').insert({ user_id: user.id, amount: -SYNTHESIS_COST, reason: 'synthesis_email' });
   }
 
+  // Auditoría: registrar envío automático premium sin costo
+  if (skipDeduction) {
+    await sb.from('credit_ledger').insert({ user_id: user.id, amount: 0, reason: 'synthesis_email_premium_auto' });
+  }
+
   // Enviar email
   if (!process.env.RESEND_API_KEY) {
     // Reembolsar créditos solo si se descontaron — no se puede enviar sin API key
@@ -204,7 +209,7 @@ export default async function handler(req, res) {
       await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
     }
     console.error('[send-synthesis] RESEND_API_KEY no configurada');
-    return res.status(500).json({ error: 'Servicio de email no configurado', credits: skipDeduction ? profile.credits : profile.credits });
+    return res.status(500).json({ error: 'Servicio de email no configurado', credits: newCredits });
   }
 
   const appUrl = process.env.APP_URL || 'https://zoltar-two.vercel.app';

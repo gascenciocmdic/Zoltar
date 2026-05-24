@@ -1955,7 +1955,7 @@ function App() {
               <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
 
                 {/* Enviar síntesis por email */}
-                {authSession && (
+                {authSession && consultTier !== 'premium' && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.78rem', margin: 0, letterSpacing: '1px' }}>
                       💎 {CREDIT_COSTS.synthesis_email} {translations.ui.credits_label || 'créditos'}
