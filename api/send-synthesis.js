@@ -175,30 +175,36 @@ export default async function handler(req, res) {
   const user = await getUser(req);
   if (!user) return res.status(401).json({ error: 'No autenticado' });
 
-  const { language = 'es', userName, selectedCards, interpretation, clarifications, birthNarrative } = req.body || {};
+  const { language = 'es', userName, selectedCards, interpretation, clarifications, birthNarrative, skipCreditDeduction } = req.body || {};
 
   if (!interpretation) return res.status(400).json({ error: 'Sin síntesis para enviar' });
 
   const sb = supabaseAdmin();
 
-  // Verificar y descontar créditos
+  // Verificar y descontar créditos (omitir para premium auto-send)
+  const skipDeduction = skipCreditDeduction === true;
   const { data: profile } = await sb.from('profiles').select('credits').eq('id', user.id).single();
   if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
-  if (profile.credits < SYNTHESIS_COST) {
-    return res.status(402).json({ error: 'insufficient_credits', credits: profile.credits });
-  }
 
-  const newCredits = profile.credits - SYNTHESIS_COST;
-  await sb.from('profiles').update({ credits: newCredits }).eq('id', user.id);
-  await sb.from('credit_ledger').insert({ user_id: user.id, amount: -SYNTHESIS_COST, reason: 'synthesis_email' });
+  let newCredits = profile.credits;
+  if (!skipDeduction) {
+    if (profile.credits < SYNTHESIS_COST) {
+      return res.status(402).json({ error: 'insufficient_credits', credits: profile.credits });
+    }
+    newCredits = profile.credits - SYNTHESIS_COST;
+    await sb.from('profiles').update({ credits: newCredits }).eq('id', user.id);
+    await sb.from('credit_ledger').insert({ user_id: user.id, amount: -SYNTHESIS_COST, reason: 'synthesis_email' });
+  }
 
   // Enviar email
   if (!process.env.RESEND_API_KEY) {
-    // Reembolsar créditos — no se puede enviar sin API key
-    await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
-    await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
+    // Reembolsar créditos solo si se descontaron — no se puede enviar sin API key
+    if (!skipDeduction) {
+      await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
+      await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
+    }
     console.error('[send-synthesis] RESEND_API_KEY no configurada');
-    return res.status(500).json({ error: 'Servicio de email no configurado', credits: profile.credits });
+    return res.status(500).json({ error: 'Servicio de email no configurado', credits: skipDeduction ? profile.credits : profile.credits });
   }
 
   const appUrl = process.env.APP_URL || 'https://zoltar-two.vercel.app';
@@ -227,9 +233,11 @@ export default async function handler(req, res) {
   if (!emailRes.ok) {
     const errText = await emailRes.text();
     console.error('[send-synthesis] Resend error:', emailRes.status, errText);
-    // Devolver créditos si el email falló
-    await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
-    await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
+    // Devolver créditos solo si se descontaron
+    if (!skipDeduction) {
+      await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
+      await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
+    }
     return res.status(500).json({ error: 'Error enviando email', resend_status: emailRes.status, resend_error: errText, credits: profile.credits });
   }
 
