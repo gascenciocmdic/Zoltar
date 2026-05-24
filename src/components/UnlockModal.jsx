@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CREDIT_COSTS } from '../lib/credits.js';
 import { useTheme } from '../lib/themeContext';
 
@@ -9,46 +10,145 @@ export default function UnlockModal({
   credits,
   onShowAuth,
   onShowPurchase,
+  translations,
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
+  const [selectedTier,  setSelectedTier]  = useState(null); // 'standard'|'full'|'premium'
+  const [selectedVoice, setSelectedVoice] = useState(null); // 'masculine'|'feminine'
+
   if (!isOpen) return null;
 
   const canAffordStandard = (credits ?? 0) >= CREDIT_COSTS.consultation;
-  const canAffordFull = (credits ?? 0) >= CREDIT_COSTS.ancestral_ritual;
-  const isLoggedIn = !!authSession;
+  const canAffordFull     = (credits ?? 0) >= CREDIT_COSTS.ancestral_ritual;
+  const canAffordPremium  = (credits ?? 0) >= CREDIT_COSTS.premium_ritual;
+  const isLoggedIn        = !!authSession;
 
-  const overlayBg = isLight ? 'rgba(200,190,230,0.55)' : 'rgba(0,0,0,0.85)';
-  const modalBg = isLight ? 'linear-gradient(145deg, #faf8ff, #f0ecff)' : '#14142b';
-  const modalBorder = isLight ? '1px solid rgba(124,111,160,0.3)' : '1px solid rgba(255,215,0,0.3)';
+  const canConfirm = selectedTier !== null &&
+    (selectedTier !== 'premium' || selectedVoice !== null);
+
+  const handleConfirm = () => {
+    if (!isLoggedIn)    { onShowAuth(); return; }
+    if (!canConfirm)    return;
+
+    const costMap = { standard: 'canAffordStandard', full: 'canAffordFull', premium: 'canAffordPremium' };
+    const affordMap = { standard: canAffordStandard, full: canAffordFull, premium: canAffordPremium };
+    if (!affordMap[selectedTier]) { onShowPurchase(); return; }
+
+    onUnlock(selectedTier, selectedVoice);
+    setSelectedTier(null);
+    setSelectedVoice(null);
+  };
+
+  // ── Styles ────────────────────────────────────────────────────────────
+  const overlayBg  = isLight ? 'rgba(200,190,230,0.55)' : 'rgba(0,0,0,0.85)';
+  const modalBg    = isLight ? 'linear-gradient(145deg, #faf8ff, #f0ecff)' : '#14142b';
+  const modalBorder= isLight ? '1px solid rgba(124,111,160,0.3)' : '1px solid rgba(255,215,0,0.3)';
   const closeColor = isLight ? 'rgba(45,37,64,0.4)' : '#666';
   const titleColor = isLight ? '#b8860b' : '#ffd700';
-  const subtitleColor = isLight ? 'rgba(45,37,64,0.55)' : '#888';
-  const stdBtnBg = isLight ? 'rgba(184,134,11,0.08)' : 'rgba(255,215,0,0.08)';
-  const stdBtnBorder = isLight ? '#b8860b' : '#ffd700';
-  const stdBtnColor = isLight ? '#6b4e00' : '#ffd700';
-  const stdBtnSubColor = isLight ? 'rgba(45,37,64,0.5)' : '#888';
-  const dividerColor = isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.1)';
-  const linkColor = isLight ? '#7c6fa0' : '#a78bfa';
-  const altLinkColor = isLight ? 'rgba(45,37,64,0.45)' : '#888';
-  const buyLinkColor = isLight ? 'rgba(45,37,64,0.3)' : '#555';
+  const subColor   = isLight ? 'rgba(45,37,64,0.55)' : '#888';
+  const divColor   = isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.1)';
+  const linkColor  = isLight ? '#7c6fa0' : '#a78bfa';
+  const buyColor   = isLight ? 'rgba(45,37,64,0.3)' : '#555';
+
+  const tierBtn = (tier, label, sub, recommended = false) => {
+    const active   = selectedTier === tier;
+    const costMap  = { standard: CREDIT_COSTS.consultation, full: CREDIT_COSTS.ancestral_ritual, premium: CREDIT_COSTS.premium_ritual };
+    const cost     = costMap[tier];
+    const affordMap= { standard: canAffordStandard, full: canAffordFull, premium: canAffordPremium };
+    const affordable = affordMap[tier];
+
+    const bg = active
+      ? (tier === 'premium'
+          ? 'linear-gradient(135deg, #7c3aed, #a855f7)'
+          : tier === 'full'
+          ? (isLight ? 'linear-gradient(135deg,#7c6fa0,#5b8db8)' : '#7c3aed')
+          : (isLight ? 'rgba(184,134,11,0.15)' : 'rgba(255,215,0,0.15)'))
+      : (isLight ? 'rgba(184,134,11,0.05)' : 'rgba(255,255,255,0.03)');
+
+    const border = active
+      ? (tier === 'premium' ? '1px solid #a855f7' : tier === 'full' ? '1px solid #7c3aed' : `1px solid ${isLight ? '#b8860b' : '#ffd700'}`)
+      : `1px solid ${isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.08)'}`;
+
+    const textColor = active && (tier === 'premium' || tier === 'full') ? '#fff' : (isLight ? '#6b4e00' : '#ffd700');
+    const descColor = active && (tier === 'premium' || tier === 'full') ? 'rgba(255,255,255,0.75)' : subColor;
+
+    return (
+      <button
+        key={tier}
+        onClick={() => {
+          if (!isLoggedIn) { onShowAuth(); return; }
+          if (!affordable) { onShowPurchase(); return; }
+          setSelectedTier(tier);
+          if (tier !== 'premium') setSelectedVoice(null);
+        }}
+        style={{
+          background: bg, border, borderRadius: 12, padding: '11px 14px',
+          color: textColor, cursor: 'pointer', textAlign: 'left',
+          transition: 'all 0.2s', position: 'relative', width: '100%',
+        }}
+      >
+        {recommended && (
+          <span style={{
+            position: 'absolute', top: -9, right: 12,
+            background: isLight ? '#b8860b' : '#ffd700',
+            color: isLight ? '#fff' : '#000',
+            fontSize: '0.55rem', padding: '2px 8px',
+            borderRadius: 8, fontWeight: 700,
+          }}>RECOMENDADO</span>
+        )}
+        <strong style={{ display: 'block', marginBottom: 2, fontSize: '0.88rem' }}>
+          {label} — {cost}💎
+          {!affordable && isLoggedIn && (
+            <span style={{ color: subColor, fontSize: '0.65rem', marginLeft: 6 }}>
+              (tienes {credits ?? 0})
+            </span>
+          )}
+        </strong>
+        <span style={{ color: descColor, fontSize: '0.72rem' }}>{sub}</span>
+      </button>
+    );
+  };
+
+  const voiceCard = (voice, emoji, name, desc) => {
+    const active = selectedVoice === voice;
+    return (
+      <button
+        key={voice}
+        onClick={() => setSelectedVoice(voice)}
+        style={{
+          flex: 1, background: active ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'rgba(255,255,255,0.04)',
+          border: active ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 10, padding: '10px 8px', cursor: 'pointer',
+          color: active ? '#fff' : subColor,
+          textAlign: 'center', transition: 'all 0.2s',
+        }}
+      >
+        <div style={{ fontSize: '1.3rem', marginBottom: 4 }}>{emoji}</div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 2 }}>{name}</div>
+        <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>{desc}</div>
+      </button>
+    );
+  };
+
+  const ui = translations?.ui || {};
 
   return (
     <div
       style={{
         position: 'fixed', inset: 0,
         background: overlayBg,
-        backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', zIndex: 9000,
+        backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9000,
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: modalBg,
-          border: modalBorder,
-          borderRadius: '20px', padding: '28px 24px', width: '320px',
+          background: modalBg, border: modalBorder,
+          borderRadius: 20, padding: '28px 24px', width: 320,
           textAlign: 'center', position: 'relative',
           boxShadow: isLight
             ? '0 0 40px rgba(124,111,160,0.2), 0 20px 60px rgba(0,0,0,0.08)'
@@ -57,110 +157,72 @@ export default function UnlockModal({
         onClick={e => e.stopPropagation()}
       >
         <button
-          onClick={onClose}
-          style={{
-            position: 'absolute', top: '12px', right: '16px',
-            background: 'none', border: 'none', color: closeColor,
-            fontSize: '1.2rem', cursor: 'pointer',
-          }}
-        >
-          ✕
-        </button>
+          onClick={() => { onClose(); setSelectedTier(null); setSelectedVoice(null); }}
+          style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: closeColor, fontSize: '1.2rem', cursor: 'pointer' }}
+        >✕</button>
 
-        <div style={{ fontSize: '1.6rem', marginBottom: '8px' }}>🔮</div>
+        <div style={{ fontSize: '1.6rem', marginBottom: 8 }}>🔮</div>
         <h3 style={{ color: titleColor, margin: '0 0 4px', fontSize: '1rem' }}>
           Desbloquea tu lectura
         </h3>
-        <p style={{ color: subtitleColor, fontSize: '0.75rem', margin: '0 0 18px' }}>
+        <p style={{ color: subColor, fontSize: '0.75rem', margin: '0 0 16px' }}>
           Revela las 3 cartas + síntesis final
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-          <button
-            onClick={() => {
-              if (!isLoggedIn) { onShowAuth(); return; }
-              canAffordStandard ? onUnlock('standard') : onShowPurchase();
-            }}
-            style={{
-              background: stdBtnBg,
-              border: `1px solid ${stdBtnBorder}`,
-              borderRadius: '12px', padding: '12px', color: stdBtnColor,
-              cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <strong style={{ display: 'block', marginBottom: '2px' }}>
-              Estándar — {CREDIT_COSTS.consultation}💎
-              {!canAffordStandard && isLoggedIn && (
-                <span style={{ color: stdBtnSubColor, fontSize: '0.65rem', marginLeft: '6px' }}>
-                  (tienes {credits ?? 0})
-                </span>
-              )}
-            </strong>
-            <span style={{ color: stdBtnSubColor, fontSize: '0.72rem' }}>
-              Revelación completa · Profundizar a {CREDIT_COSTS.deepening}💎/carta
-            </span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (!isLoggedIn) { onShowAuth(); return; }
-              canAffordFull ? onUnlock('full') : onShowPurchase();
-            }}
-            style={{
-              background: isLight
-                ? 'linear-gradient(135deg, #7c6fa0, #5b8db8)'
-                : '#7c3aed',
-              border: 'none', borderRadius: '12px',
-              padding: '12px', color: '#fff', cursor: 'pointer',
-              textAlign: 'left', position: 'relative',
-            }}
-          >
-            <span style={{
-              position: 'absolute', top: '-9px', right: '12px',
-              background: isLight ? '#b8860b' : '#ffd700',
-              color: isLight ? '#fff' : '#000',
-              fontSize: '0.55rem',
-              padding: '2px 8px', borderRadius: '8px', fontWeight: 700,
-            }}>
-              RECOMENDADO
-            </span>
-            <strong style={{ display: 'block', marginBottom: '2px' }}>
-              Full — {CREDIT_COSTS.ancestral_ritual}💎
-            </strong>
-            <span style={{ color: isLight ? 'rgba(255,255,255,0.85)' : '#c4b5fd', fontSize: '0.72rem' }}>
-              Todo incluido · Profundización gratis en las 3 cartas
-            </span>
-          </button>
+        {/* ── Tier selection ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {tierBtn('standard', 'Estándar', `Revelación completa · Profundizar a ${CREDIT_COSTS.deepening}💎/carta`)}
+          {tierBtn('full',     'Full',     'Todo incluido · Profundización gratis en las 3 cartas', true)}
+          {tierBtn('premium',  `${ui.premium_tier_name || 'Premium'} ✨`, `${ui.premium_tier_desc || 'Voz premium · Email incluido'} · Profundización gratis`)}
         </div>
 
-        <div style={{
-          borderTop: `1px solid ${dividerColor}`, paddingTop: '12px',
-          display: 'flex', flexDirection: 'column', gap: '6px',
-        }}>
+        {/* ── Voice selection (only when Premium selected) ── */}
+        {selectedTier === 'premium' && (
+          <div style={{ marginBottom: 12, animation: 'fadeIn 0.3s ease' }}>
+            <p style={{ color: subColor, fontSize: '0.72rem', margin: '0 0 8px' }}>
+              {ui.voice_choose || 'Elige tu voz'}
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {voiceCard('masculine', '🌌', ui.voice_masculine_name || 'Masculina', ui.voice_masculine_desc || 'Energías del universo')}
+              {voiceCard('feminine',  '🌸', ui.voice_feminine_name  || 'Femenina',  ui.voice_feminine_desc  || 'Espíritu ancestral')}
+            </div>
+          </div>
+        )}
+
+        {/* ── Confirm button ── */}
+        {selectedTier && (
+          <button
+            onClick={handleConfirm}
+            disabled={!canConfirm}
+            style={{
+              width: '100%', borderRadius: 12, padding: '11px 0',
+              fontWeight: 700, fontSize: '0.85rem', cursor: canConfirm ? 'pointer' : 'not-allowed',
+              marginBottom: 10, border: 'none',
+              background: canConfirm
+                ? (selectedTier === 'premium' ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : selectedTier === 'full' ? (isLight ? 'linear-gradient(135deg,#7c6fa0,#5b8db8)' : '#7c3aed') : (isLight ? '#b8860b' : '#ffd700'))
+                : 'rgba(255,255,255,0.1)',
+              color: canConfirm ? (selectedTier === 'standard' && !isLight ? '#000' : '#fff') : subColor,
+              transition: 'all 0.2s',
+            }}
+          >
+            Confirmar — {selectedTier === 'standard' ? CREDIT_COSTS.consultation : selectedTier === 'full' ? CREDIT_COSTS.ancestral_ritual : CREDIT_COSTS.premium_ritual}💎
+          </button>
+        )}
+
+        {/* ── Footer links ── */}
+        <div style={{ borderTop: `1px solid ${divColor}`, paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
           {!isLoggedIn && (
-            <button
-              onClick={onShowAuth}
-              style={{
-                background: 'none', border: 'none', color: linkColor,
-                cursor: 'pointer', fontSize: '0.75rem',
-              }}
-            >
+            <button onClick={onShowAuth} style={{ background: 'none', border: 'none', color: linkColor, cursor: 'pointer', fontSize: '0.75rem' }}>
               🎁 Registrarme y obtener 100💎 gratis
             </button>
           )}
           {!isLoggedIn && (
-            <button
-              onClick={onShowAuth}
-              style={{ background: 'none', border: 'none', color: altLinkColor, cursor: 'pointer', fontSize: '0.72rem' }}
-            >
+            <button onClick={onShowAuth} style={{ background: 'none', border: 'none', color: subColor, cursor: 'pointer', fontSize: '0.72rem' }}>
               Ya tengo cuenta — iniciar sesión
             </button>
           )}
           {isLoggedIn && (
-            <button
-              onClick={onShowPurchase}
-              style={{ background: 'none', border: 'none', color: buyLinkColor, cursor: 'pointer', fontSize: '0.68rem' }}
-            >
+            <button onClick={onShowPurchase} style={{ background: 'none', border: 'none', color: buyColor, cursor: 'pointer', fontSize: '0.68rem' }}>
               💳 Comprar créditos
             </button>
           )}
