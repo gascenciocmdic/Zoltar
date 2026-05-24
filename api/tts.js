@@ -22,6 +22,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falta la API Key de ElevenLabs.' });
   }
 
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return res.status(400).json({ error: 'Missing or empty text field.' });
+  }
+
   const profile = voiceProfile === 'feminine' ? 'feminine' : 'masculine';
   const voiceId       = VOICE_IDS[profile];
   const voice_settings = VOICE_SETTINGS[profile];
