@@ -411,6 +411,18 @@ function App() {
       } else if (action.type === 'unlock' || action.type === 'purchase_reading') {
         // Re-abrir UnlockModal — ahora el usuario está autenticado y puede elegir tier
         setShowUnlockModal(true);
+      } else if (action.type === 'landing_premium') {
+        const { voiceProfile: vp } = action;
+        deductCredits(session, 'premium_ritual').then(result => {
+          if (result.ok) {
+            setCredits(result.credits);
+            flashCredit(-100);
+            setConsultTier('premium');
+            setVoiceProfile(vp);
+          } else {
+            showToast('Créditos insuficientes para Premium.');
+          }
+        });
       }
       // 'deepening': el botón sigue visible en la fase revelation; el usuario lo pulsa de nuevo
     }
@@ -501,6 +513,56 @@ function App() {
       setSynthEmailState('error');
       if (silent) showToast('📧 No se pudo enviar el email de síntesis');
     }
+  };
+
+  const handleLandingEnter = ({ language: lang = 'en', tier = 'standard', voiceProfile: vp = 'feminine' } = {}) => {
+    setLanguage(lang);
+    setVoiceProfile(vp);
+
+    if (tier === 'premium') {
+      if (!authSession) {
+        setPendingAction({ type: 'landing_premium', tier, voiceProfile: vp });
+        setShowAuthModal(true);
+        setPhase('threshold');
+        return;
+      }
+      deductCredits(authSession, 'premium_ritual').then(result => {
+        if (result.ok) {
+          setCredits(result.credits);
+          flashCredit(-100);
+          setConsultTier('premium');
+        } else {
+          showToast(`Créditos insuficientes para Premium (necesitas 100 cr).`);
+          setConsultTier(null);
+        }
+      }).catch(() => setConsultTier(null));
+    } else if (tier === 'full') {
+      if (authSession) {
+        deductCredits(authSession, 'ancestral_ritual').then(result => {
+          if (result.ok) {
+            setCredits(result.credits);
+            flashCredit(-65);
+            setConsultTier('full');
+          } else {
+            setConsultTier('standard');
+          }
+        }).catch(() => setConsultTier('standard'));
+      }
+    } else {
+      if (authSession) {
+        deductCredits(authSession, 'consultation').then(result => {
+          if (result.ok) {
+            setCredits(result.credits);
+            flashCredit(-40);
+            setConsultTier('standard');
+          } else {
+            setConsultTier(null);
+          }
+        }).catch(() => setConsultTier(null));
+      }
+    }
+
+    setPhase('threshold');
   };
 
   const handleSelectLanguage = (lang) => {
@@ -1187,7 +1249,7 @@ function App() {
       )}
 
       {phase === 'landing' && (
-        <LandingScreen onEnter={() => setPhase('languageSelection')} />
+        <LandingScreen onEnter={handleLandingEnter} />
       )}
 
       {phase !== 'landing' && !language ? (
