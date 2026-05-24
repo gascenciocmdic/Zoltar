@@ -243,7 +243,7 @@ export default async function handler(req, res) {
       await sb.from('profiles').update({ credits: profile.credits }).eq('id', user.id);
       await sb.from('credit_ledger').insert({ user_id: user.id, amount: SYNTHESIS_COST, reason: 'synthesis_email_refund' });
     }
-    return res.status(500).json({ error: 'Error enviando email', resend_status: emailRes.status, resend_error: errText, credits: profile.credits });
+    return res.status(500).json({ error: 'Error enviando email', resend_status: emailRes.status, resend_error: errText, credits: newCredits });
   }
 
   return res.status(200).json({ ok: true, credits: newCredits });
