@@ -859,14 +859,19 @@ function App() {
     }
   };
 
-  const handleUnlock = async (tier) => {
+  const handleUnlock = async (tier, voiceProfileChoice = null) => {
     if (!authSession) {
       setPendingAction({ type: 'unlock', tier });
       setShowAuthModal(true);
       return;
     }
 
-    const creditKey = tier === 'full' ? 'ancestral_ritual' : 'consultation';
+    const creditKeyMap = {
+      standard: 'consultation',
+      full:     'ancestral_ritual',
+      premium:  'premium_ritual',
+    };
+    const creditKey = creditKeyMap[tier] || 'consultation';
     const cost = CREDIT_COSTS[creditKey];
 
     if ((credits ?? 0) < cost) {
@@ -902,13 +907,18 @@ function App() {
     flashCredit(-cost);
 
     setConsultTier(tier);
+    if (tier === 'premium') setVoiceProfile(voiceProfileChoice);
     setLoading(false);
 
     if (revealedStage > 0) {
       const fullText = Array.isArray(interpretation.narrativaAncestral)
         ? interpretation.narrativaAncestral[revealedStage - 1]
         : interpretation.narrativaAncestral;
-      speakText(fullText, language, () => setCanProceed(true));
+      if (tier === 'premium' && voiceProfileChoice) {
+        speakPremium(fullText, voiceProfileChoice, language, () => setCanProceed(true));
+      } else {
+        speakText(fullText, language, () => setCanProceed(true));
+      }
     }
 
     trackEvent('reading_unlocked', { tier, credits_spent: cost }, authSession);
