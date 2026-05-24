@@ -248,16 +248,18 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .brain-bubble {
-  padding: 15px 20px;
-  border-radius: 8px;
+  padding: 18px 24px;
+  border-radius: 18px;
   font-size: 1.05rem;
-  line-height: 1.6;
+  line-height: 1.7;
   border-left: 4px solid transparent;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
   font-style: italic;
   display: block;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
 }
 
 .dichotomy-buttons {
@@ -1276,6 +1278,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 [data-theme="light"] .astral-bubble .narrative-meta {
   color: #5a3d90 !important;
 }
+[data-theme="light"] .brain-bubble {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(124, 111, 160, 0.18);
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.06);
+}
+
 [data-theme="light"] .brain-bubble.narrative p,
 [data-theme="light"] .brain-bubble.narrative span {
   color: #2d1f50 !important;
@@ -1865,8 +1873,8 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 
   /* PNG de la mesa como fondo — puesto vía inline style desde App.jsx */
   background-color: #4a3820;
-  background-size: cover;
-  background-position: center;
+  background-size: contain;
+  background-position: center center;
   background-repeat: no-repeat;
 
   /* ── Marco: portal energético (modo oscuro) ── */
@@ -1943,10 +1951,18 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 
 .fan-subtitle {
-  font-size: 0.82rem;
-  color: rgba(196, 181, 253, 0.75);
-  letter-spacing: 1px;
+  font-size: 0.88rem;
+  color: rgba(232, 220, 255, 0.92);
+  letter-spacing: 0.5px;
+  font-weight: 600;
   margin: 0;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+[data-theme="light"] .fan-subtitle {
+  color: rgba(45, 30, 80, 0.85);
+  text-shadow: none;
+  font-weight: 700;
 }
 
 /* Contenedor del abanico — pivot point */
@@ -2196,11 +2212,15 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     bottom: -20px;
   }
   .fan-selected-row {
-    gap: 12px;
+    gap: 8px;
     min-height: 90px;
-    padding: 8px 12px 4px;
+    padding: 8px 8px 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+    overflow: visible;
   }
-  .fan-tray-card .card-wrapper { width: 80px; height: 126px; }
+  .fan-tray-card .card-wrapper { width: 72px; height: 113px; }
   .fan-continue-outer {
     position: sticky;
     bottom: 16px;
@@ -2309,8 +2329,12 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
     gap: 8px;
     min-height: 76px;
     padding: 6px 8px 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+    overflow: visible;
   }
-  .fan-tray-card .card-wrapper { width: 66px; height: 104px; }
+  .fan-tray-card .card-wrapper { width: 60px; height: 94px; }
   .fan-continue-outer {
     position: sticky;
     bottom: 12px;
@@ -2387,9 +2411,9 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   padding: 32px 16px 40px;
 
   /* PNG de la mesa — puesto vía inline style desde App.jsx */
-  background-color: #4a3820;
-  background-size: cover;
-  background-position: center;
+  background-color: #3a2c18;
+  background-size: contain;
+  background-position: center center;
   background-repeat: no-repeat;
 
   /* ── Mismo marco que fan-scene: portal energético (modo oscuro) ── */
