@@ -1,6 +1,7 @@
 let isMuted = false;
 let preferredVoice = null;
 let ambientAudio = null;
+let premiumAudio = null;
 
 /**
  * Inicializa el motor de voz de sistema (Web Speech API) - Gratis
@@ -75,6 +76,10 @@ export const stopSpeech = () => {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
+  if (premiumAudio) {
+    premiumAudio.pause();
+    premiumAudio = null;
+  }
 };
 
 /**
@@ -114,9 +119,10 @@ export const stopAmbient = () => {
  * Si la API falla, hace fallback a speakText silenciosamente.
  * @param {string} text
  * @param {'masculine'|'feminine'} voiceProfile
+ * @param {string} lang  BCP-47 language code (default 'es')
  * @param {Function|null} onEnd  Called when audio ends or on error
  */
-export const speakPremium = async (text, voiceProfile = 'masculine', onEnd = null) => {
+export const speakPremium = async (text, voiceProfile = 'masculine', lang = 'es', onEnd = null) => {
   if (isMuted || !text) {
     if (onEnd) onEnd();
     return;
@@ -134,19 +140,23 @@ export const speakPremium = async (text, voiceProfile = 'masculine', onEnd = nul
     const blob  = await res.blob();
     const url   = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    premiumAudio = audio;
 
     audio.onended = () => {
       URL.revokeObjectURL(url);
+      premiumAudio = null;
       if (onEnd) onEnd();
     };
     audio.onerror = () => {
       URL.revokeObjectURL(url);
-      if (onEnd) onEnd();
+      premiumAudio = null;
+      console.warn('[speakPremium] Audio playback error, falling back to speakText');
+      speakText(text, lang, onEnd);
     };
 
     await audio.play();
   } catch (e) {
     console.warn('[speakPremium] ElevenLabs unavailable, falling back to speakText:', e.message);
-    speakText(text, 'es', onEnd);
+    speakText(text, lang, onEnd);
   }
 };
