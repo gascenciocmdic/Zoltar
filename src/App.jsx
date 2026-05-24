@@ -5,7 +5,7 @@ import { useTheme } from './lib/themeContext';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
-import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
+import { initSpeech, toggleMute, speakText, speakPremium, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';

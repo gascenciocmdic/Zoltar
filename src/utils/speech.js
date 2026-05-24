@@ -108,3 +108,45 @@ export const stopAmbient = () => {
     ambientAudio = null;
   }
 };
+
+/**
+ * Narra el texto usando ElevenLabs (voz premium).
+ * Si la API falla, hace fallback a speakText silenciosamente.
+ * @param {string} text
+ * @param {'masculine'|'feminine'} voiceProfile
+ * @param {Function|null} onEnd  Called when audio ends or on error
+ */
+export const speakPremium = async (text, voiceProfile = 'masculine', onEnd = null) => {
+  if (isMuted || !text) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voiceProfile }),
+    });
+
+    if (!res.ok) throw new Error(`TTS HTTP ${res.status}`);
+
+    const blob  = await res.blob();
+    const url   = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      if (onEnd) onEnd();
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      if (onEnd) onEnd();
+    };
+
+    await audio.play();
+  } catch (e) {
+    console.warn('[speakPremium] ElevenLabs unavailable, falling back to speakText:', e.message);
+    speakText(text, 'es', onEnd);
+  }
+};
