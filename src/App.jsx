@@ -5,7 +5,7 @@ import { useTheme } from './lib/themeContext';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
-import { initSpeech, toggleMute, speakText, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
+import { initSpeech, toggleMute, speakText, speakPremium, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
@@ -144,7 +144,8 @@ function App() {
   const [synthEmailState, setSynthEmailState] = useState('idle'); // idle | sending | sent | error
   const [deepeningActive, setDeepeningActive] = useState(null); // cardId while loading deepening
   const [anchoringLoading, setAnchoringLoading] = useState(false);
-  const [consultTier, setConsultTier] = useState(null); // null | 'standard' | 'full'
+  const [consultTier,  setConsultTier]  = useState(null); // null | 'standard' | 'full' | 'premium'
+  const [voiceProfile, setVoiceProfile] = useState(null); // null | 'masculine' | 'feminine'
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   
   const [isMutedState, setIsMutedState] = useState(false);
@@ -437,38 +438,68 @@ function App() {
       dichotomousChoice, thresholdStep, interpretation, introspectionMessage,
       clarifications, revealedStage, consultCount, autoRevealStarted, birthNarrative]);
 
-  const handleSendSynthesis = async () => {
-    if (!authSession || synthEmailState !== 'idle') return;
-    if ((credits ?? 0) < CREDIT_COSTS.synthesis_email) {
-      setPurchaseReason(`Necesitas ${CREDIT_COSTS.synthesis_email} créditos para enviar la síntesis.`);
-      setShowPurchaseModal(true);
-      return;
+  /**
+   * Dispatches narration to ElevenLabs (premium) or Web Speech API (all other tiers).
+   * Drop-in replacement for speakText() inside reading phases.
+   */
+  const narrate = useCallback((text, lang, onEnd) => {
+    if (consultTier === 'premium' && voiceProfile) {
+      speakPremium(text, voiceProfile, lang, onEnd);
+    } else {
+      speakText(text, lang, onEnd);
     }
+  }, [consultTier, voiceProfile]);
+
+  const handleSendSynthesis = async ({ silent = false } = {}) => {
+    if (!authSession || synthEmailState !== 'idle') return;
+
+    // For non-premium: check and deduct 10cr; for premium (silent): skip cost check
+    if (!silent) {
+      if ((credits ?? 0) < CREDIT_COSTS.synthesis_email) {
+        setPurchaseReason(`Necesitas ${CREDIT_COSTS.synthesis_email} créditos para enviar la síntesis.`);
+        setShowPurchaseModal(true);
+        return;
+      }
+    }
+
     setSynthEmailState('sending');
     try {
       const res = await fetch('/api/send-synthesis', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authSession.access_token}` },
-        body: JSON.stringify({ language, userName, selectedCards, interpretation, clarifications, birthNarrative }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({
+          language, userName, selectedCards, interpretation,
+          clarifications, birthNarrative,
+          skipCreditDeduction: silent,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        setCredits(data.credits);
-        flashCredit(-CREDIT_COSTS.synthesis_email);
+        if (!silent) {
+          setCredits(data.credits);
+          flashCredit(-CREDIT_COSTS.synthesis_email);
+        }
         setSynthEmailState('sent');
       } else if (data.error === 'insufficient_credits') {
-        setPurchaseReason(`Créditos insuficientes. Necesitas ${CREDIT_COSTS.synthesis_email}.`);
-        setShowPurchaseModal(true);
+        if (!silent) {
+          setPurchaseReason(`Créditos insuficientes. Necesitas ${CREDIT_COSTS.synthesis_email}.`);
+          setShowPurchaseModal(true);
+        }
         setSynthEmailState('idle');
       } else {
         const detail = data.resend_error || data.error || 'Error desconocido';
         console.error('[synthesis email] API error:', data);
-        showToast(`Error al enviar el correo: ${detail}`);
-        if (data.credits !== undefined) setCredits(data.credits);
+        if (!silent) showToast(`Error al enviar el correo: ${detail}`);
+        else showToast('📧 No se pudo enviar el email de síntesis');
+        if (data.credits !== undefined && !silent) setCredits(data.credits);
         setSynthEmailState('error');
       }
     } catch (e) {
       setSynthEmailState('error');
+      if (silent) showToast('📧 No se pudo enviar el email de síntesis');
     }
   };
 
@@ -793,7 +824,7 @@ function App() {
         setConsultTier('standard');
         setLoading(false);
         setVibe(interpretation?.vibe || 'healing_blue');
-        speakText(interpretation.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
+        narrate(interpretation.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
         return;
       }
 
@@ -819,7 +850,7 @@ function App() {
       setLoading(false);
       
       // Speak the new interpretation for the current stage
-      speakText(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
+      narrate(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
       
     } catch (error) {
       console.error("Error en la lectura pagada:", error);
@@ -828,14 +859,19 @@ function App() {
     }
   };
 
-  const handleUnlock = async (tier) => {
+  const handleUnlock = async (tier, voiceProfileChoice = null) => {
     if (!authSession) {
       setPendingAction({ type: 'unlock', tier });
       setShowAuthModal(true);
       return;
     }
 
-    const creditKey = tier === 'full' ? 'ancestral_ritual' : 'consultation';
+    const creditKeyMap = {
+      standard: 'consultation',
+      full:     'ancestral_ritual',
+      premium:  'premium_ritual',
+    };
+    const creditKey = creditKeyMap[tier] || 'consultation';
     const cost = CREDIT_COSTS[creditKey];
 
     if ((credits ?? 0) < cost) {
@@ -871,13 +907,18 @@ function App() {
     flashCredit(-cost);
 
     setConsultTier(tier);
+    if (tier === 'premium') setVoiceProfile(voiceProfileChoice);
     setLoading(false);
 
     if (revealedStage > 0) {
       const fullText = Array.isArray(interpretation.narrativaAncestral)
         ? interpretation.narrativaAncestral[revealedStage - 1]
         : interpretation.narrativaAncestral;
-      speakText(fullText, language, () => setCanProceed(true));
+      if (tier === 'premium' && voiceProfileChoice) {
+        speakPremium(fullText, voiceProfileChoice, language, () => setCanProceed(true));
+      } else {
+        speakText(fullText, language, () => setCanProceed(true));
+      }
     }
 
     trackEvent('reading_unlocked', { tier, credits_spent: cost }, authSession);
@@ -921,7 +962,7 @@ function App() {
             ? prefix + textToRead
             : prefix + textToRead.split('. ')[0] + '.';
           setCanProceed(false);
-          speakText(audioText, language, () => setCanProceed(true));
+          narrate(audioText, language, () => setCanProceed(true));
         }
       }, Math.floor(Math.random() * 2000) + 3000);
     } else {
@@ -942,12 +983,17 @@ function App() {
             setShowDebug(true);
           }
           // Small pause so the transition from loading to content feels ceremonial
+          const currentTier = consultTier; // capture before async gap
           setTimeout(() => {
             setAnchoringLoading(false);
-            const synthText = consultTier !== null
+            const synthText = currentTier !== null
               ? `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`
               : `${translations.ui.great_synthesis.replace('{name}', userName)} ${(finalSynthesis.conclusionFinal || '').split('. ')[0]}.`;
-            speakText(synthText, language);
+            narrate(synthText, language);
+            // Auto-send email for Premium tier (no credit deduction, no user action needed)
+            if (currentTier === 'premium' && authSession) {
+              handleSendSynthesis({ silent: true });
+            }
           }, 500);
         })
         .catch(error => {
@@ -966,7 +1012,7 @@ function App() {
   // -------------- DEEPENING FLOW HANDLERS --------------
   const initDeepening = async (cardId) => {
     // Full tier: deepening gratis para las 3 cartas
-    if (consultTier === 'full') {
+    if (consultTier === 'full' || consultTier === 'premium') {
       setClarifications(prev => ({
         ...prev,
         [cardId]: { step: 'question', question: '', extraCard: null, extraResponse: '' }
@@ -1007,7 +1053,7 @@ function App() {
   const submitDeepenQuestion = (cardId, questionText) => {
     if (!questionText.trim()) { showToast(translations.ui.revelation_confession, 'warning'); return; }
     setIsFading(true);
-    speakText(translations.ui.deepen_loading, language);
+    narrate(translations.ui.deepen_loading, language);
     setTimeout(() => {
       setClarifications(prev => ({
         ...prev,
@@ -1024,7 +1070,7 @@ function App() {
       ...prev,
       [cardId]: { ...prev[cardId], extraCard, step: 'loading' }
     }));
-    speakText(translations.ui.deepen_loading, language);
+    narrate(translations.ui.deepen_loading, language);
 
     // Wait 4-5 seconds (ceremonial pause), then call API
     const ceremonyDelay = Math.floor(Math.random() * 1000) + 4000;
@@ -1054,7 +1100,7 @@ function App() {
           setShowDebug(true);
         }
         // Voice reads: only the deepening whisper
-        speakText(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
+        narrate(`${translations.ui.deepen_subtitle}. ${finalResponse}`, language);
       } catch (e) {
         console.error("Deepening failed:", e);
         setDeepeningActive(null);
@@ -1062,7 +1108,7 @@ function App() {
           ...prev,
           [cardId]: { ...prev[cardId], extraResponse: translations.ui.oracle_misfire, step: 'done' }
         }));
-        speakText(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
+        narrate(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
       }
     }
   };
@@ -1735,9 +1781,9 @@ function App() {
                                            💎 {CREDIT_COSTS.deepening} {translations.ui.credits_label || 'créditos'}
                                          </p>
                                        )}
-                                       {consultTier === 'full' && (
+                                       {(consultTier === 'full' || consultTier === 'premium') && (
                                          <p style={{ color: 'rgba(167,139,250,0.7)', fontSize: '0.75rem', margin: 0, letterSpacing: '1px' }}>
-                                           ✦ Profundización incluida
+                                           {translations.ui.deepening_included || '✦ Profundización incluida'}
                                          </p>
                                        )}
                                        <button className="start-button blinking-button" style={{ fontSize: '0.8rem', padding: '8px 20px'}} disabled={loading} onClick={() => initDeepening(selectedCards[revealedStage-1].id)}>
@@ -1909,7 +1955,7 @@ function App() {
               <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
 
                 {/* Enviar síntesis por email */}
-                {authSession && (
+                {authSession && consultTier !== 'premium' && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <p style={{ color: 'rgba(255,215,0,0.55)', fontSize: '0.78rem', margin: 0, letterSpacing: '1px' }}>
                       💎 {CREDIT_COSTS.synthesis_email} {translations.ui.credits_label || 'créditos'}
@@ -1983,6 +2029,7 @@ function App() {
         credits={credits}
         onShowAuth={() => { setShowUnlockModal(false); setShowAuthModal(true); }}
         onShowPurchase={() => { setShowUnlockModal(false); setShowPurchaseModal(true); }}
+        translations={translations}
       />
       <AuthModal
         isOpen={showAuthModal}
