@@ -519,11 +519,35 @@ function App() {
     setLanguage(lang);
     setVoiceProfile(vp);
 
+    // Ambient greeting (same as handleSelectLanguage)
+    const pool = I18N[lang] || I18N.es;
+    const welcomeMsg = pool.greetings[Math.floor(Math.random() * pool.greetings.length)];
+    speakText(welcomeMsg, lang);
+    trackEvent('session_started', { language: lang, tier, is_guest: !authSession }, authSession);
+
+    // Load saved user data so we can skip already-answered steps
+    let startStep = 1;
+    try {
+      const saved = JSON.parse(localStorage.getItem(ZOLTAR_USER_KEY) || 'null');
+      if (saved?.userName) {
+        setUserName(saved.userName);
+        if (saved.birthDate?.day) {
+          setBirthDate(saved.birthDate);
+          if (saved.birthNarrative) setBirthNarrative(saved.birthNarrative);
+          startStep = 3;
+        } else {
+          startStep = 2;
+        }
+      }
+    } catch (e) { /* ignore */ }
+
     if (tier === 'premium') {
       if (!authSession) {
         setPendingAction({ type: 'landing_premium', tier, voiceProfile: vp });
         setShowAuthModal(true);
         setPhase('threshold');
+        setThresholdStep(startStep);
+        setCanProceed(true);
         return;
       }
       deductCredits(authSession, 'premium_ritual').then(result => {
@@ -563,6 +587,8 @@ function App() {
     }
 
     setPhase('threshold');
+    setThresholdStep(startStep);
+    setCanProceed(true);
   };
 
   const handleSelectLanguage = (lang) => {

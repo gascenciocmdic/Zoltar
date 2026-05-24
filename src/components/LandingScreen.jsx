@@ -30,20 +30,15 @@ const LANDING_I18N = {
     ],
     cta: '✦ Iniciar mi lectura',
     hook: '100 créditos gratis al registrarte · Sin tarjeta requerida',
-    configure_title: '✦ Configura tu experiencia',
-    reading_label: 'Lectura',
-    voice_label: 'Voz',
-    begin_btn: '✦ Comenzar',
-    tiers: [
-      { id: 'standard', label: 'Estándar',   credits: '40 cr',  desc: '3 cartas · voz del sistema' },
-      { id: 'full',     label: 'Completa',   credits: '65 cr',  desc: '+ profundización · voz sistema' },
-      { id: 'premium',  label: 'Premium ✨', credits: '100 cr', desc: 'voz premium · email incluido' },
-    ],
+    configure_title: 'Elige la voz de tu Oráculo',
+    voice_subtitle: 'Selecciona la energía que guiará tu lectura',
     voices: [
-      { id: 'masculine', label: '🌌 Masculina', desc: 'Energías del universo' },
-      { id: 'feminine',  label: '🌸 Femenina',  desc: 'Espíritu ancestral' },
+      { id: 'masculine', label: '🌌 Masculina', desc: 'Energías cósmicas del universo' },
+      { id: 'feminine',  label: '🌸 Femenina',  desc: 'Espíritu ancestral sanador' },
     ],
-    voice_premium_note: 'La voz ElevenLabs se activa con el tier Premium',
+    begin_btn: '✦ Comenzar',
+    premium_cta: 'Experiencia Premium ✨',
+    premium_desc: 'Voz ElevenLabs · email con tu síntesis · requiere cuenta',
     packages: [
       { label: 'Iniciado',   credits: '150 cr',  price: '$4.99' },
       { label: 'Explorador', credits: '400 cr',  price: '$9.99',  popular: true },
@@ -80,20 +75,15 @@ const LANDING_I18N = {
     ],
     cta: '✦ Start my reading',
     hook: '100 free credits when you register · No card required',
-    configure_title: '✦ Configure your experience',
-    reading_label: 'Reading',
-    voice_label: 'Voice',
-    begin_btn: '✦ Begin',
-    tiers: [
-      { id: 'standard', label: 'Standard',   credits: '40 cr',  desc: '3 cards · system voice' },
-      { id: 'full',     label: 'Full',       credits: '65 cr',  desc: '+ deepening · system voice' },
-      { id: 'premium',  label: 'Premium ✨', credits: '100 cr', desc: 'premium voice · email included' },
-    ],
+    configure_title: 'Choose your Oracle\'s voice',
+    voice_subtitle: 'Select the energy that will guide your reading',
     voices: [
-      { id: 'masculine', label: '🌌 Masculine', desc: 'Universe energies' },
-      { id: 'feminine',  label: '🌸 Feminine',  desc: 'Ancestral spirit' },
+      { id: 'masculine', label: '🌌 Masculine', desc: 'Cosmic universe energies' },
+      { id: 'feminine',  label: '🌸 Feminine',  desc: 'Healing ancestral spirit' },
     ],
-    voice_premium_note: 'ElevenLabs voice activates with the Premium tier',
+    begin_btn: '✦ Begin',
+    premium_cta: 'Premium Experience ✨',
+    premium_desc: 'ElevenLabs voice · synthesis email · requires account',
     packages: [
       { label: 'Initiate', credits: '150 cr',  price: '$4.99' },
       { label: 'Explorer', credits: '400 cr',  price: '$9.99',  popular: true },
@@ -130,20 +120,15 @@ const LANDING_I18N = {
     ],
     cta: '✦ Iniciar minha leitura',
     hook: '100 créditos grátis ao se registrar · Sem cartão necessário',
-    configure_title: '✦ Configure sua experiência',
-    reading_label: 'Leitura',
-    voice_label: 'Voz',
-    begin_btn: '✦ Começar',
-    tiers: [
-      { id: 'standard', label: 'Iniciante',  credits: '40 cr',  desc: '3 cartas · voz do sistema' },
-      { id: 'full',     label: 'Completo',   credits: '65 cr',  desc: '+ aprofundamento · voz sistema' },
-      { id: 'premium',  label: 'Premium ✨', credits: '100 cr', desc: 'voz premium · e-mail incluído' },
-    ],
+    configure_title: 'Escolha a voz do seu Oráculo',
+    voice_subtitle: 'Selecione a energia que guiará sua leitura',
     voices: [
-      { id: 'masculine', label: '🌌 Masculina', desc: 'Energias do universo' },
-      { id: 'feminine',  label: '🌸 Feminina',  desc: 'Espírito ancestral' },
+      { id: 'masculine', label: '🌌 Masculina', desc: 'Energias cósmicas do universo' },
+      { id: 'feminine',  label: '🌸 Feminina',  desc: 'Espírito ancestral curador' },
     ],
-    voice_premium_note: 'A voz ElevenLabs é ativada com o tier Premium',
+    begin_btn: '✦ Começar',
+    premium_cta: 'Experiência Premium ✨',
+    premium_desc: 'Voz ElevenLabs · e-mail com síntese · requer conta',
     packages: [
       { label: 'Iniciante',  credits: '150 cr',  price: '$4.99' },
       { label: 'Explorador', credits: '400 cr',  price: '$9.99',  popular: true },
@@ -164,7 +149,6 @@ export default function LandingScreen({ onEnter }) {
   const [entered, setEntered] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en'); // default English
   const [step, setStep] = useState('landing'); // 'landing' | 'configure'
-  const [selectedTier, setSelectedTier] = useState('standard');
   const [selectedVoice, setSelectedVoice] = useState('feminine');
 
   // Active translation set
@@ -195,7 +179,12 @@ export default function LandingScreen({ onEnter }) {
 
   function handleBegin() {
     setEntered(true);
-    setTimeout(() => onEnter({ language: selectedLang, tier: selectedTier, voiceProfile: selectedVoice }), 400);
+    setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: selectedVoice }), 400);
+  }
+
+  function handlePremium() {
+    setEntered(true);
+    setTimeout(() => onEnter({ language: selectedLang, tier: 'premium', voiceProfile: selectedVoice }), 400);
   }
 
   // ── Theme-dependent design tokens ────────────────────────────────────────
@@ -243,15 +232,16 @@ export default function LandingScreen({ onEnter }) {
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      {/* ── Configure step — appears when user clicks Start ── */}
+      {/* ── Configure step — voice selection only ── */}
       {step === 'configure' && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 10,
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '80px 20px 32px',
+          justifyContent: 'center', padding: '80px 20px 40px',
           background: bg, backdropFilter: 'blur(8px)',
           overflowY: 'auto',
         }}>
+          {/* Back button */}
           <button
             onClick={() => setStep('landing')}
             style={{
@@ -263,101 +253,87 @@ export default function LandingScreen({ onEnter }) {
             ←
           </button>
 
+          {/* Title */}
           <h2 style={{
-            color: titleColor, fontSize: 'clamp(1rem, 3vw, 1.4rem)',
-            fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-            marginBottom: 24, fontFamily: 'Georgia, serif',
+            color: titleColor, fontSize: 'clamp(1.05rem, 3vw, 1.45rem)',
+            fontWeight: 800, letterSpacing: '0.06em',
+            marginBottom: 6, fontFamily: 'Georgia, serif', textAlign: 'center',
           }}>
             {t.configure_title}
           </h2>
+          <p style={{
+            color: taglineColor, fontSize: 13, fontStyle: 'italic',
+            marginBottom: 28, textAlign: 'center',
+          }}>
+            {t.voice_subtitle}
+          </p>
 
-          {/* Reading tier selector */}
-          <div style={{ width: '100%', maxWidth: 500, marginBottom: 20 }}>
-            <p style={{
-              color: taglineColor, fontSize: 12, letterSpacing: '2px',
-              textTransform: 'uppercase', marginBottom: 10,
-              fontWeight: 700, textAlign: 'center',
-            }}>
-              {t.reading_label}
-            </p>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {t.tiers.map(tier => (
-                <div
-                  key={tier.id}
-                  onClick={() => setSelectedTier(tier.id)}
-                  style={{
-                    background: selectedTier === tier.id
-                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
-                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
-                    border: `1.5px solid ${selectedTier === tier.id
-                      ? (isLight ? 'rgba(124,111,160,0.7)' : 'rgba(167,139,250,0.7)')
-                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
-                    borderRadius: 14, padding: '12px 14px',
-                    cursor: 'pointer', textAlign: 'center',
-                    flex: '1 1 120px', maxWidth: 160, transition: 'all 0.2s',
-                  }}
-                >
-                  <div style={{ color: priceColor, fontWeight: 800, fontSize: 15 }}>{tier.credits}</div>
-                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 12, margin: '4px 0 2px' }}>{tier.label}</div>
-                  <div style={{ color: pillDescColor, fontSize: 10, lineHeight: 1.4 }}>{tier.desc}</div>
+          {/* Voice cards — big, centered, no prices */}
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 28, width: '100%', maxWidth: 420 }}>
+            {t.voices.map(voice => (
+              <div
+                key={voice.id}
+                onClick={() => setSelectedVoice(voice.id)}
+                style={{
+                  background: selectedVoice === voice.id
+                    ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
+                    : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
+                  border: `2px solid ${selectedVoice === voice.id
+                    ? (isLight ? 'rgba(124,111,160,0.75)' : 'rgba(167,139,250,0.75)')
+                    : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
+                  borderRadius: 18, padding: '20px 24px',
+                  cursor: 'pointer', textAlign: 'center',
+                  flex: '1 1 150px', maxWidth: 200,
+                  transition: 'all 0.2s',
+                  boxShadow: selectedVoice === voice.id
+                    ? (isLight ? '0 4px 20px rgba(124,111,160,0.25)' : '0 4px 20px rgba(124,58,237,0.3)')
+                    : 'none',
+                }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{voice.id === 'masculine' ? '🌌' : '🌸'}</div>
+                <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 14 }}>
+                  {voice.label.replace('🌌 ', '').replace('🌸 ', '')}
                 </div>
-              ))}
-            </div>
+                <div style={{ color: pillDescColor, fontSize: 11, marginTop: 5, lineHeight: 1.4 }}>{voice.desc}</div>
+              </div>
+            ))}
           </div>
 
-          {/* Voice selector */}
-          <div style={{ width: '100%', maxWidth: 500, marginBottom: 20 }}>
-            <p style={{
-              color: taglineColor, fontSize: 12, letterSpacing: '2px',
-              textTransform: 'uppercase', marginBottom: 10,
-              fontWeight: 700, textAlign: 'center',
-            }}>
-              {t.voice_label}
-            </p>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-              {t.voices.map(voice => (
-                <div
-                  key={voice.id}
-                  onClick={() => setSelectedVoice(voice.id)}
-                  style={{
-                    background: selectedVoice === voice.id
-                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
-                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
-                    border: `1.5px solid ${selectedVoice === voice.id
-                      ? (isLight ? 'rgba(124,111,160,0.7)' : 'rgba(167,139,250,0.7)')
-                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
-                    borderRadius: 14, padding: '12px 20px',
-                    cursor: 'pointer', textAlign: 'center',
-                    flex: '1 1 140px', maxWidth: 200, transition: 'all 0.2s',
-                  }}
-                >
-                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 13 }}>{voice.label}</div>
-                  <div style={{ color: pillDescColor, fontSize: 11, marginTop: 4 }}>{voice.desc}</div>
-                </div>
-              ))}
-            </div>
-            {selectedTier !== 'premium' && (
-              <p style={{
-                color: taglineColor, fontSize: 10, fontStyle: 'italic',
-                marginTop: 8, textAlign: 'center',
-              }}>
-                {t.voice_premium_note}
-              </p>
-            )}
-          </div>
-
+          {/* Begin (standard) */}
           <button
             onClick={handleBegin}
             style={{
               background: ctaBg, border: `1px solid ${ctaBorder}`,
-              borderRadius: 50, padding: '14px 44px',
+              borderRadius: 50, padding: '15px 48px',
               color: '#fff', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
               fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
               boxShadow: ctaShadow, fontFamily: 'inherit',
+              marginBottom: 16,
             }}
           >
             {t.begin_btn}
           </button>
+
+          {/* Premium shortcut — triggers auth + premium flow */}
+          <button
+            onClick={handlePremium}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${isLight ? 'rgba(184,134,11,0.4)' : 'rgba(255,215,0,0.35)'}`,
+              borderRadius: 50, padding: '10px 28px',
+              color: isLight ? '#b8860b' : '#ffd700',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              letterSpacing: '0.04em', fontFamily: 'inherit',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = isLight ? 'rgba(184,134,11,0.08)' : 'rgba(255,215,0,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+          >
+            {t.premium_cta}
+          </button>
+          <p style={{ color: pillDescColor, fontSize: 10, marginTop: 6, textAlign: 'center', fontStyle: 'italic' }}>
+            {t.premium_desc}
+          </p>
         </div>
       )}
 
