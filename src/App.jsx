@@ -983,14 +983,15 @@ function App() {
             setShowDebug(true);
           }
           // Small pause so the transition from loading to content feels ceremonial
+          const currentTier = consultTier; // capture before async gap
           setTimeout(() => {
             setAnchoringLoading(false);
-            const synthText = consultTier !== null
+            const synthText = currentTier !== null
               ? `${translations.ui.great_synthesis.replace('{name}', userName)} ${finalSynthesis.conclusionFinal || ''} ${translations.ui.healing_decree}: ${finalSynthesis.decreto || translations.ui.default_decree}. ${translations.ui.earthly_task}: ${finalSynthesis.tarea_terrenal || translations.ui.default_task}`
               : `${translations.ui.great_synthesis.replace('{name}', userName)} ${(finalSynthesis.conclusionFinal || '').split('. ')[0]}.`;
             narrate(synthText, language);
             // Auto-send email for Premium tier (no credit deduction, no user action needed)
-            if (consultTier === 'premium' && authSession) {
+            if (currentTier === 'premium' && authSession) {
               handleSendSynthesis({ silent: true });
             }
           }, 500);
@@ -1052,7 +1053,7 @@ function App() {
   const submitDeepenQuestion = (cardId, questionText) => {
     if (!questionText.trim()) { showToast(translations.ui.revelation_confession, 'warning'); return; }
     setIsFading(true);
-    speakText(translations.ui.deepen_loading, language);
+    narrate(translations.ui.deepen_loading, language);
     setTimeout(() => {
       setClarifications(prev => ({
         ...prev,
@@ -1069,7 +1070,7 @@ function App() {
       ...prev,
       [cardId]: { ...prev[cardId], extraCard, step: 'loading' }
     }));
-    speakText(translations.ui.deepen_loading, language);
+    narrate(translations.ui.deepen_loading, language);
 
     // Wait 4-5 seconds (ceremonial pause), then call API
     const ceremonyDelay = Math.floor(Math.random() * 1000) + 4000;
