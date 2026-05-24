@@ -1555,18 +1555,13 @@ function App() {
             <ConstellationCanvas seed={birthNarrative?.sign || interpretation?.constelacion || userName} />
           </div>
 
-          {/* Narrativa astrológica basada en fecha de nacimiento */}
           {birthNarrative && (
-            <div className="narrative-container" style={{ margin: '0 auto 10px auto', maxWidth: '620px' }}>
-              <div className="brain-bubble narrative fade-in-text astral-bubble" style={{ borderLeftColor: '#a78bfa', background: 'linear-gradient(135deg,rgba(124,58,237,0.08),rgba(20,22,28,0))' }}>
-                <p className="narrative-meta" style={{ color: '#c084fc', fontSize: '0.78rem', marginBottom: '8px', letterSpacing: '1px' }}>
-                  ✦ {birthNarrative.element} · {birthNarrative.ruler} ✦
-                </p>
-                <p style={{ fontStyle: 'italic', lineHeight: '1.7', color: '#e5e4e7', margin: 0, fontSize: '0.93rem' }}>
-                  <span className="reveal-text">{birthNarrative.narrative}</span>
-                </p>
-              </div>
-            </div>
+            <p className="narrative-meta fade-in-text" style={{
+              color: '#c084fc', fontSize: '0.78rem', letterSpacing: '1px',
+              textAlign: 'center', margin: '4px 0 12px',
+            }}>
+              {birthNarrative.symbol} {birthNarrative.sign} · {birthNarrative.element} · {birthNarrative.ruler}
+            </p>
           )}
 
           {loading ? (
