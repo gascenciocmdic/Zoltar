@@ -128,6 +128,13 @@ export const speakPremium = async (text, voiceProfile = 'masculine', lang = 'es'
     return;
   }
 
+  // Pre-create and register the Audio element BEFORE any await so it is
+  // associated with the current user-gesture context.  Browsers (especially
+  // Safari) block audio.play() that is called after an async gap unless the
+  // audio element was created within the original gesture.
+  const audio = new Audio();
+  premiumAudio = audio;
+
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
@@ -137,10 +144,11 @@ export const speakPremium = async (text, voiceProfile = 'masculine', lang = 'es'
 
     if (!res.ok) throw new Error(`TTS HTTP ${res.status}`);
 
-    const blob  = await res.blob();
-    const url   = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    premiumAudio = audio;
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+
+    // Assign src after fetch so we can reuse the pre-created element
+    audio.src = url;
 
     audio.onended = () => {
       URL.revokeObjectURL(url);
@@ -157,6 +165,7 @@ export const speakPremium = async (text, voiceProfile = 'masculine', lang = 'es'
     await audio.play();
   } catch (e) {
     console.warn('[speakPremium] ElevenLabs unavailable, falling back to speakText:', e.message);
+    premiumAudio = null;
     speakText(text, lang, onEnd);
   }
 };

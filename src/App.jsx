@@ -183,7 +183,10 @@ function App() {
 
   useEffect(() => {
     initSpeech(language);
-    return () => { stopSpeech(); stopAmbient(); };
+    // Only stop speech synthesis on language change — ambient music is
+    // session-wide and must NOT be stopped here (stopAmbient belongs only
+    // in handleNewConsultation when the user explicitly exits the portal).
+    return () => { stopSpeech(); };
   }, [language]);
 
   useEffect(() => {
@@ -519,10 +522,11 @@ function App() {
     setLanguage(lang);
     setVoiceProfile(vp);
 
-    // Initialise Web Speech API from within a user gesture (button click on landing)
+    // initSpeech() and startAmbientMusic() are now called synchronously from
+    // LandingScreen's click handlers BEFORE this setTimeout-delayed function runs.
+    // Calling them here again is safe (both are idempotent) but the critical
+    // first call must happen within the actual user gesture, not inside setTimeout.
     initSpeech();
-    // Start hypnotic ambient loop — was previously tied to old "Entrar al Portal" button
-    startAmbientMusic();
 
     // Ambient greeting (same as handleSelectLanguage)
     const pool = I18N[lang] || I18N.es;
@@ -555,16 +559,20 @@ function App() {
         setCanProceed(true);
         return;
       }
+      // Set consultTier optimistically so narrate() routes to ElevenLabs immediately
+      // (before the deductCredits network round-trip completes). If the charge fails,
+      // we revert below.
+      setConsultTier('premium');
       deductCredits(authSession, 'premium_ritual').then(result => {
         if (result.ok) {
           setCredits(result.credits);
           flashCredit(-100);
-          setConsultTier('premium');
+          // consultTier already 'premium' — nothing to change
         } else {
           showToast(`Créditos insuficientes para Premium (necesitas 100 cr).`);
-          setConsultTier(null);
+          setConsultTier(null); // revert optimistic set
         }
-      }).catch(() => setConsultTier(null));
+      }).catch(() => setConsultTier(null)); // revert on network error
     } else if (tier === 'full') {
       if (authSession) {
         deductCredits(authSession, 'ancestral_ritual').then(result => {
@@ -808,7 +816,7 @@ function App() {
     }
     setLoading(true);
     setVibe('karmic_red');
-    speakText(sessionTexts.waitMsg, language);
+    narrate(sessionTexts.waitMsg, language);
     try {
        const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
        const userContext = { name: userName, birthDate: bdStr, reason: visitReason };
@@ -837,7 +845,7 @@ function App() {
   const handleStartRevelation = async ({ introspectionAnswer = '' } = {}) => {
     setLoading(true);
     setVibe('karmic_red');
-    speakText(sessionTexts.waitMsg, language);
+    narrate(sessionTexts.waitMsg, language);
 
     // Snapshot the tier the user already paid for BEFORE entering the async gap.
     // handleStartRevelation must never silently overwrite a paid tier.
@@ -912,7 +920,7 @@ function App() {
 
     setLoading(true);
     setVibe('karmic_red');
-    speakText(sessionTexts.waitMsg, language);
+    narrate(sessionTexts.waitMsg, language);
 
     try {
       const resultDeduct = await deductCredits(authSession, tier);
@@ -992,7 +1000,7 @@ function App() {
     setShowUnlockModal(false);
     setLoading(true);
     setVibe('karmic_red');
-    speakText(sessionTexts.waitMsg, language);
+    narrate(sessionTexts.waitMsg, language);
 
     let resultDeduct;
     try {
@@ -1132,7 +1140,7 @@ function App() {
                 .then(data => {
                   if (data.ok) {
                     setSynthEmailState('sent');
-                    showToast(`📧 ${translations.ui.synthesis_sent || '¡Síntesis enviada a tu correo!'}`);
+                    showToast(`📧 ${translations.ui.synthesis_sent || '¡Síntesis enviada a tu correo!'}`, 'success');
                   } else {
                     console.error('[premium auto-email] API error:', data);
                     showToast(`📧 ${translations.ui.synthesis_error || 'No se pudo enviar el email de síntesis'}`);

@@ -1,13 +1,23 @@
 export const maxDuration = 60;
 
+// 4 premium voices from the Zoltar ElevenLabs agent
 const VOICE_IDS = {
-  masculine: process.env.ELEVENLABS_VOICE_ID_MALE   || 'ErXwobaYiN019PkySvjV', // Antoni
-  feminine:  process.env.ELEVENLABS_VOICE_ID_FEMALE || 'EXAVITQu4vr4xnSDxMaL', // Bella
+  masculine_1: 'cjVigY5qzO86Huf0OWal', // Eric — natural masculine
+  masculine_2: 'fbIG6gEosVIM95R5qOna', // Deep Calm Zolta — deep & mystical
+  feminine_1:  'SaqYcK3ZpDKBAImA8AdW', // Fem Smooth Voice — ethereal feminine
+  feminine_2:  'qBDvhofpxp92JgXJxDjB', // Empathy fem voice — warm feminine
+  // Legacy fallbacks for any old sessions that stored 'masculine'/'feminine'
+  masculine:   'cjVigY5qzO86Huf0OWal',
+  feminine:    'SaqYcK3ZpDKBAImA8AdW',
 };
 
 const VOICE_SETTINGS = {
-  masculine: { stability: 0.72, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true },
-  feminine:  { stability: 0.65, similarity_boost: 0.85, style: 0.20, use_speaker_boost: true },
+  masculine_1: { stability: 0.72, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true },
+  masculine_2: { stability: 0.82, similarity_boost: 0.75, style: 0.08, use_speaker_boost: true },
+  feminine_1:  { stability: 0.65, similarity_boost: 0.85, style: 0.20, use_speaker_boost: true },
+  feminine_2:  { stability: 0.60, similarity_boost: 0.88, style: 0.28, use_speaker_boost: true },
+  masculine:   { stability: 0.72, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true },
+  feminine:    { stability: 0.65, similarity_boost: 0.85, style: 0.20, use_speaker_boost: true },
 };
 
 export default async function handler(req, res) {
@@ -26,8 +36,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing or empty text field.' });
   }
 
-  const profile = voiceProfile === 'feminine' ? 'feminine' : 'masculine';
-  const voiceId       = VOICE_IDS[profile];
+  // Accept any of the 4 voice profiles; fall back to masculine_1 for unknowns
+  const profile = VOICE_IDS[voiceProfile] ? voiceProfile : 'masculine_1';
+  const voiceId        = VOICE_IDS[profile];
   const voice_settings = VOICE_SETTINGS[profile];
   const modelId = 'eleven_multilingual_v2';
 

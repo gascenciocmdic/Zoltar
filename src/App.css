@@ -2548,6 +2548,8 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   padding: 4px;
   gap: 0;
   margin: 1.5rem auto 1.75rem;
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
 }
 
 .dichotomy-option {
@@ -2562,6 +2564,29 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   letter-spacing: 0.5px;
   transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .dichotomy-toggle {
+    flex-direction: column;
+    width: calc(100vw - 48px);
+    max-width: 320px;
+    border-radius: 20px;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .dichotomy-option {
+    padding: 11px 16px;
+    font-size: 0.84rem;
+    text-align: center;
+    border-radius: 14px;
+    white-space: normal;
+  }
+
+  .dichotomy-option.dichotomy-active {
+    border-radius: 14px;
+  }
 }
 
 .dichotomy-option.dichotomy-active {

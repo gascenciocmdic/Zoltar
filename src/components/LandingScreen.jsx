@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../lib/themeContext';
+import { startAmbientMusic, initSpeech } from '../utils/speech';
 import logoDark from '../assets/Logo_Zoltar_oscuro.png';
 import logoClaro from '../assets/Logo_Zoltar_claro.png';
 
@@ -33,8 +34,10 @@ const LANDING_I18N = {
     configure_title: 'Elige la voz de tu Oráculo',
     voice_subtitle: 'Selecciona la energía que guiará tu lectura',
     voices: [
-      { id: 'masculine', label: '🌌 Masculina', desc: 'Energías cósmicas del universo' },
-      { id: 'feminine',  label: '🌸 Femenina',  desc: 'Espíritu ancestral sanador' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural y serena' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda y mística' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Voz femenina etérea y sanadora' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz femenina cálida y compasiva' },
     ],
     begin_btn: '✦ Comenzar',
     premium_cta: 'Experiencia Premium ✨',
@@ -78,8 +81,10 @@ const LANDING_I18N = {
     configure_title: 'Choose your Oracle\'s voice',
     voice_subtitle: 'Select the energy that will guide your reading',
     voices: [
-      { id: 'masculine', label: '🌌 Masculine', desc: 'Cosmic universe energies' },
-      { id: 'feminine',  label: '🌸 Feminine',  desc: 'Healing ancestral spirit' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Natural, serene masculine voice' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Deep, profound and mystical voice' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Ethereal, healing feminine voice' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Warm, compassionate feminine voice' },
     ],
     begin_btn: '✦ Begin',
     premium_cta: 'Premium Experience ✨',
@@ -123,8 +128,10 @@ const LANDING_I18N = {
     configure_title: 'Escolha a voz do seu Oráculo',
     voice_subtitle: 'Selecione a energia que guiará sua leitura',
     voices: [
-      { id: 'masculine', label: '🌌 Masculina', desc: 'Energias cósmicas do universo' },
-      { id: 'feminine',  label: '🌸 Feminina',  desc: 'Espírito ancestral curador' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural e serena' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda e mística' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Voz feminina etérea e curadora' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz feminina calorosa e compassiva' },
     ],
     begin_btn: '✦ Começar',
     premium_cta: 'Experiência Premium ✨',
@@ -149,7 +156,7 @@ export default function LandingScreen({ onEnter }) {
   const [entered, setEntered] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en'); // default English
   const [step, setStep] = useState('landing'); // 'landing' | 'configure'
-  const [selectedVoice, setSelectedVoice] = useState('feminine');
+  const [selectedVoice, setSelectedVoice] = useState('feminine_1');
 
   // Active translation set
   const t = LANDING_I18N[selectedLang] || LANDING_I18N.en;
@@ -179,11 +186,18 @@ export default function LandingScreen({ onEnter }) {
 
   function handleBegin() {
     setEntered(true);
+    // Must call audio APIs synchronously within the user gesture to satisfy
+    // browser autoplay policy — BEFORE the animation setTimeout.
+    initSpeech();
+    startAmbientMusic();
     setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: selectedVoice }), 400);
   }
 
   function handlePremium() {
     setEntered(true);
+    // Same as above — unlock ambient music from within the click handler.
+    initSpeech();
+    startAmbientMusic();
     setTimeout(() => onEnter({ language: selectedLang, tier: 'premium', voiceProfile: selectedVoice }), 400);
   }
 
@@ -268,35 +282,46 @@ export default function LandingScreen({ onEnter }) {
             {t.voice_subtitle}
           </p>
 
-          {/* Voice cards — big, centered, no prices */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 28, width: '100%', maxWidth: 420 }}>
-            {t.voices.map(voice => (
-              <div
-                key={voice.id}
-                onClick={() => setSelectedVoice(voice.id)}
-                style={{
-                  background: selectedVoice === voice.id
-                    ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
-                    : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
-                  border: `2px solid ${selectedVoice === voice.id
-                    ? (isLight ? 'rgba(124,111,160,0.75)' : 'rgba(167,139,250,0.75)')
-                    : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
-                  borderRadius: 18, padding: '20px 24px',
-                  cursor: 'pointer', textAlign: 'center',
-                  flex: '1 1 150px', maxWidth: 200,
-                  transition: 'all 0.2s',
-                  boxShadow: selectedVoice === voice.id
-                    ? (isLight ? '0 4px 20px rgba(124,111,160,0.25)' : '0 4px 20px rgba(124,58,237,0.3)')
-                    : 'none',
-                }}
-              >
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{voice.id === 'masculine' ? '🌌' : '🌸'}</div>
-                <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 14 }}>
-                  {voice.label.replace('🌌 ', '').replace('🌸 ', '')}
+          {/* Voice cards — 2×2 grid for 4 voices */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 10,
+            marginBottom: 28,
+            width: '100%',
+            maxWidth: 400,
+          }}>
+            {t.voices.map(voice => {
+              const isSelected = selectedVoice === voice.id;
+              // Extract emoji (first grapheme) and name separately
+              const parts = voice.label.split(' ');
+              const icon = parts[0];
+              const name = parts.slice(1).join(' ');
+              return (
+                <div
+                  key={voice.id}
+                  onClick={() => setSelectedVoice(voice.id)}
+                  style={{
+                    background: isSelected
+                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
+                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
+                    border: `2px solid ${isSelected
+                      ? (isLight ? 'rgba(124,111,160,0.75)' : 'rgba(167,139,250,0.75)')
+                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
+                    borderRadius: 16, padding: '14px 12px',
+                    cursor: 'pointer', textAlign: 'center',
+                    transition: 'all 0.2s',
+                    boxShadow: isSelected
+                      ? (isLight ? '0 4px 20px rgba(124,111,160,0.25)' : '0 4px 20px rgba(124,58,237,0.3)')
+                      : 'none',
+                  }}
+                >
+                  <div style={{ fontSize: 28, marginBottom: 6 }}>{icon}</div>
+                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 13 }}>{name}</div>
+                  <div style={{ color: pillDescColor, fontSize: 10, marginTop: 4, lineHeight: 1.4 }}>{voice.desc}</div>
                 </div>
-                <div style={{ color: pillDescColor, fontSize: 11, marginTop: 5, lineHeight: 1.4 }}>{voice.desc}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Begin (standard) */}
