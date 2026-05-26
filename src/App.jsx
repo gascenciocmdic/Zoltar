@@ -2235,6 +2235,7 @@ function App() {
         onShowAuth={() => { setShowUnlockModal(false); setShowAuthModal(true); }}
         onShowPurchase={() => { setShowUnlockModal(false); setShowPurchaseModal(true); }}
         translations={translations}
+        language={language}
       />
       <AuthModal
         isOpen={showAuthModal}

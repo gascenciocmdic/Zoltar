@@ -2,6 +2,28 @@ import { useState } from 'react';
 import { CREDIT_COSTS } from '../lib/credits.js';
 import { useTheme } from '../lib/themeContext';
 
+// The 4 ElevenLabs premium voices — same IDs as api/tts.js VOICE_IDS
+const PREMIUM_VOICES = {
+  es: [
+    { id: 'masculine_1', emoji: '🌌', name: 'Eric, Default',  desc: 'Voz masculina natural y serena' },
+    { id: 'masculine_2', emoji: '🔮', name: 'Zoltar, Calm',   desc: 'Voz grave, profunda y mística' },
+    { id: 'feminine_1',  emoji: '🌸', name: 'Jane, Smooth',   desc: 'Voz femenina etérea y sanadora' },
+    { id: 'feminine_2',  emoji: '💜', name: 'Lly, Empathy',   desc: 'Voz femenina cálida y compasiva' },
+  ],
+  en: [
+    { id: 'masculine_1', emoji: '🌌', name: 'Eric, Default',  desc: 'Natural, serene masculine voice' },
+    { id: 'masculine_2', emoji: '🔮', name: 'Zoltar, Calm',   desc: 'Deep, profound and mystical voice' },
+    { id: 'feminine_1',  emoji: '🌸', name: 'Jane, Smooth',   desc: 'Ethereal, healing feminine voice' },
+    { id: 'feminine_2',  emoji: '💜', name: 'Lly, Empathy',   desc: 'Warm, compassionate feminine voice' },
+  ],
+  pt: [
+    { id: 'masculine_1', emoji: '🌌', name: 'Eric, Default',  desc: 'Voz masculina natural e serena' },
+    { id: 'masculine_2', emoji: '🔮', name: 'Zoltar, Calm',   desc: 'Voz grave, profunda e mística' },
+    { id: 'feminine_1',  emoji: '🌸', name: 'Jane, Smooth',   desc: 'Voz feminina etérea e curadora' },
+    { id: 'feminine_2',  emoji: '💜', name: 'Lly, Empathy',   desc: 'Voz feminina calorosa e compassiva' },
+  ],
+};
+
 export default function UnlockModal({
   isOpen,
   onClose,
@@ -11,6 +33,7 @@ export default function UnlockModal({
   onShowAuth,
   onShowPurchase,
   translations,
+  language = 'es',
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -109,22 +132,31 @@ export default function UnlockModal({
     );
   };
 
-  const voiceCard = (voice, emoji, name, desc) => {
-    const active = selectedVoice === voice;
+  const voices = PREMIUM_VOICES[language] || PREMIUM_VOICES.es;
+
+  const voiceCard = ({ id, emoji, name, desc }) => {
+    const active = selectedVoice === id;
     return (
       <button
-        onClick={() => setSelectedVoice(voice)}
+        key={id}
+        onClick={() => setSelectedVoice(id)}
         style={{
-          flex: 1, background: active ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'rgba(255,255,255,0.04)',
-          border: active ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)',
+          background: active
+            ? (isLight ? 'rgba(124,58,237,0.18)' : 'linear-gradient(135deg,#7c3aed,#a855f7)')
+            : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
+          border: `1.5px solid ${active
+            ? (isLight ? 'rgba(124,58,237,0.7)' : '#a855f7')
+            : (isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.1)')}`,
           borderRadius: 10, padding: '10px 8px', cursor: 'pointer',
-          color: active ? '#fff' : subColor,
+          color: active ? (isLight ? '#4a1d96' : '#fff') : subColor,
           textAlign: 'center', transition: 'all 0.2s',
+          boxShadow: active ? (isLight ? '0 2px 12px rgba(124,58,237,0.2)' : '0 2px 12px rgba(168,85,247,0.3)') : 'none',
         }}
       >
         <div style={{ fontSize: '1.3rem', marginBottom: 4 }}>{emoji}</div>
-        <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 2 }}>{name}</div>
-        <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>{desc}</div>
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, marginBottom: 2,
+          color: active ? (isLight ? '#4a1d96' : '#fff') : (isLight ? '#2d2540' : '#e5e7eb') }}>{name}</div>
+        <div style={{ fontSize: '0.62rem', opacity: 0.8, lineHeight: 1.3 }}>{desc}</div>
       </button>
     );
   };
@@ -177,11 +209,10 @@ export default function UnlockModal({
         {selectedTier === 'premium' && (
           <div style={{ marginBottom: 12, animation: 'fadeIn 0.3s ease' }}>
             <p style={{ color: subColor, fontSize: '0.72rem', margin: '0 0 8px' }}>
-              {ui.voice_choose || 'Elige tu voz'}
+              {ui.voice_choose || 'Elige tu voz premium'}
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {voiceCard('masculine', '🌌', ui.voice_masculine_name || 'Masculina', ui.voice_masculine_desc || 'Energías del universo')}
-              {voiceCard('feminine',  '🌸', ui.voice_feminine_name  || 'Femenina',  ui.voice_feminine_desc  || 'Espíritu ancestral')}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {voices.map(v => voiceCard(v))}
             </div>
           </div>
         )}
