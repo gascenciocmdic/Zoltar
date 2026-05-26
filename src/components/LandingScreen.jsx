@@ -590,38 +590,7 @@ export default function LandingScreen({ onEnter }) {
         ))}
       </div>
 
-      {/* ── Pricing anchor ── */}
-      <div style={{
-        display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center',
-        marginBottom: 20, padding: '0 8px', width: '100%', maxWidth: 420,
-      }}>
-        {t.packages.map((pkg) => (
-          <div key={pkg.label} style={{
-            background: pkg.popular
-              ? (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(124,58,237,0.15)')
-              : (isLight ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.03)'),
-            border: `1px solid ${pkg.popular
-              ? (isLight ? 'rgba(124,111,160,0.4)' : 'rgba(167,139,250,0.4)')
-              : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.08)')}`,
-            borderRadius: 12, padding: '10px 18px', textAlign: 'center', minWidth: 100,
-            position: 'relative', transition: 'background 0.4s, border-color 0.4s',
-          }}>
-            {pkg.popular && (
-              <div style={{
-                position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-                background: isLight ? '#7c6fa0' : '#7c3aed',
-                color: '#fff', fontSize: 10, fontWeight: 700,
-                padding: '2px 10px', borderRadius: 99, letterSpacing: '0.06em', whiteSpace: 'nowrap',
-              }}>
-                {t.most_popular}
-              </div>
-            )}
-            <div style={{ color: priceColor, fontWeight: 800, fontSize: 16, transition: 'color 0.4s' }}>{pkg.price}</div>
-            <div style={{ color: hookColor, fontWeight: 600, fontSize: 12, marginTop: 3, transition: 'color 0.4s' }}>{pkg.readings}</div>
-            <div style={{ color: priceLabelColor, fontSize: 10, marginTop: 1, transition: 'color 0.4s' }}>{pkg.label}</div>
-          </div>
-        ))}
-      </div>
+      {/* ── Pricing anchor — hidden for MVP launch ── */}
 
       {/* ── Footer micro-copy ── */}
       <p style={{

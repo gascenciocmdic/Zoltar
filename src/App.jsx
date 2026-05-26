@@ -66,6 +66,17 @@ function App() {
 
   const translations = useMemo(() => I18N[language] || I18N.es, [language]);
 
+  // Translate card names to the active language before sending to the AI.
+  // In Spanish cards already have their native name; for EN/PT we look up
+  // translations.cards so Gemini receives — and narrates — the right name.
+  const localizeCards = useCallback(
+    (cards) =>
+      language === 'es'
+        ? cards
+        : cards.map(c => ({ ...c, name: translations.cards?.[c.id]?.name || c.name })),
+    [language, translations]
+  );
+
   const sessionTexts = useMemo(() => {
     const pool = I18N[language] || I18N.es;
     return {
@@ -879,7 +890,7 @@ function App() {
 
         // Fetch the full ancestral interpretation — same content regardless of tier;
         // the tier only controls whether the text is visible or blurred in the UI.
-        const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
+        const result = await interpretCards(localizeCards(selectedCards), visitReason, null, userContext, language);
         setInterpretation({
           ...result,
           decreto: result.decreto || translations.ui.default_decree,
@@ -964,7 +975,7 @@ function App() {
         tier
       };
 
-      const result = await interpretCards(selectedCards, visitReason, null, userContext, language);
+      const result = await interpretCards(localizeCards(selectedCards), visitReason, null, userContext, language);
       setInterpretation({
         ...result,
         decreto: result.decreto || translations.ui.default_decree,
@@ -1096,7 +1107,7 @@ function App() {
       setPhase('anchoring');
       setAnchoringLoading(true);
       setIsFading(false);
-      generateAnchoring(selectedCards, visitReason, dichotomousChoice, userName, clarifications, null, language)
+      generateAnchoring(localizeCards(selectedCards), visitReason, dichotomousChoice, userName, clarifications, null, language)
         .then(finalSynthesis => {
           setInterpretation(prev => ({
             ...prev,
@@ -1253,7 +1264,11 @@ function App() {
           ? (Array.isArray(interpretation.narrativaAncestral) ? interpretation.narrativaAncestral[readingIndex] : interpretation.narrativaAncestral)
           : '';
         
-        const resp = await generateDeepening(originalCard, extraCard, clarState.question, previousReadingText, {userName}, null, language);
+        const resp = await generateDeepening(
+          localizeCards([originalCard])[0],
+          extraCard ? localizeCards([extraCard])[0] : extraCard,
+          clarState.question, previousReadingText, {userName}, null, language
+        );
         
         const finalResponse = resp === "misfire" ? translations.ui.oracle_misfire : resp;
 
