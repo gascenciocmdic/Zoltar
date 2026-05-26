@@ -317,12 +317,78 @@ export default function LandingScreen({ onEnter }) {
   const toggleColor    = isLight ? '#4a3560'  : '#e5e7eb';
 
   return (
+    <>
+    {/* ── Language + theme controls ─────────────────────────────────────────
+        Rendered OUTSIDE the scrollable container so iOS touch-coordinate
+        drift (position:absolute inside overflow:auto fixed div) never
+        applies. zIndex:100001 ensures these are above every overlay. ── */}
+    <div style={{
+      position: 'fixed', top: 8, right: 8, zIndex: 100001,
+      display: 'flex', alignItems: 'center', gap: 2,
+      opacity: entered ? 0 : 1,
+      transition: 'opacity 0.4s ease',
+      pointerEvents: entered ? 'none' : 'auto',
+    }}>
+      {[
+        { code: 'es', flag: '🇪🇸', label: 'ES' },
+        { code: 'en', flag: '🇺🇸', label: 'EN' },
+        { code: 'pt', flag: '🇧🇷', label: 'PT' },
+      ].map(({ code, flag, label }) => (
+        <button
+          key={code}
+          onClick={() => setSelectedLang(code)}
+          style={{
+            background: selectedLang === code
+              ? (isLight ? 'rgba(124,111,160,0.28)' : 'rgba(124,58,237,0.35)')
+              : (isLight ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.3)'),
+            border: `1.5px solid ${selectedLang === code
+              ? (isLight ? 'rgba(124,111,160,0.6)' : 'rgba(167,139,250,0.6)')
+              : (isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.12)')}`,
+            borderRadius: 10,
+            minWidth: 44, minHeight: 44,
+            padding: '4px 6px',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            transition: 'background 0.2s, border-color 0.2s',
+            gap: 1,
+          }}
+        >
+          <span style={{ fontSize: 20, lineHeight: 1, display: 'block' }}>{flag}</span>
+          <span style={{
+            fontSize: 8, fontWeight: 700, letterSpacing: '0.06em', lineHeight: 1,
+            color: selectedLang === code
+              ? (isLight ? '#4a3560' : '#ffd700')
+              : (isLight ? '#9b8ab0' : 'rgba(255,255,255,0.35)'),
+          }}>{label}</span>
+        </button>
+      ))}
+      <button
+        onClick={toggleTheme}
+        style={{
+          background: toggleBg, border: `1.5px solid ${toggleBorder}`,
+          borderRadius: 10,
+          minWidth: 44, minHeight: 44,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', fontSize: 18, color: toggleColor,
+          marginLeft: 2,
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          transition: 'background 0.2s',
+        }}
+      >
+        {isLight ? '🌙' : '☀️'}
+      </button>
+    </div>
+
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 99999,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center',
-        padding: 'max(60px, 5vh) 16px 24px',
+        padding: 'max(68px, 5vh) 16px 24px',
         background: bg,
         backdropFilter: 'blur(4px)',
         opacity: entered ? 0 : 1,
@@ -437,46 +503,6 @@ export default function LandingScreen({ onEnter }) {
           )}
         </div>
       )}
-
-      {/* ── Top-right controls: language flags + theme toggle ── */}
-      <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-        {[
-          { code: 'es', flag: '🇪🇸' },
-          { code: 'en', flag: '🇺🇸' },
-          { code: 'pt', flag: '🇧🇷' },
-        ].map(({ code, flag }) => (
-          <button
-            key={code}
-            onClick={() => setSelectedLang(code)}
-            title={code.toUpperCase()}
-            style={{
-              background: selectedLang === code
-                ? (isLight ? 'rgba(124,111,160,0.25)' : 'rgba(124,58,237,0.3)')
-                : 'transparent',
-              border: selectedLang === code
-                ? `1px solid ${isLight ? 'rgba(124,111,160,0.5)' : 'rgba(167,139,250,0.5)'}`
-                : '1px solid transparent',
-              borderRadius: 8, width: 34, height: 34,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontSize: 18, transition: 'all 0.2s',
-            }}
-          >
-            {flag}
-          </button>
-        ))}
-        <button
-          onClick={toggleTheme}
-          title={isLight ? 'Dark mode' : 'Light mode'}
-          style={{
-            background: toggleBg, border: `1px solid ${toggleBorder}`,
-            borderRadius: 50, width: 34, height: 34,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 16, color: toggleColor, transition: 'all 0.2s',
-          }}
-        >
-          {isLight ? '🌙' : '☀️'}
-        </button>
-      </div>
 
       {/* ── Logo ── */}
       <div style={{ marginBottom: 8, lineHeight: 0 }}>
@@ -614,5 +640,6 @@ export default function LandingScreen({ onEnter }) {
         }
       `}</style>
     </div>
+    </>
   );
 }
