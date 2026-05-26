@@ -33,6 +33,12 @@ const LANDING_I18N = {
     hook: '100 créditos gratis al registrarte · Sin tarjeta requerida',
     configure_title: 'Elige la voz de tu Oráculo',
     voice_subtitle: 'Selecciona la energía que guiará tu lectura',
+    standard_section: 'Estándar',
+    premium_section: 'Premium ✨',
+    std_voices: [
+      { id: 'std_masculine', label: '🗣 Masculino', desc: 'Voz del navegador, gratuita' },
+      { id: 'std_feminine',  label: '🗣 Femenina',  desc: 'Voz del navegador, gratuita' },
+    ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural y serena' },
       { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda y mística' },
@@ -40,6 +46,8 @@ const LANDING_I18N = {
       { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz femenina cálida y compasiva' },
     ],
     begin_btn: '✦ Comenzar',
+    begin_premium_btn: '✦ Comenzar Premium',
+    premium_voice_note: 'Requiere cuenta · consume 100 créditos',
     premium_cta: 'Experiencia Premium ✨',
     premium_desc: 'Voz ElevenLabs · email con tu síntesis · requiere cuenta',
     packages: [
@@ -80,6 +88,12 @@ const LANDING_I18N = {
     hook: '100 free credits when you register · No card required',
     configure_title: 'Choose your Oracle\'s voice',
     voice_subtitle: 'Select the energy that will guide your reading',
+    standard_section: 'Standard',
+    premium_section: 'Premium ✨',
+    std_voices: [
+      { id: 'std_masculine', label: '🗣 Masculine', desc: 'Browser voice, free' },
+      { id: 'std_feminine',  label: '🗣 Feminine',  desc: 'Browser voice, free' },
+    ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Natural, serene masculine voice' },
       { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Deep, profound and mystical voice' },
@@ -87,6 +101,8 @@ const LANDING_I18N = {
       { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Warm, compassionate feminine voice' },
     ],
     begin_btn: '✦ Begin',
+    begin_premium_btn: '✦ Begin Premium',
+    premium_voice_note: 'Requires account · uses 100 credits',
     premium_cta: 'Premium Experience ✨',
     premium_desc: 'ElevenLabs voice · synthesis email · requires account',
     packages: [
@@ -127,6 +143,12 @@ const LANDING_I18N = {
     hook: '100 créditos grátis ao se registrar · Sem cartão necessário',
     configure_title: 'Escolha a voz do seu Oráculo',
     voice_subtitle: 'Selecione a energia que guiará sua leitura',
+    standard_section: 'Padrão',
+    premium_section: 'Premium ✨',
+    std_voices: [
+      { id: 'std_masculine', label: '🗣 Masculino', desc: 'Voz do navegador, gratuita' },
+      { id: 'std_feminine',  label: '🗣 Feminino',  desc: 'Voz do navegador, gratuita' },
+    ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural e serena' },
       { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda e mística' },
@@ -134,6 +156,8 @@ const LANDING_I18N = {
       { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz feminina calorosa e compassiva' },
     ],
     begin_btn: '✦ Começar',
+    begin_premium_btn: '✦ Começar Premium',
+    premium_voice_note: 'Requer conta · consome 100 créditos',
     premium_cta: 'Experiência Premium ✨',
     premium_desc: 'Voz ElevenLabs · e-mail com síntese · requer conta',
     packages: [
@@ -148,6 +172,67 @@ const LANDING_I18N = {
   },
 };
 
+// ── Helper sub-components ─────────────────────────────────────────────────────
+
+function SectionDivider({ label, isLight, taglineColor, isPremium = false }) {
+  const lineColor = isLight
+    ? (isPremium ? 'rgba(184,134,11,0.25)' : 'rgba(124,111,160,0.2)')
+    : (isPremium ? 'rgba(255,215,0,0.18)'  : 'rgba(255,255,255,0.1)');
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+      <div style={{ flex: 1, height: 1, background: lineColor }} />
+      <span style={{
+        color: isPremium
+          ? (isLight ? '#b8860b' : '#ffd700')
+          : taglineColor,
+        fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+      }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 1, background: lineColor }} />
+    </div>
+  );
+}
+
+function VoiceCard({ voice, isSelected, isPremium, isLight, pillTitleColor, pillDescColor, onSelect }) {
+  const parts = voice.label.split(' ');
+  const icon = parts[0];
+  const name = parts.slice(1).join(' ');
+
+  const selectedBg     = isPremium
+    ? (isLight ? 'rgba(184,134,11,0.18)'    : 'rgba(255,215,0,0.12)')
+    : (isLight ? 'rgba(124,111,160,0.22)'   : 'rgba(124,58,237,0.22)');
+  const unselectedBg   = isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)';
+  const selectedBorder = isPremium
+    ? (isLight ? 'rgba(184,134,11,0.75)'    : 'rgba(255,215,0,0.65)')
+    : (isLight ? 'rgba(124,111,160,0.75)'   : 'rgba(167,139,250,0.75)');
+  const unselectedBorder = isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)';
+  const selectedShadow = isPremium
+    ? (isLight ? '0 4px 20px rgba(184,134,11,0.22)' : '0 4px 20px rgba(255,215,0,0.2)')
+    : (isLight ? '0 4px 20px rgba(124,111,160,0.25)' : '0 4px 20px rgba(124,58,237,0.3)');
+
+  return (
+    <div
+      onClick={() => onSelect(voice.id)}
+      style={{
+        background: isSelected ? selectedBg : unselectedBg,
+        border: `2px solid ${isSelected ? selectedBorder : unselectedBorder}`,
+        borderRadius: 16, padding: '14px 12px',
+        cursor: 'pointer', textAlign: 'center',
+        transition: 'all 0.2s',
+        boxShadow: isSelected ? selectedShadow : 'none',
+      }}
+    >
+      <div style={{ fontSize: 26, marginBottom: 5 }}>{icon}</div>
+      <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 12 }}>{name}</div>
+      <div style={{ color: pillDescColor, fontSize: 10, marginTop: 3, lineHeight: 1.4 }}>{voice.desc}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function LandingScreen({ onEnter }) {
   const { theme, toggleTheme } = useTheme();
   const isLight = theme === 'light';
@@ -156,7 +241,11 @@ export default function LandingScreen({ onEnter }) {
   const [entered, setEntered] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en'); // default English
   const [step, setStep] = useState('landing'); // 'landing' | 'configure'
-  const [selectedVoice, setSelectedVoice] = useState('feminine_1');
+  const [selectedVoice, setSelectedVoice] = useState('std_masculine');
+
+  // Detect if the chosen voice requires ElevenLabs (premium tier)
+  const STD_VOICE_IDS = ['std_masculine', 'std_feminine'];
+  const isPremiumVoice = !STD_VOICE_IDS.includes(selectedVoice);
 
   // Active translation set
   const t = LANDING_I18N[selectedLang] || LANDING_I18N.en;
@@ -190,15 +279,11 @@ export default function LandingScreen({ onEnter }) {
     // browser autoplay policy — BEFORE the animation setTimeout.
     initSpeech();
     startAmbientMusic();
-    setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: selectedVoice }), 400);
-  }
-
-  function handlePremium() {
-    setEntered(true);
-    // Same as above — unlock ambient music from within the click handler.
-    initSpeech();
-    startAmbientMusic();
-    setTimeout(() => onEnter({ language: selectedLang, tier: 'premium', voiceProfile: selectedVoice }), 400);
+    if (isPremiumVoice) {
+      setTimeout(() => onEnter({ language: selectedLang, tier: 'premium', voiceProfile: selectedVoice }), 400);
+    } else {
+      setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: null }), 400);
+    }
   }
 
   // ── Theme-dependent design tokens ────────────────────────────────────────
@@ -282,83 +367,74 @@ export default function LandingScreen({ onEnter }) {
             {t.voice_subtitle}
           </p>
 
-          {/* Voice cards — 2×2 grid for 4 voices */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 10,
-            marginBottom: 28,
-            width: '100%',
-            maxWidth: 400,
-          }}>
-            {t.voices.map(voice => {
-              const isSelected = selectedVoice === voice.id;
-              // Extract emoji (first grapheme) and name separately
-              const parts = voice.label.split(' ');
-              const icon = parts[0];
-              const name = parts.slice(1).join(' ');
-              return (
-                <div
+          {/* ── Voice sections ── */}
+          <div style={{ width: '100%', maxWidth: 400, marginBottom: 24 }}>
+
+            {/* Standard section */}
+            <SectionDivider label={t.standard_section} isLight={isLight} taglineColor={taglineColor} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              {t.std_voices.map(voice => (
+                <VoiceCard
                   key={voice.id}
-                  onClick={() => setSelectedVoice(voice.id)}
-                  style={{
-                    background: isSelected
-                      ? (isLight ? 'rgba(124,111,160,0.22)' : 'rgba(124,58,237,0.22)')
-                      : (isLight ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.04)'),
-                    border: `2px solid ${isSelected
-                      ? (isLight ? 'rgba(124,111,160,0.75)' : 'rgba(167,139,250,0.75)')
-                      : (isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.1)')}`,
-                    borderRadius: 16, padding: '14px 12px',
-                    cursor: 'pointer', textAlign: 'center',
-                    transition: 'all 0.2s',
-                    boxShadow: isSelected
-                      ? (isLight ? '0 4px 20px rgba(124,111,160,0.25)' : '0 4px 20px rgba(124,58,237,0.3)')
-                      : 'none',
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>{icon}</div>
-                  <div style={{ color: pillTitleColor, fontWeight: 700, fontSize: 13 }}>{name}</div>
-                  <div style={{ color: pillDescColor, fontSize: 10, marginTop: 4, lineHeight: 1.4 }}>{voice.desc}</div>
-                </div>
-              );
-            })}
+                  voice={voice}
+                  isSelected={selectedVoice === voice.id}
+                  isPremium={false}
+                  isLight={isLight}
+                  pillTitleColor={pillTitleColor}
+                  pillDescColor={pillDescColor}
+                  onSelect={setSelectedVoice}
+                />
+              ))}
+            </div>
+
+            {/* Premium section */}
+            <SectionDivider label={t.premium_section} isLight={isLight} taglineColor={taglineColor} isPremium />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {t.voices.map(voice => (
+                <VoiceCard
+                  key={voice.id}
+                  voice={voice}
+                  isSelected={selectedVoice === voice.id}
+                  isPremium
+                  isLight={isLight}
+                  pillTitleColor={pillTitleColor}
+                  pillDescColor={pillDescColor}
+                  onSelect={setSelectedVoice}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Begin (standard) */}
+          {/* Adaptive begin button */}
           <button
             onClick={handleBegin}
             style={{
-              background: ctaBg, border: `1px solid ${ctaBorder}`,
+              background: isPremiumVoice
+                ? (isLight
+                    ? 'linear-gradient(135deg, #b8860b 0%, #d4a017 100%)'
+                    : 'linear-gradient(135deg, #b8860b 0%, #ffd700 100%)')
+                : ctaBg,
+              border: `1px solid ${isPremiumVoice
+                ? (isLight ? 'rgba(184,134,11,0.5)' : 'rgba(255,215,0,0.45)')
+                : ctaBorder}`,
               borderRadius: 50, padding: '15px 48px',
               color: '#fff', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
               fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
-              boxShadow: ctaShadow, fontFamily: 'inherit',
-              marginBottom: 16,
+              boxShadow: isPremiumVoice
+                ? (isLight ? '0 0 32px rgba(184,134,11,0.35)' : '0 0 32px rgba(255,215,0,0.35)')
+                : ctaShadow,
+              fontFamily: 'inherit',
+              marginBottom: 8,
+              transition: 'background 0.25s, box-shadow 0.25s',
             }}
           >
-            {t.begin_btn}
+            {isPremiumVoice ? t.begin_premium_btn : t.begin_btn}
           </button>
-
-          {/* Premium shortcut — triggers auth + premium flow */}
-          <button
-            onClick={handlePremium}
-            style={{
-              background: 'transparent',
-              border: `1px solid ${isLight ? 'rgba(184,134,11,0.4)' : 'rgba(255,215,0,0.35)'}`,
-              borderRadius: 50, padding: '10px 28px',
-              color: isLight ? '#b8860b' : '#ffd700',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              letterSpacing: '0.04em', fontFamily: 'inherit',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = isLight ? 'rgba(184,134,11,0.08)' : 'rgba(255,215,0,0.08)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-          >
-            {t.premium_cta}
-          </button>
-          <p style={{ color: pillDescColor, fontSize: 10, marginTop: 6, textAlign: 'center', fontStyle: 'italic' }}>
-            {t.premium_desc}
-          </p>
+          {isPremiumVoice && (
+            <p style={{ color: isLight ? '#b8860b' : '#ffd700', fontSize: 10, marginTop: 4, textAlign: 'center', fontStyle: 'italic', opacity: 0.8 }}>
+              {t.premium_voice_note}
+            </p>
+          )}
         </div>
       )}
 
