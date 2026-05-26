@@ -128,6 +128,14 @@ export const speakPremium = async (text, voiceProfile = 'masculine', lang = 'es'
     return;
   }
 
+  // Stop any Web Speech synthesis and any previous premium audio BEFORE starting
+  // ElevenLabs, so the two voices never overlap.
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if (premiumAudio) {
+    premiumAudio.pause();
+    premiumAudio = null;
+  }
+
   // Pre-create and register the Audio element BEFORE any await so it is
   // associated with the current user-gesture context.  Browsers (especially
   // Safari) block audio.play() that is called after an async gap unless the

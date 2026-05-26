@@ -458,6 +458,9 @@ function App() {
    * Drop-in replacement for speakText() inside reading phases.
    */
   const narrate = useCallback((text, lang, onEnd) => {
+    // Always stop any ongoing audio before starting a new narration to prevent
+    // voice overlap between Web Speech API and ElevenLabs.
+    stopSpeech();
     if (consultTier === 'premium' && voiceProfile) {
       speakPremium(text, voiceProfile, lang, onEnd);
     } else {
@@ -528,10 +531,16 @@ function App() {
     // first call must happen within the actual user gesture, not inside setTimeout.
     initSpeech();
 
-    // Ambient greeting (same as handleSelectLanguage)
+    // Ambient greeting — use the selected voice tier so ElevenLabs fires from
+    // the very first word and the standard Web Speech API is never started in
+    // parallel.  This prevents the "double voice" overlap on premium sessions.
     const pool = I18N[lang] || I18N.es;
     const welcomeMsg = pool.greetings[Math.floor(Math.random() * pool.greetings.length)];
-    speakText(welcomeMsg, lang);
+    if (tier === 'premium' && vp) {
+      speakPremium(welcomeMsg, vp, lang);
+    } else {
+      speakText(welcomeMsg, lang);
+    }
     trackEvent('session_started', { language: lang, tier, is_guest: !authSession }, authSession);
 
     // Load saved user data so we can skip already-answered steps
