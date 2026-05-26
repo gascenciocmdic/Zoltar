@@ -1,3 +1,12 @@
+/* ── Custom fonts ────────────────────────────────────────── */
+body {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+h1, h2, h3, h4, .phase-title, .section-heading {
+  font-family: 'Cinzel', serif;
+}
+
 /* ── Resets táctiles iOS / Android ─────────────────────── */
 *, *::before, *::after {
   -webkit-tap-highlight-color: transparent;

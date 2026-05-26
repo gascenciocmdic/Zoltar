@@ -15,18 +15,18 @@ const LANDING_I18N = {
     features: [
       {
         icon: '🃏',
-        title: '44 Cartas Arcanas',
-        desc: 'Mazo propio inspirado en arquetipos de vidas pasadas. Cada carta abre una memoria diferente.',
+        title: '44 Cartas del Destino',
+        desc: 'Cada carta es un portal. Un arquetipo que despierta la memoria dormida de quién fuiste.',
       },
       {
         icon: '✨',
-        title: 'Guía Espiritual IA',
-        desc: 'Una presencia sensible, empática y sanadora que construye una narrativa única para tu alma.',
+        title: 'Presencia Ancestral',
+        desc: 'Una guía sensible que teje tu historia con palabras vivas, únicas para tu alma.',
       },
       {
         icon: '🔊',
-        title: 'Voz del Oráculo',
-        desc: 'Tu lectura es narrada por una voz etérea. Cierra los ojos y déjate guiar.',
+        title: 'La Voz que Recuerda',
+        desc: 'Cierra los ojos. Tu lectura llega susurrada por una voz que conoce tu eternidad.',
       },
     ],
     cta: '✦ Iniciar mi lectura',
@@ -36,8 +36,8 @@ const LANDING_I18N = {
     standard_section: 'Estándar',
     premium_section: 'Premium ✨',
     std_voices: [
-      { id: 'std_masculine', label: '🗣 Masculino', desc: 'Voz del navegador, gratuita' },
-      { id: 'std_feminine',  label: '🗣 Femenina',  desc: 'Voz del navegador, gratuita' },
+      { id: 'std_masculine', label: '🗣 Masculino', desc: 'El aliento profundo del cosmos' },
+      { id: 'std_feminine',  label: '🗣 Femenina',  desc: 'La voz etérea del universo' },
     ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural y serena' },
@@ -51,9 +51,9 @@ const LANDING_I18N = {
     premium_cta: 'Experiencia Premium ✨',
     premium_desc: 'Voz ElevenLabs · email con tu síntesis · requiere cuenta',
     packages: [
-      { label: 'Iniciado',   credits: '150 cr',  price: '$4.99' },
-      { label: 'Explorador', credits: '400 cr',  price: '$9.99',  popular: true },
-      { label: 'Oráculo',    credits: '1100 cr', price: '$19.99' },
+      { label: 'Iniciado',   credits: '150 cr',  readings: '3 lecturas',  price: '$4.99' },
+      { label: 'Explorador', credits: '400 cr',  readings: '8 lecturas',  price: '$9.99',  popular: true },
+      { label: 'Oráculo',    credits: '1100 cr', readings: '22 lecturas', price: '$19.99' },
     ],
     most_popular: 'MÁS POPULAR',
     footer: 'Experiencia de entretenimiento digital. Las lecturas son generadas por IA con fines de exploración personal, no constituyen asesoramiento profesional.',
@@ -70,18 +70,18 @@ const LANDING_I18N = {
     features: [
       {
         icon: '🃏',
-        title: '44 Arcane Cards',
-        desc: 'A unique deck inspired by past-life archetypes. Each card opens a different memory.',
+        title: '44 Destiny Cards',
+        desc: 'Each card is a portal. An archetype that awakens the sleeping memory of who you were.',
       },
       {
         icon: '✨',
-        title: 'AI Spiritual Guide',
-        desc: 'A sensitive, empathetic, healing presence that builds a unique narrative for your soul.',
+        title: 'Ancient Presence',
+        desc: 'A sensitive guide that weaves your story with living words, unique to your soul.',
       },
       {
         icon: '🔊',
-        title: 'Oracle Voice',
-        desc: 'Your reading is narrated by an ethereal voice. Close your eyes and let yourself be guided.',
+        title: 'The Voice That Remembers',
+        desc: 'Close your eyes. Your reading arrives whispered by a voice that knows your eternity.',
       },
     ],
     cta: '✦ Start my reading',
@@ -91,8 +91,8 @@ const LANDING_I18N = {
     standard_section: 'Standard',
     premium_section: 'Premium ✨',
     std_voices: [
-      { id: 'std_masculine', label: '🗣 Masculine', desc: 'Browser voice, free' },
-      { id: 'std_feminine',  label: '🗣 Feminine',  desc: 'Browser voice, free' },
+      { id: 'std_masculine', label: '🗣 Masculine', desc: 'The deep breath of the cosmos' },
+      { id: 'std_feminine',  label: '🗣 Feminine',  desc: 'The ethereal voice of the universe' },
     ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Natural, serene masculine voice' },
@@ -106,9 +106,9 @@ const LANDING_I18N = {
     premium_cta: 'Premium Experience ✨',
     premium_desc: 'ElevenLabs voice · synthesis email · requires account',
     packages: [
-      { label: 'Initiate', credits: '150 cr',  price: '$4.99' },
-      { label: 'Explorer', credits: '400 cr',  price: '$9.99',  popular: true },
-      { label: 'Oracle',   credits: '1100 cr', price: '$19.99' },
+      { label: 'Initiate', credits: '150 cr',  readings: '3 readings',  price: '$4.99' },
+      { label: 'Explorer', credits: '400 cr',  readings: '8 readings',  price: '$9.99',  popular: true },
+      { label: 'Oracle',   credits: '1100 cr', readings: '22 readings', price: '$19.99' },
     ],
     most_popular: 'MOST POPULAR',
     footer: 'Digital entertainment experience. Readings are AI-generated for personal exploration and do not constitute professional advice.',
@@ -125,18 +125,18 @@ const LANDING_I18N = {
     features: [
       {
         icon: '🃏',
-        title: '44 Cartas Arcanas',
-        desc: 'Um baralho próprio inspirado em arquétipos de vidas passadas. Cada carta abre uma memória diferente.',
+        title: '44 Cartas do Destino',
+        desc: 'Cada carta é um portal. Um arquétipo que desperta a memória adormecida de quem você foi.',
       },
       {
         icon: '✨',
-        title: 'Guia Espiritual IA',
-        desc: 'Uma presença sensível, empática e curadora que constrói uma narrativa única para sua alma.',
+        title: 'Presença Ancestral',
+        desc: 'Uma guia sensível que tece sua história com palavras vivas, únicas para sua alma.',
       },
       {
         icon: '🔊',
-        title: 'Voz do Oráculo',
-        desc: 'Sua leitura é narrada por uma voz etérea. Feche os olhos e deixe-se guiar.',
+        title: 'A Voz que Lembra',
+        desc: 'Feche os olhos. Sua leitura chega sussurrada por uma voz que conhece sua eternidade.',
       },
     ],
     cta: '✦ Iniciar minha leitura',
@@ -146,8 +146,8 @@ const LANDING_I18N = {
     standard_section: 'Padrão',
     premium_section: 'Premium ✨',
     std_voices: [
-      { id: 'std_masculine', label: '🗣 Masculino', desc: 'Voz do navegador, gratuita' },
-      { id: 'std_feminine',  label: '🗣 Feminino',  desc: 'Voz do navegador, gratuita' },
+      { id: 'std_masculine', label: '🗣 Masculino', desc: 'O sopro profundo do cosmos' },
+      { id: 'std_feminine',  label: '🗣 Feminino',  desc: 'A voz etérea do universo' },
     ],
     voices: [
       { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural e serena' },
@@ -161,9 +161,9 @@ const LANDING_I18N = {
     premium_cta: 'Experiência Premium ✨',
     premium_desc: 'Voz ElevenLabs · e-mail com síntese · requer conta',
     packages: [
-      { label: 'Iniciante',  credits: '150 cr',  price: '$4.99' },
-      { label: 'Explorador', credits: '400 cr',  price: '$9.99',  popular: true },
-      { label: 'Oráculo',    credits: '1100 cr', price: '$19.99' },
+      { label: 'Iniciante',  credits: '150 cr',  readings: '3 leituras',  price: '$4.99' },
+      { label: 'Explorador', credits: '400 cr',  readings: '8 leituras',  price: '$9.99',  popular: true },
+      { label: 'Oráculo',    credits: '1100 cr', readings: '22 leituras', price: '$19.99' },
     ],
     most_popular: 'MAIS POPULAR',
     footer: 'Experiência de entretenimento digital. As leituras são geradas por IA para fins de exploração pessoal e não constituem aconselhamento profissional.',
@@ -355,8 +355,8 @@ export default function LandingScreen({ onEnter }) {
           {/* Title */}
           <h2 style={{
             color: titleColor, fontSize: 'clamp(1.05rem, 3vw, 1.45rem)',
-            fontWeight: 800, letterSpacing: '0.06em',
-            marginBottom: 6, fontFamily: 'Georgia, serif', textAlign: 'center',
+            fontWeight: 700, letterSpacing: '0.06em',
+            marginBottom: 6, fontFamily: "'Cinzel', serif", textAlign: 'center',
           }}>
             {t.configure_title}
           </h2>
@@ -512,7 +512,7 @@ export default function LandingScreen({ onEnter }) {
         fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
         textAlign: 'center', margin: '0 0 12px',
         textShadow: isLight ? 'none' : '0 0 40px rgba(255,215,0,0.5)',
-        fontFamily: 'Georgia, serif',
+        fontFamily: "'Cinzel', serif",
         transition: 'color 0.4s',
       }}>
         {t.title}
@@ -526,7 +526,7 @@ export default function LandingScreen({ onEnter }) {
         opacity: taglineVisible ? 1 : 0,
         transform: taglineVisible ? 'translateY(0)' : 'translateY(-6px)',
         transition: 'opacity 0.4s, transform 0.4s, color 0.4s',
-        fontFamily: 'Georgia, serif',
+        fontFamily: "'Cormorant Garamond', Georgia, serif",
       }}>
         {t.taglines[taglineIdx]}
       </p>
@@ -617,7 +617,7 @@ export default function LandingScreen({ onEnter }) {
               </div>
             )}
             <div style={{ color: priceColor, fontWeight: 800, fontSize: 16, transition: 'color 0.4s' }}>{pkg.price}</div>
-            <div style={{ color: priceSubColor, fontSize: 11, marginTop: 2, transition: 'color 0.4s' }}>{pkg.credits}</div>
+            <div style={{ color: hookColor, fontWeight: 600, fontSize: 12, marginTop: 3, transition: 'color 0.4s' }}>{pkg.readings}</div>
             <div style={{ color: priceLabelColor, fontSize: 10, marginTop: 1, transition: 'color 0.4s' }}>{pkg.label}</div>
           </div>
         ))}
