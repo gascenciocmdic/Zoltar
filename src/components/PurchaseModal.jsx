@@ -11,7 +11,7 @@ import { PACKAGES } from '../lib/credits';
  *   reason          string | null   ← mensaje opcional del por qué se abrió
  *   onSaveState     () => void      ← guardar estado de la app antes de redirigir
  */
-export default function PurchaseModal({ isOpen, onClose, session, reason, onSaveState }) {
+export default function PurchaseModal({ isOpen, onClose, session, reason, onSaveState, language = 'es' }) {
   const [loading, setLoading] = useState(null);  // packageId cargando
   const [error,   setError]   = useState('');
 
@@ -29,7 +29,7 @@ export default function PurchaseModal({ isOpen, onClose, session, reason, onSave
           'Content-Type': 'application/json',
           Authorization:  `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ packageId }),
+        body: JSON.stringify({ packageId, language }),
       });
 
       let data;

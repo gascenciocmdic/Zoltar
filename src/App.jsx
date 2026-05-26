@@ -2193,6 +2193,7 @@ function App() {
                   authSession={authSession}
                   referralCode={referralCode || null}
                   inviterName={userName || null}
+                  language={language}
                 />
 
                 {/* Nueva consulta */}
@@ -2248,6 +2249,7 @@ function App() {
         session={authSession}
         reason={purchaseReason}
         onSaveState={saveStateForPurchase}
+        language={language}
       />
       {showReferralWidget && referralCode && (
         <ReferralWidget

@@ -2,11 +2,72 @@ import { useState } from 'react';
 
 const APP_URL = 'https://zoltar-two.vercel.app';
 
-export default function InviteWidget({ authSession, referralCode, inviterName }) {
+const UI = {
+  es: {
+    invite_title:       'Invita y gana 50💎 por registro',
+    invite_sub:         'Tu invitado recibe 25💎 extra al registrarse',
+    code_label:         'Tu código',
+    share_title:        '¿Conoces a alguien que necesite esta lectura?',
+    share_sub:          'Comparte Zoltar con quienes más lo necesitan',
+    btn_send_personal:  '✉️ Enviar invitación personalizada',
+    btn_send:           '✉️ Enviar invitación',
+    btn_sending:        '⏳ Enviando...',
+    btn_sent:           '✅ ¡Enviado!',
+    btn_error:          '❌ Error — intenta de nuevo',
+    or_share_unique:    '— o comparte tu link único —',
+    or_share_direct:    '— o comparte directo —',
+    copied:             '✅ Copiado',
+    copy_link:          '🔗 Copiar link',
+    wa_text:  (code, link, url) => code
+      ? `✨ Te invito a descubrir tu lectura en Zoltar. Usa mi código ${code} para obtener 25💎 extra: ${link}`
+      : `✨ Descubrí Zoltar, el oráculo de vidas pasadas. Pruébalo en: ${url}`,
+  },
+  en: {
+    invite_title:       'Invite and earn 50💎 per sign-up',
+    invite_sub:         'Your friend gets 25💎 extra when they register',
+    code_label:         'Your code',
+    share_title:        'Know someone who needs this reading?',
+    share_sub:          'Share Zoltar with those who need it most',
+    btn_send_personal:  '✉️ Send personalized invitation',
+    btn_send:           '✉️ Send invitation',
+    btn_sending:        '⏳ Sending...',
+    btn_sent:           '✅ Sent!',
+    btn_error:          '❌ Error — try again',
+    or_share_unique:    '— or share your unique link —',
+    or_share_direct:    '— or share directly —',
+    copied:             '✅ Copied',
+    copy_link:          '🔗 Copy link',
+    wa_text:  (code, link, url) => code
+      ? `✨ I invite you to discover your reading at Zoltar. Use my code ${code} to get 25💎 extra: ${link}`
+      : `✨ I discovered Zoltar, the past lives oracle. Try it at: ${url}`,
+  },
+  pt: {
+    invite_title:       'Convide e ganhe 50💎 por cadastro',
+    invite_sub:         'Seu convidado recebe 25💎 extras ao se registrar',
+    code_label:         'Seu código',
+    share_title:        'Conhece alguém que precisa desta leitura?',
+    share_sub:          'Compartilhe Zoltar com quem mais precisa',
+    btn_send_personal:  '✉️ Enviar convite personalizado',
+    btn_send:           '✉️ Enviar convite',
+    btn_sending:        '⏳ Enviando...',
+    btn_sent:           '✅ Enviado!',
+    btn_error:          '❌ Erro — tente novamente',
+    or_share_unique:    '— ou compartilhe seu link único —',
+    or_share_direct:    '— ou compartilhe diretamente —',
+    copied:             '✅ Copiado',
+    copy_link:          '🔗 Copiar link',
+    wa_text:  (code, link, url) => code
+      ? `✨ Eu te convido a descobrir sua leitura no Zoltar. Use meu código ${code} para ganhar 25💎 extras: ${link}`
+      : `✨ Descobri o Zoltar, o oráculo de vidas passadas. Experimente em: ${url}`,
+  },
+};
+
+export default function InviteWidget({ authSession, referralCode, inviterName, language = 'es' }) {
   const [email, setEmail] = useState('');
   const [emailState, setEmailState] = useState('idle'); // idle | sending | sent | error
   const [copied, setCopied] = useState(false);
 
+  const t = UI[language] || UI.es;
   const inviteLink = referralCode ? `${APP_URL}?ref=${referralCode}` : APP_URL;
 
   const handleSendEmail = async () => {
@@ -16,7 +77,12 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
       const res = await fetch('/api/send-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toEmail: email, referralCode: referralCode || undefined, inviterName: inviterName || undefined }),
+        body: JSON.stringify({
+          toEmail: email,
+          referralCode: referralCode || undefined,
+          inviterName: inviterName || undefined,
+          language,
+        }),
       });
       setEmailState(res.ok ? 'sent' : 'error');
     } catch {
@@ -31,9 +97,7 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
     });
   };
 
-  const waText = referralCode
-    ? `✨ Te invito a descubrir tu lectura en Zoltar. Usa mi código ${referralCode} para obtener 25💎 extra: ${inviteLink}`
-    : `✨ Descubrí Zoltar, el oráculo de vidas pasadas. Pruébalo en: ${APP_URL}`;
+  const waText = t.wa_text(referralCode, inviteLink, APP_URL);
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
 
   return (
@@ -47,17 +111,17 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
       {referralCode ? (
         <>
           <p style={{ color: '#ffd700', fontSize: '0.85rem', fontWeight: 700, margin: '0 0 4px' }}>
-            Invita y gana 50💎 por registro
+            {t.invite_title}
           </p>
           <p style={{ color: '#888', fontSize: '0.72rem', margin: '0 0 12px' }}>
-            Tu invitado recibe 25💎 extra al registrarse
+            {t.invite_sub}
           </p>
           <div style={{
             background: 'rgba(255,215,0,0.07)', border: '1px solid rgba(255,215,0,0.25)',
             borderRadius: '10px', padding: '10px', marginBottom: '14px',
           }}>
             <div style={{ color: '#888', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase' }}>
-              Tu código
+              {t.code_label}
             </div>
             <div style={{ color: '#ffd700', fontSize: '1.4rem', fontWeight: 800, letterSpacing: '6px' }}>
               {referralCode}
@@ -67,10 +131,10 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
       ) : (
         <>
           <p style={{ color: '#ffd700', fontSize: '0.85rem', fontWeight: 700, margin: '0 0 4px' }}>
-            ¿Conoces a alguien que necesite esta lectura?
+            {t.share_title}
           </p>
           <p style={{ color: '#888', fontSize: '0.72rem', margin: '0 0 14px' }}>
-            Comparte Zoltar con quienes más lo necesitan
+            {t.share_sub}
           </p>
         </>
       )}
@@ -101,15 +165,15 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
             color: '#fff', fontSize: '0.75rem', cursor: 'pointer',
           }}
         >
-          {emailState === 'idle' && (referralCode ? '✉️ Enviar invitación personalizada' : '✉️ Enviar invitación')}
-          {emailState === 'sending' && '⏳ Enviando...'}
-          {emailState === 'sent' && '✅ ¡Enviado!'}
-          {emailState === 'error' && '❌ Error — intenta de nuevo'}
+          {emailState === 'idle' && (referralCode ? t.btn_send_personal : t.btn_send)}
+          {emailState === 'sending' && t.btn_sending}
+          {emailState === 'sent' && t.btn_sent}
+          {emailState === 'error' && t.btn_error}
         </button>
       </div>
 
       <div style={{ color: '#555', fontSize: '0.65rem', marginBottom: '10px' }}>
-        — o comparte {referralCode ? 'tu link único' : 'directo'} —
+        {referralCode ? t.or_share_unique : t.or_share_direct}
       </div>
 
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -121,7 +185,7 @@ export default function InviteWidget({ authSession, referralCode, inviterName })
             fontSize: '0.72rem', cursor: 'pointer',
           }}
         >
-          {copied ? '✅ Copiado' : '🔗 Copiar link'}
+          {copied ? t.copied : t.copy_link}
         </button>
         <a
           href={waUrl}

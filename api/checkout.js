@@ -59,7 +59,7 @@ export default async function handler(req, res) {
     const user = await getUser(req);
     if (!user) return safeJson(401, { error: 'No autenticado' });
 
-    const { packageId } = req.body || {};
+    const { packageId, language = 'es' } = req.body || {};
     const pkg = PACKAGES[packageId];
     if (!pkg) return safeJson(400, { error: 'Paquete inválido' });
 
@@ -87,6 +87,7 @@ export default async function handler(req, res) {
           user_id:    user.id,
           package_id: packageId,
           credits:    String(pkg.credits),
+          language:   language,
         },
         success_url: `${appUrl}?payment=success&credits=${pkg.credits}`,
         cancel_url:  `${appUrl}?payment=cancelled`,
