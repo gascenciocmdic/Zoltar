@@ -800,7 +800,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   right: 16px;
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.62);
   font-size: 1rem;
   cursor: pointer;
   transition: color 0.2s;
@@ -1003,7 +1003,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 }
 .credit-dd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .credit-dd-email { font-size: 0.75rem; color: rgba(255,255,255,0.5); overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
-.credit-dd-close { background: transparent; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.85rem; }
+.credit-dd-close { background: transparent; border: none; color: rgba(255,255,255,0.62); cursor: pointer; font-size: 0.85rem; }
 .credit-dd-balance { display: flex; align-items: baseline; gap: 6px; margin-bottom: 14px; padding: 12px; background: rgba(255,215,0,0.07); border-radius: 10px; }
 .credit-dd-gem { font-size: 1.2rem; }
 .credit-dd-num { font-size: 1.8rem; font-weight: 700; color: #ffd700; }
@@ -1013,7 +1013,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 .credit-dd-warning { font-size: 0.8rem; color: #f87171; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px; margin-bottom: 10px; text-align: center; }
 .credit-dd-buy { width: 100%; padding: 10px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-bottom: 8px; transition: opacity 0.2s; }
 .credit-dd-buy:hover { opacity: 0.85; }
-.credit-dd-logout { width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.4); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+.credit-dd-logout { width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.62); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
 .credit-dd-logout:hover { color: #f87171; border-color: rgba(255,100,100,0.3); }
 
 /* ── Purchase Modal ─────────────────────────────────────── */
@@ -1063,7 +1063,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
 .purchase-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #7c3aed; color: #fff; font-size: 0.68rem; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
 .purchase-card-name { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 8px; }
 .purchase-card-credits { font-size: 1.5rem; font-weight: 800; color: #ffd700; margin-bottom: 4px; }
-.purchase-card-subs { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+.purchase-card-subs { font-size: 0.72rem; color: rgba(255,255,255,0.62); margin-bottom: 10px; }
 .purchase-card-price { font-size: 1.1rem; font-weight: 700; color: #a78bfa; margin-bottom: 14px; }
 .purchase-btn { width: 100%; padding: 9px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 9px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
 .purchase-btn:hover:not(:disabled) { opacity: 0.85; }
@@ -1082,7 +1082,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   width: 100%;
   box-sizing: border-box;
 }
-.referral-code-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+.referral-code-label { font-size: 0.72rem; color: rgba(255,255,255,0.62); text-transform: uppercase; letter-spacing: 2px; }
 .referral-code-value { font-size: 2rem; font-weight: 800; color: #ffd700; letter-spacing: 6px; margin-top: 4px; }
 
 .referral-url-box {
@@ -1093,7 +1093,7 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   box-sizing: border-box;
   margin-bottom: 4px;
 }
-.referral-url-text { font-size: 0.72rem; color: rgba(255,255,255,0.4); word-break: break-all; }
+.referral-url-text { font-size: 0.72rem; color: rgba(255,255,255,0.62); word-break: break-all; }
 
 .referral-rewards { margin-top: 18px; width: 100%; }
 .referral-reward-row { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }

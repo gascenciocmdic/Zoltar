@@ -309,9 +309,9 @@ export default function LandingScreen({ onEnter }) {
     ? 'linear-gradient(180deg, rgba(245,240,255,0.92) 0%, rgba(245,240,255,0.80) 100%)'
     : 'linear-gradient(180deg, rgba(5,0,15,0.85) 0%, rgba(5,0,15,0.7) 100%)';
   const titleColor     = isLight ? '#4a3560' : '#ffd700';
-  const taglineColor   = isLight ? '#7c6fa0' : '#c4b5fd';
+  const taglineColor   = isLight ? '#6b5f8a' : '#c4b5fd'; // was #7c6fa0 — 4.30:1 (fail)
   const ctaBg          = isLight
-    ? 'linear-gradient(135deg, #7c6fa0 0%, #5b8db8 100%)'
+    ? 'linear-gradient(135deg, #4a3f6e 0%, #2d5c7a 100%)' // was #7c6fa0→#5b8db8 (3.5:1 fail)
     : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #1d4ed8 100%)';
   const ctaBorder      = isLight ? 'rgba(124,111,160,0.4)' : 'rgba(167,139,250,0.4)';
   const ctaShadow      = isLight
@@ -324,12 +324,12 @@ export default function LandingScreen({ onEnter }) {
   const pillBg         = isLight ? 'rgba(255,255,255,0.7)'    : 'rgba(255,255,255,0.04)';
   const pillBorder     = isLight ? 'rgba(124,111,160,0.2)'    : 'rgba(255,215,0,0.12)';
   const pillTitleColor = isLight ? '#2d2540'  : '#e5e7eb';
-  const pillDescColor  = isLight ? '#6b5f8a'  : '#6b7280';
-  const priceColor     = isLight ? '#b8860b'  : '#ffd700';
-  const priceSubColor  = isLight ? '#7c6fa0'  : '#9ca3af';
-  const priceLabelColor= isLight ? '#9b8ab0'  : '#6b7280';
-  const footerColor    = isLight ? '#7c6fa0'  : '#374151';
-  const footerLinkColor= isLight ? '#5b4f8a'  : '#4b5563';
+  const pillDescColor  = isLight ? '#6b5f8a'  : '#9ca3af'; // dark: was #6b7280 — 4.22:1 (fail)
+  const priceColor     = isLight ? '#785200'  : '#ffd700'; // was #b8860b — 3.09:1 on light
+  const priceSubColor  = isLight ? '#6b5f8a'  : '#9ca3af'; // was #7c6fa0 — 4.30:1 (fail)
+  const priceLabelColor= isLight ? '#6b5f8a'  : '#9ca3af'; // was #9b8ab0/#6b7280 (fails both)
+  const footerColor    = isLight ? '#6b5f8a'  : '#9ca3af'; // dark: #6b7280 was 4.30:1 fail
+  const footerLinkColor= isLight ? '#5f5280'  : '#9ca3af'; // dark: #6b7280 was 4.30:1 fail
   const toggleBg       = isLight ? 'rgba(124,111,160,0.15)' : 'rgba(255,255,255,0.08)';
   const toggleBorder   = isLight ? 'rgba(124,111,160,0.3)'  : 'rgba(255,255,255,0.15)';
   const toggleColor    = isLight ? '#4a3560'  : '#e5e7eb';
@@ -502,7 +502,7 @@ export default function LandingScreen({ onEnter }) {
                 ? (isLight ? 'rgba(184,134,11,0.5)' : 'rgba(255,215,0,0.45)')
                 : ctaBorder}`,
               borderRadius: 50, padding: '15px 48px',
-              color: '#fff', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+              color: isPremiumVoice ? '#2d1a00' : '#fff', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
               fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
               boxShadow: isPremiumVoice
                 ? (isLight ? '0 0 32px rgba(184,134,11,0.35)' : '0 0 32px rgba(255,215,0,0.35)')
@@ -515,7 +515,7 @@ export default function LandingScreen({ onEnter }) {
             {isPremiumVoice ? t.begin_premium_btn : t.begin_btn}
           </button>
           {isPremiumVoice && (
-            <p style={{ color: isLight ? '#b8860b' : '#ffd700', fontSize: 10, marginTop: 4, textAlign: 'center', fontStyle: 'italic', opacity: 0.8 }}>
+            <p style={{ color: isLight ? '#785200' : '#ffd700', fontSize: 10, marginTop: 4, textAlign: 'center', fontStyle: 'italic', opacity: 0.8 }}>
               {t.premium_voice_note}
             </p>
           )}

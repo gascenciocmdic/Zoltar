@@ -67,12 +67,12 @@ export default function UnlockModal({
   const overlayBg  = isLight ? 'rgba(200,190,230,0.55)' : 'rgba(0,0,0,0.85)';
   const modalBg    = isLight ? 'linear-gradient(145deg, #faf8ff, #f0ecff)' : '#14142b';
   const modalBorder= isLight ? '1px solid rgba(124,111,160,0.3)' : '1px solid rgba(255,215,0,0.3)';
-  const closeColor = isLight ? 'rgba(45,37,64,0.4)' : '#666';
-  const titleColor = isLight ? '#b8860b' : '#ffd700';
-  const subColor   = isLight ? 'rgba(45,37,64,0.55)' : '#888';
+  const closeColor = isLight ? 'rgba(45,37,64,0.65)' : '#888'; // was 0.4/#666 — failed WCAG AA
+  const titleColor = isLight ? '#785200' : '#ffd700';           // was #b8860b — 3.09:1 on light
+  const subColor   = isLight ? 'rgba(45,37,64,0.75)' : '#888'; // was 0.55 — 3.43:1 on light
   const divColor   = isLight ? 'rgba(124,111,160,0.2)' : 'rgba(255,255,255,0.1)';
-  const linkColor  = isLight ? '#7c6fa0' : '#a78bfa';
-  const buyColor   = isLight ? 'rgba(45,37,64,0.3)' : '#555';
+  const linkColor  = isLight ? '#6b5f8a' : '#a78bfa';           // was #7c6fa0 — 4.30:1 on light
+  const buyColor   = isLight ? 'rgba(45,37,64,0.65)' : '#888'; // was 0.3/#555 — 1.83/2.42:1
 
   const tierBtn = (tier, label, sub, recommended = false) => {
     const active   = selectedTier === tier;
@@ -85,7 +85,7 @@ export default function UnlockModal({
       ? (tier === 'premium'
           ? 'linear-gradient(135deg, #7c3aed, #a855f7)'
           : tier === 'full'
-          ? (isLight ? 'linear-gradient(135deg,#7c6fa0,#5b8db8)' : '#7c3aed')
+          ? (isLight ? 'linear-gradient(135deg,#4a3f6e,#2d5c7a)' : '#7c3aed') // was #7c6fa0→#5b8db8 (3.5:1 fail)
           : (isLight ? 'rgba(184,134,11,0.15)' : 'rgba(255,215,0,0.15)'))
       : (isLight ? 'rgba(184,134,11,0.05)' : 'rgba(255,255,255,0.03)');
 
@@ -227,9 +227,12 @@ export default function UnlockModal({
               fontWeight: 700, fontSize: '0.85rem', cursor: canConfirm ? 'pointer' : 'not-allowed',
               marginBottom: 10, border: 'none',
               background: canConfirm
-                ? (selectedTier === 'premium' ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : selectedTier === 'full' ? (isLight ? 'linear-gradient(135deg,#7c6fa0,#5b8db8)' : '#7c3aed') : (isLight ? '#b8860b' : '#ffd700'))
+                ? (selectedTier === 'premium' ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : selectedTier === 'full' ? (isLight ? 'linear-gradient(135deg,#4a3f6e,#2d5c7a)' : '#7c3aed') : (isLight ? '#785200' : '#ffd700'))
                 : 'rgba(255,255,255,0.1)',
-              color: canConfirm ? (selectedTier === 'standard' && !isLight ? '#000' : '#fff') : subColor,
+              // standard light → dark text on amber bg; standard dark → black on gold; others → white
+              color: canConfirm
+                ? (selectedTier === 'standard' ? (isLight ? '#fff8e8' : '#000') : '#fff')
+                : subColor,
               transition: 'all 0.2s',
             }}
           >
