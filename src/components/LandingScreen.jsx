@@ -650,16 +650,14 @@ export default function LandingScreen({ onEnter }) {
           </p>
           <div style={{
             display: 'flex', gap: 12,
-            overflowX: 'auto', paddingBottom: 8,
-            /* hide scrollbar — still scrollable */
-            msOverflowStyle: 'none', scrollbarWidth: 'none',
+            flexWrap: 'wrap', justifyContent: 'center',
           }}>
             {t.testimonials.map((item, i) => (
               <div key={i} style={{
                 background: pillBg,
                 border: `1px solid ${pillBorder}`,
                 borderRadius: 16, padding: '14px 16px',
-                minWidth: 220, maxWidth: 240, flex: '0 0 auto',
+                flex: '1 1 190px', maxWidth: 240, minWidth: 160,
                 textAlign: 'left', transition: 'background 0.4s, border-color 0.4s',
               }}>
                 <p style={{
