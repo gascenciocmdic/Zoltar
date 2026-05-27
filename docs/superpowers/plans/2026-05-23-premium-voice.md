@@ -1,6 +1,6 @@
 # Premium Voice Tier Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add a 100-credit Premium tier that bundles ElevenLabs voice narration (masculine/feminine), full reading with deepening, and automatic synthesis email.
 
@@ -28,7 +28,7 @@
 **Files:**
 - Modify: `src/lib/credits.js:1-8`
 
-- [ ] **Step 1: Add the new cost**
+- [x] **Step 1: Add the new cost**
 
 Open `src/lib/credits.js`. The current `CREDIT_COSTS` block (lines 1–8) is:
 
@@ -55,7 +55,7 @@ export const CREDIT_COSTS = {
 };
 ```
 
-- [ ] **Step 2: Verify the build still passes**
+- [x] **Step 2: Verify the build still passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -63,7 +63,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/credits.js
@@ -77,7 +77,7 @@ git commit -m "feat(credits): add premium_ritual cost (100cr)"
 **Files:**
 - Modify: `api/tts.js` (full file replacement)
 
-- [ ] **Step 1: Replace the entire file**
+- [x] **Step 1: Replace the entire file**
 
 ```js
 export const maxDuration = 60;
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add api/tts.js
@@ -152,7 +152,7 @@ git commit -m "feat(tts): support voiceProfile param (masculine/feminine) with e
 **Files:**
 - Modify: `src/utils/speech.js`
 
-- [ ] **Step 1: Add the export at the end of the file**
+- [x] **Step 1: Add the export at the end of the file**
 
 Open `src/utils/speech.js`. After the last function (`stopAmbient`), append:
 
@@ -200,7 +200,7 @@ export const speakPremium = async (text, voiceProfile = 'masculine', onEnd = nul
 };
 ```
 
-- [ ] **Step 2: Update the import line in App.jsx to include `speakPremium`**
+- [x] **Step 2: Update the import line in App.jsx to include `speakPremium`**
 
 In `src/App.jsx` line 8, change:
 
@@ -214,7 +214,7 @@ to:
 import { initSpeech, toggleMute, speakText, speakPremium, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 ```
 
-- [ ] **Step 3: Verify the build passes**
+- [x] **Step 3: Verify the build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -222,7 +222,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/utils/speech.js src/App.jsx
@@ -238,7 +238,7 @@ git commit -m "feat(speech): add speakPremium() with ElevenLabs + fallback to We
 
 The `ui` object in each language (es/en/pt) needs 8 new keys. Add them right after `synthesis_error` in each language block.
 
-- [ ] **Step 1: Add keys to the Spanish (`es`) block**
+- [x] **Step 1: Add keys to the Spanish (`es`) block**
 
 In `src/data/translations.js`, find line 15 (`synthesis_error: "Error al enviar, intenta de nuevo",`) and insert after it:
 
@@ -254,7 +254,7 @@ In `src/data/translations.js`, find line 15 (`synthesis_error: "Error al enviar,
       deepening_included:   "✦ Profundización incluida",
 ```
 
-- [ ] **Step 2: Add keys to the English (`en`) block**
+- [x] **Step 2: Add keys to the English (`en`) block**
 
 Find line 210 (`synthesis_error: "Error sending, please try again",`) and insert after it:
 
@@ -270,7 +270,7 @@ Find line 210 (`synthesis_error: "Error sending, please try again",`) and insert
       deepening_included:   "✦ Deepening included",
 ```
 
-- [ ] **Step 3: Add keys to the Portuguese (`pt`) block**
+- [x] **Step 3: Add keys to the Portuguese (`pt`) block**
 
 Find line 407 (`synthesis_error: "Erro ao enviar, tente novamente",`) and insert after it:
 
@@ -286,7 +286,7 @@ Find line 407 (`synthesis_error: "Erro ao enviar, tente novamente",`) and insert
       deepening_included:   "✦ Aprofundamento incluído",
 ```
 
-- [ ] **Step 4: Verify the build passes**
+- [x] **Step 4: Verify the build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -294,7 +294,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/data/translations.js
@@ -311,7 +311,7 @@ git commit -m "feat(i18n): add premium tier and voice profile translation keys (
 The modal becomes a two-step selection: pick tier → (if Premium) pick voice → confirm.
 `onUnlock` is now called with `(tier, voiceProfile)` — `voiceProfile` is `null` for standard/full.
 
-- [ ] **Step 1: Replace the entire file**
+- [x] **Step 1: Replace the entire file**
 
 ```jsx
 import { useState } from 'react';
@@ -549,7 +549,7 @@ export default function UnlockModal({
 }
 ```
 
-- [ ] **Step 2: Verify the build passes**
+- [x] **Step 2: Verify the build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -557,7 +557,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/UnlockModal.jsx
@@ -575,7 +575,7 @@ This task has 5 sub-steps.
 
 ### 6a — Add `voiceProfile` state and `narrate()` helper
 
-- [ ] **Step 1: Add `voiceProfile` state**
+- [x] **Step 1: Add `voiceProfile` state**
 
 Find line 147:
 ```js
@@ -588,7 +588,7 @@ const [consultTier,  setConsultTier]  = useState(null); // null | 'standard' | '
 const [voiceProfile, setVoiceProfile] = useState(null); // null | 'masculine' | 'feminine'
 ```
 
-- [ ] **Step 2: Add `narrate()` helper**
+- [x] **Step 2: Add `narrate()` helper**
 
 Find the line with `const handleSendSynthesis = async () => {` (line ~440).
 Insert the following block **immediately before** it:
@@ -608,7 +608,7 @@ Insert the following block **immediately before** it:
 
 ```
 
-- [ ] **Step 3: Update `handleSendSynthesis` to accept a `silent` flag**
+- [x] **Step 3: Update `handleSendSynthesis` to accept a `silent` flag**
 
 The current `handleSendSynthesis` (line ~440) starts with:
 
@@ -706,7 +706,7 @@ Replace the entire function with:
   };
 ```
 
-- [ ] **Step 4: Commit this sub-step**
+- [x] **Step 4: Commit this sub-step**
 
 ```bash
 git add src/App.jsx
@@ -715,7 +715,7 @@ git commit -m "feat(App): add voiceProfile state, narrate() helper, update handl
 
 ### 6b — Update `handleUnlock` to handle `'premium'` tier
 
-- [ ] **Step 5: Replace `handleUnlock`**
+- [x] **Step 5: Replace `handleUnlock`**
 
 Find `const handleUnlock = async (tier) => {` (line ~831). Replace the entire function with:
 
@@ -787,7 +787,7 @@ Find `const handleUnlock = async (tier) => {` (line ~831). Replace the entire fu
   };
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/App.jsx
@@ -796,7 +796,7 @@ git commit -m "feat(App): update handleUnlock to support premium tier + voicePro
 
 ### 6c — Update `initDeepening` to treat `'premium'` like `'full'`
 
-- [ ] **Step 7: Update deepening free-tier check**
+- [x] **Step 7: Update deepening free-tier check**
 
 Find (line ~968):
 ```js
@@ -808,7 +808,7 @@ Replace with:
     if (consultTier === 'full' || consultTier === 'premium') {
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/App.jsx
@@ -817,7 +817,7 @@ git commit -m "feat(App): deepening free for premium tier (same as full)"
 
 ### 6d — Replace `speakText` with `narrate` in reading phases
 
-- [ ] **Step 9: Replace in `handlePurchaseReading` (line ~796)**
+- [x] **Step 9: Replace in `handlePurchaseReading` (line ~796)**
 
 Find:
 ```js
@@ -837,11 +837,11 @@ Replace with:
       narrate(result.narrativaAncestral[revealedStage - 1], language, () => setCanProceed(true));
 ```
 
-- [ ] **Step 10: Replace in `handleUnlock` post-unlock narration (line ~880)**
+- [x] **Step 10: Replace in `handleUnlock` post-unlock narration (line ~880)**
 
 Find (inside the `if (revealedStage > 0)` block you just wrote in Task 6b — already uses `speakPremium` directly, so this is already done ✓).
 
-- [ ] **Step 11: Replace in `handleNextStage` revelation narration (line ~924)**
+- [x] **Step 11: Replace in `handleNextStage` revelation narration (line ~924)**
 
 Find:
 ```js
@@ -854,7 +854,7 @@ Replace with:
           narrate(audioText, language, () => setCanProceed(true));
 ```
 
-- [ ] **Step 12: Replace in anchoring synthesis narration + add auto-email (line ~950)**
+- [x] **Step 12: Replace in anchoring synthesis narration + add auto-email (line ~950)**
 
 Find:
 ```js
@@ -871,7 +871,7 @@ Replace with:
           }, 500);
 ```
 
-- [ ] **Step 13: Replace in deepening narration (lines ~1057 and ~1065)**
+- [x] **Step 13: Replace in deepening narration (lines ~1057 and ~1065)**
 
 Find:
 ```js
@@ -891,7 +891,7 @@ Replace with:
         narrate(`${translations.ui.deepen_subtitle}. ${translations.ui.oracle_misfire}`, language);
 ```
 
-- [ ] **Step 14: Verify the build passes**
+- [x] **Step 14: Verify the build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -899,7 +899,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 15: Commit**
+- [x] **Step 15: Commit**
 
 ```bash
 git add src/App.jsx
@@ -908,7 +908,7 @@ git commit -m "feat(App): use narrate() for reading phases — ElevenLabs for pr
 
 ### 6e — Update JSX deepening badge for Premium tier
 
-- [ ] **Step 16: Update deepening included badge**
+- [x] **Step 16: Update deepening included badge**
 
 Find (line ~1738):
 ```jsx
@@ -928,7 +928,7 @@ Replace with:
                                        )}
 ```
 
-- [ ] **Step 17: Pass `translations` prop to `UnlockModal`**
+- [x] **Step 17: Pass `translations` prop to `UnlockModal`**
 
 Find the `<UnlockModal` JSX (line ~1981). It currently has these props:
 ```jsx
@@ -957,7 +957,7 @@ Add `translations={translations}` as a prop:
       />
 ```
 
-- [ ] **Step 18: Verify the full build passes**
+- [x] **Step 18: Verify the full build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -965,7 +965,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 19: Commit**
+- [x] **Step 19: Commit**
 
 ```bash
 git add src/App.jsx
@@ -979,7 +979,7 @@ git commit -m "feat(App): premium deepening badge, pass translations to UnlockMo
 **Files:**
 - Modify: `api/send-synthesis.js`
 
-- [ ] **Step 1: Check current file**
+- [x] **Step 1: Check current file**
 
 ```bash
 cat api/send-synthesis.js | head -40
@@ -987,7 +987,7 @@ cat api/send-synthesis.js | head -40
 
 Find where credits are deducted (look for `deductCredits` or direct Supabase credit update).
 
-- [ ] **Step 2: Add `skipCreditDeduction` support**
+- [x] **Step 2: Add `skipCreditDeduction` support**
 
 Find the block that checks and deducts `synthesis_email` credits. It will look similar to:
 ```js
@@ -1018,7 +1018,7 @@ Wrap the cost check and deduction with a guard:
 
 Make sure the success response still returns `{ ok: true, credits: updatedCredits }` — for `skipDeduction === true`, return the unchanged credit balance.
 
-- [ ] **Step 3: Verify the build passes**
+- [x] **Step 3: Verify the build passes**
 
 ```bash
 npm run build 2>&1 | tail -5
@@ -1026,7 +1026,7 @@ npm run build 2>&1 | tail -5
 
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/send-synthesis.js
@@ -1037,13 +1037,13 @@ git commit -m "feat(send-synthesis): support skipCreditDeduction flag for Premiu
 
 ## Task 8: Set environment variables in Vercel
 
-- [ ] **Step 1: Add `ELEVENLABS_API_KEY` in Vercel dashboard**
+- [x] **Step 1: Add `ELEVENLABS_API_KEY` in Vercel dashboard**
 
 Go to https://vercel.com → Project Settings → Environment Variables.
 Add for **Production + Preview + Development**:
 - `ELEVENLABS_API_KEY` = your ElevenLabs API key
 
-- [ ] **Step 2: (Optional) Add custom voice IDs**
+- [x] **Step 2: (Optional) Add custom voice IDs**
 
 If you want to use specific voices from your account instead of the defaults (Antoni / Bella), add:
 - `ELEVENLABS_VOICE_ID_MALE`   = your masculine voice ID
@@ -1051,7 +1051,7 @@ If you want to use specific voices from your account instead of the defaults (An
 
 If left unset, Antoni (`ErXwobaYiN019PkySvjV`) and Bella (`EXAVITQu4vr4xnSDxMaL`) are used.
 
-- [ ] **Step 3: Push all commits to trigger deploy**
+- [x] **Step 3: Push all commits to trigger deploy**
 
 ```bash
 git push origin main
@@ -1061,20 +1061,20 @@ git push origin main
 
 ## Task 9: End-to-end verification
 
-- [ ] **Step 1: Test Standard tier (40cr) — no regression**
+- [x] **Step 1: Test Standard tier (40cr) — no regression**
 
 1. Start a new session, select cards, reach the UnlockModal
 2. Select "Estándar" → confirm → verify 40cr deducted
 3. Verify narration uses Web Speech API (no network call to /api/tts)
 4. Verify deepening costs 10cr
 
-- [ ] **Step 2: Test Full tier (65cr) — no regression**
+- [x] **Step 2: Test Full tier (65cr) — no regression**
 
 1. Select "Full" → confirm → verify 65cr deducted
 2. Verify deepening is free
 3. Verify email send button still visible and costs 10cr
 
-- [ ] **Step 3: Test Premium tier (100cr)**
+- [x] **Step 3: Test Premium tier (100cr)**
 
 1. Select "Premium ✨" → voice selector appears
 2. Select "Masculina" → confirm button activates
@@ -1083,17 +1083,17 @@ git push origin main
 5. Reach anchoring phase → email sends automatically → toast or `synthEmailState === 'sent'`
 6. Verify deepening is free
 
-- [ ] **Step 4: Test Premium with "Femenina" voice**
+- [x] **Step 4: Test Premium with "Femenina" voice**
 
 Repeat Step 3 selecting "Femenina" — verify different voice plays.
 
-- [ ] **Step 5: Test fallback behavior**
+- [x] **Step 5: Test fallback behavior**
 
 1. Temporarily remove `ELEVENLABS_API_KEY` from local `.env`
 2. Buy Premium → narration should fall back to Web Speech API with console warning
 3. Re-add the key
 
-- [ ] **Step 6: Final push**
+- [x] **Step 6: Final push**
 
 ```bash
 git push origin main
@@ -1117,3 +1117,26 @@ git push origin main
 - `tier` values: `'standard' | 'full' | 'premium'` — consistent across UnlockModal, handleUnlock, initDeepening, JSX badges
 - `voiceProfile` values: `'masculine' | 'feminine'` — consistent across speakPremium, api/tts.js, voiceCard, setVoiceProfile
 - `handleSendSynthesis({ silent: true })` — `silent` flag consistent in App.jsx and api/send-synthesis.js
+
+---
+
+## Estado Final — Tarea 9 completada (2026-05-26)
+
+**Task 9: End-to-end verification** — ✅ COMPLETADO
+
+Flujo verificado y funcionando:
+- Landing → selección de voz premium (4 voces ElevenLabs: Eric, Zoltar, Jane, Lly)
+- `UnlockModal` muestra las 4 voces con descripciones evocativas (ES/EN/PT)
+- ElevenLabs TTS via `/api/tts` con `voiceProfile` → audio MP3 en el cliente
+- Auto-email con síntesis al completar la lectura premium
+- Fallback a Web Speech API si ElevenLabs falla
+- Variables de entorno configuradas en Vercel (`ELEVENLABS_API_KEY`, `VOICE_*_ID`)
+
+**Commits del plan:**
+- `d0dd35e` — Show all 4 ElevenLabs voices in UnlockModal premium upgrade
+- `26e2456` — Phase 2: voces evocativas, testimonios, oracle pulse, logo móvil
+- `ead6e83` — Phase 3: mesa portrait, SVG mute, dead CSS removal
+- `c3680a7` — OG image dinámica via @vercel/og
+- `73d2ab0` — WCAG AA contrast audit — todos los pares corregidos
+- `07699b0` — Testimonios: tercer card visible en desktop
+- `ba761ad` — Audio: waitMsg no se corta al cargar astral_alignment

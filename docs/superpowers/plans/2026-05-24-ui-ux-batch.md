@@ -1,6 +1,6 @@
 # UI/UX Batch Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Apply 9 UI/UX improvements to the Zoltar tarot app: remove duplicate astral text, replace Truth/Whisper buttons with a toggle switch, improve card-selection subtitle visibility, restyle message bubbles, fix mesa image clipping, show card names in revelation (en/pt), fix mobile deepening overflow, add language flags + voice/tier pre-selection on landing, and improve the landing AI copy.
 
@@ -27,7 +27,7 @@
 **Files:**
 - Modify: `src/App.jsx` (around line 1558–1570)
 
-- [ ] **Step 1: Find the birthNarrative narrative bubble in astral_alignment**
+- [x] **Step 1: Find the birthNarrative narrative bubble in astral_alignment**
 
 In `src/App.jsx`, find this block (approx. lines 1558–1570):
 
@@ -46,7 +46,7 @@ In `src/App.jsx`, find this block (approx. lines 1558–1570):
 )}
 ```
 
-- [ ] **Step 2: Remove only the narrative `<p>`, keep the meta header**
+- [x] **Step 2: Remove only the narrative `<p>`, keep the meta header**
 
 Replace the entire block above with a slim header-only version. The `narrative-container` wrapper and bubble are removed; only a small inline header remains so the zodiac sign/element isn't completely lost:
 
@@ -61,11 +61,11 @@ Replace the entire block above with a slim header-only version. The `narrative-c
 )}
 ```
 
-- [ ] **Step 3: Verify visually**
+- [x] **Step 3: Verify visually**
 
 Check: in `astral_alignment` phase with a birth date entered, only one text block appears (the `introspectionMessage` below the loading spinner area). The zodiac symbol/sign/element/ruler appears as a single compact line above. No `brain-bubble` text wall.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.jsx
@@ -82,7 +82,7 @@ git commit -m "fix(astral): hide birthNarrative long text, keep compact zodiac h
 - Modify: `src/App.jsx` (around lines 1375–1382)
 - Modify: `src/App.css` (add `.dichotomy-toggle` styles, keep `.dichotomy-buttons` intact for backwards-compat)
 
-- [ ] **Step 1: Replace JSX for thresholdStep 4**
+- [x] **Step 1: Replace JSX for thresholdStep 4**
 
 Find this block in `src/App.jsx` (approx. lines 1375–1382):
 
@@ -124,7 +124,7 @@ Replace with:
 )}
 ```
 
-- [ ] **Step 2: Add CSS for the toggle switch**
+- [x] **Step 2: Add CSS for the toggle switch**
 
 Add these rules at the end of `src/App.css` (before the final `@keyframes fadeIn` added by the premium feature):
 
@@ -176,11 +176,11 @@ Add these rules at the end of `src/App.css` (before the final `@keyframes fadeIn
 }
 ```
 
-- [ ] **Step 3: Verify visually**
+- [x] **Step 3: Verify visually**
 
 Check: step 4 of threshold shows a rounded pill with two options side-by-side. Clicking one highlights it with purple background. "Continuar" button below remains disabled until a choice is made.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.jsx src/App.css
@@ -196,7 +196,7 @@ git commit -m "feat(threshold): replace choice buttons with pill toggle switch f
 **Files:**
 - Modify: `src/App.css` (`.fan-subtitle` at line 1945 and mobile override at ~line 2223)
 
-- [ ] **Step 1: Update the base `.fan-subtitle` rule**
+- [x] **Step 1: Update the base `.fan-subtitle` rule**
 
 Find (approx. line 1945):
 ```css
@@ -220,7 +220,7 @@ Replace with:
 }
 ```
 
-- [ ] **Step 2: Add a light-mode override**
+- [x] **Step 2: Add a light-mode override**
 
 After the `.fan-subtitle` block (before `.fan-deck`), add:
 
@@ -232,7 +232,7 @@ After the `.fan-subtitle` block (before `.fan-deck`), add:
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/App.css
@@ -248,7 +248,7 @@ git commit -m "fix(css): improve card-selection subtitle visibility in dark and 
 **Files:**
 - Modify: `src/App.css` (`.brain-bubble` at line 250)
 
-- [ ] **Step 1: Update `.brain-bubble` base styles**
+- [x] **Step 1: Update `.brain-bubble` base styles**
 
 Find (approx. line 250):
 ```css
@@ -284,7 +284,7 @@ Replace with:
 }
 ```
 
-- [ ] **Step 2: Add light-mode override for brain-bubble**
+- [x] **Step 2: Add light-mode override for brain-bubble**
 
 Find `[data-theme="light"] .brain-bubble.narrative p,` (approx. line 1279) — add a rule just before it:
 
@@ -296,7 +296,7 @@ Find `[data-theme="light"] .brain-bubble.narrative p,` (approx. line 1279) — a
 }
 ```
 
-- [ ] **Step 3: Update `.brain-bubble.narrative` mobile rule**
+- [x] **Step 3: Update `.brain-bubble.narrative` mobile rule**
 
 Find (approx. line 334):
 ```css
@@ -304,7 +304,7 @@ Find (approx. line 334):
 ```
 Check this section exists and has `border-radius` — if so, ensure it's at least 16px. If the rule doesn't override `border-radius`, the base 18px already applies. No additional change needed.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.css
@@ -320,7 +320,7 @@ git commit -m "fix(css): restyle brain-bubble with rounder corners and polished 
 **Files:**
 - Modify: `src/App.css` (`.revelation-cloth-scene` at line 2377 and `[data-theme="light"] .revelation-cloth-scene` at ~2404, also `background-size: cover` in `.fan-scene` at ~line 1868)
 
-- [ ] **Step 1: Fix `.revelation-cloth-scene` background-size**
+- [x] **Step 1: Fix `.revelation-cloth-scene` background-size**
 
 Find (approx. line 2389–2393):
 ```css
@@ -340,7 +340,7 @@ Replace with:
   background-repeat: no-repeat;
 ```
 
-- [ ] **Step 2: Fix the fan-scene (card selection) background too**
+- [x] **Step 2: Fix the fan-scene (card selection) background too**
 
 Search for `background-size: cover;` inside `.fan-scene` rule (approx. line 1868):
 ```css
@@ -354,7 +354,7 @@ Replace with:
 
 Also check the light-mode rule at `[data-theme="light"] .fan-scene` and make the same change if it has `background-size: cover`.
 
-- [ ] **Step 3: Verify no other background-size: cover rules affect the mesa**
+- [x] **Step 3: Verify no other background-size: cover rules affect the mesa**
 
 Run:
 ```bash
@@ -363,7 +363,7 @@ grep -n "background-size: cover" src/App.css
 
 For any rule that references the mesa scenes (`fan-scene`, `revelation-cloth-scene`, `synchrony-table`), change `cover` to `contain`. Rules for `background-size: 250%` (zoom style) should NOT be changed.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.css
@@ -379,7 +379,7 @@ git commit -m "fix(css): change mesa background-size from cover to contain to pr
 **Files:**
 - Modify: `src/App.jsx` (approx. lines 1738–1750 — the `revelation-cards-spread` map)
 
-- [ ] **Step 1: Locate the card block in the revelation spread**
+- [x] **Step 1: Locate the card block in the revelation spread**
 
 Find this block (approx. lines 1738–1749):
 ```jsx
@@ -397,7 +397,7 @@ return (
 </div>
 ```
 
-- [ ] **Step 2: Add the card name label**
+- [x] **Step 2: Add the card name label**
 
 Replace the `return (` block with the version below (adds a `<p>` label after the Card, visible only when `cardsFlippedCount > index` and language is 'en' or 'pt'):
 
@@ -432,11 +432,11 @@ return (
 </div>
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 With `language = 'en'` or `'pt'`: after cards flip, a small uppercase card name appears below each. With `language = 'es'`: no name label shown.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.jsx
@@ -452,7 +452,7 @@ git commit -m "feat(revelation): show card name label below revealed cards for e
 **Files:**
 - Modify: `src/App.css` (`.fan-selected-row` mobile overrides, approx. lines 2198–2203 and 2308–2313)
 
-- [ ] **Step 1: Fix the first mobile breakpoint (.fan-selected-row)**
+- [x] **Step 1: Fix the first mobile breakpoint (.fan-selected-row)**
 
 Find (approx. line 2198–2203):
 ```css
@@ -478,7 +478,7 @@ Replace with:
   .fan-tray-card .card-wrapper { width: 72px; height: 113px; }
 ```
 
-- [ ] **Step 2: Fix the second mobile breakpoint (smaller screens)**
+- [x] **Step 2: Fix the second mobile breakpoint (smaller screens)**
 
 Find (approx. line 2308–2313):
 ```css
@@ -498,11 +498,11 @@ And its adjacent `.fan-tray-card` rule. Update:
   .fan-tray-card .card-wrapper { width: 60px; height: 94px; }
 ```
 
-- [ ] **Step 3: Verify on mobile viewport (375px wide)**
+- [x] **Step 3: Verify on mobile viewport (375px wide)**
 
 With two cards selected in deepening, both cards should be visible above the fan, centered, side by side. No overflow.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/App.css
@@ -525,7 +525,7 @@ git commit -m "fix(mobile): center and wrap deepening selected cards to prevent 
 
 #### Part A — LandingScreen.jsx
 
-- [ ] **Step 1: Add language and step state; add flag selector at top-right**
+- [x] **Step 1: Add language and step state; add flag selector at top-right**
 
 At the top of the component (after existing `useState` declarations), add:
 
@@ -587,7 +587,7 @@ Replace the theme toggle `<button>` block (which is `position: absolute, top:16,
 </div>
 ```
 
-- [ ] **Step 2: Update handleCTA to go to step 'configure' instead of calling onEnter**
+- [x] **Step 2: Update handleCTA to go to step 'configure' instead of calling onEnter**
 
 Replace:
 ```jsx
@@ -609,7 +609,7 @@ function handleBegin() {
 }
 ```
 
-- [ ] **Step 3: Add conditional rendering — show configuration step when step === 'configure'**
+- [x] **Step 3: Add conditional rendering — show configuration step when step === 'configure'**
 
 In the return JSX, right BEFORE the `{/* Logo */}` block, add:
 
@@ -730,11 +730,11 @@ In the return JSX, right BEFORE the `{/* Logo */}` block, add:
 )}
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Check: clicking "Start" on landing → shows configure panel. Selecting Standard/Full/Premium highlights the card. Selecting voice highlights it. Clicking "Comenzar" triggers the enter animation and calls `onEnter({ language, tier, voiceProfile })`.
 
-- [ ] **Step 5: Commit LandingScreen changes**
+- [x] **Step 5: Commit LandingScreen changes**
 
 ```bash
 git add src/components/LandingScreen.jsx
@@ -743,13 +743,13 @@ git commit -m "feat(landing): add language flag selector and multi-step tier/voi
 
 #### Part B — App.jsx: handle new onEnter signature + premium auth gate
 
-- [ ] **Step 6: Find where LandingScreen's onEnter is wired up**
+- [x] **Step 6: Find where LandingScreen's onEnter is wired up**
 
 Search for `onEnter` in `src/App.jsx`. Find the prop passed to `<LandingScreen>` and the handler it calls. Currently it goes to `setPhase('languageSelection')` or similar.
 
 Find where `LandingScreen` is rendered (search for `<LandingScreen`). The `onEnter` prop currently points to a function that moves to the next phase. Also find `handleSelectLanguage`.
 
-- [ ] **Step 7: Update the LandingScreen onEnter handler in App.jsx**
+- [x] **Step 7: Update the LandingScreen onEnter handler in App.jsx**
 
 Find the onEnter handler (likely something like `() => setPhase('languageSelection')` or a named function). Replace with:
 
@@ -814,14 +814,14 @@ const handleLandingEnter = ({ language: lang = 'en', tier = 'standard', voicePro
 };
 ```
 
-- [ ] **Step 8: Wire handleLandingEnter to LandingScreen**
+- [x] **Step 8: Wire handleLandingEnter to LandingScreen**
 
 Find `<LandingScreen` in App.jsx. Update:
 ```jsx
 <LandingScreen onEnter={handleLandingEnter} />
 ```
 
-- [ ] **Step 9: Handle pending landing_premium after auth**
+- [x] **Step 9: Handle pending landing_premium after auth**
 
 Find the `pendingAction` handling in App.jsx (search for `pendingAction`). Locate the block that processes pending actions after auth. Add a case for `landing_premium`:
 
@@ -841,12 +841,12 @@ if (pending?.type === 'landing_premium') {
 }
 ```
 
-- [ ] **Step 10: Verify end-to-end**
+- [x] **Step 10: Verify end-to-end**
 
 Test: Landing → select 🇺🇸 (English) → Premium tier → click Comenzar → auth modal appears → after login → threshold screen (English) with premium tier active.
 Test: Landing → Standard → Comenzar → threshold without auth modal.
 
-- [ ] **Step 11: Commit App.jsx changes**
+- [x] **Step 11: Commit App.jsx changes**
 
 ```bash
 git add src/App.jsx
@@ -862,7 +862,7 @@ git commit -m "feat(app): wire landing pre-selection (language, tier, voiceProfi
 **Files:**
 - Modify: `src/components/LandingScreen.jsx` (FEATURES array)
 
-- [ ] **Step 1: Update FEATURES array**
+- [x] **Step 1: Update FEATURES array**
 
 Find the `FEATURES` array at the top of `LandingScreen.jsx`:
 
@@ -908,7 +908,7 @@ const FEATURES = [
 ];
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/LandingScreen.jsx
@@ -939,3 +939,36 @@ git commit -m "fix(landing): improve AI feature pill copy to emphasize spiritual
 - `onEnter({ language, tier, voiceProfile })` — used consistently in T8 Part A (LandingScreen) and Part B (App.jsx `handleLandingEnter`).
 - `deductCredits(authSession, 'premium_ritual')` — matches existing API key used in `handleUnlock`.
 - `setConsultTier('premium')`, `setVoiceProfile(vp)` — match existing state names in App.jsx.
+
+---
+
+## Trabajo Adicional Completado (sesión 2026-05-26)
+
+Trabajo extra realizado durante la sesión, fuera del plan original.
+
+### Fase 2 — UX Batch adicional (`commit 26e2456`)
+- **Logo móvil**: reducción a 150px de alto + padding-top 175px en `@media (max-width: 600px)`.
+- **Voces premium**: descripciones evocativas y poéticas en ES/EN/PT (ej. *"Eco del cosmos — profundo, hipnótico, inescrutable"*).
+- **Testimonios**: sección de 3 testimonios por idioma en LandingScreen (tira horizontal).
+- **Oracle thinking overlay**: opacidad mínima 0.05 → 0.40 en `oracleThinkingPulse` — era casi invisible.
+- **Birthdate iOS**: ya estaba resuelto (`.soul-input` tiene `font-size: 16px` en móvil).
+
+### Fase 3 — Mesa, iconos SVG, OG image (`commits ead6e83`, `c3680a7`)
+- **Mesa portrait**: `@media (orientation: portrait)` aplica `background-size: cover` en fan-scene y revelation-cloth-scene — soluciona el frame incompleto en 9:16.
+- **Iconos de mute**: reemplazados emojis por SVG Material Design (volume_off / volume_up).
+- **CSS muerto**: eliminado `border-left: 4px solid transparent` de `.brain-bubble`.
+- **OG image dinámica**: creado `api/og.jsx` (Edge runtime con `@vercel/og`/Satori) que genera imagen 1200×630 con diseño Zoltar: fondo cósmico, orbe 🔮, título ZOLTAR en dorado, subtítulo, divisor, tagline y badge URL.
+- **index.html**: meta tags `og:image` y `twitter:image` apuntan a `https://www.cosmic-guidance.com/api/og`.
+
+### WCAG AA — Auditoría de contraste (`commit 73d2ab0`)
+Todos los pares de colores fallan → corregidos en 3 archivos. Todos superan ≥4.5:1 (texto normal) o ≥3:1 (texto grande/UI).
+
+| Archivo | Correcciones |
+|---------|-------------|
+| `src/App.css` | 6 ocurrencias `rgba(white, 0.4)` → `0.62` (3.26→5.72:1) |
+| `src/components/LandingScreen.jsx` | `taglineColor`, `ctaBg`, `pillDescColor`, `priceColor`, `priceSubColor`, `priceLabelColor`, `footerColor`, `footerLinkColor`, botón premium (blanco→`#2d1a00`), nota premium (`#b8860b`→`#785200`) |
+| `src/components/UnlockModal.jsx` | `closeColor`, `titleColor`, `subColor`, `linkColor`, `buyColor`, gradiente full tier, botón confirmar |
+
+### Bug fixes (`commits 07699b0`, `ba761ad`)
+- **Testimonios desktop**: tercer testimonio se cortaba (744px > 680px contenedor). Fix: `flexWrap: wrap` + `flex: 1 1 190px` — 3 columnas en desktop, apilado en móvil.
+- **Audio astral_alignment**: la voz del `waitMsg` se cortaba al aparecer la sección de constelación. Fix: encadenamiento de narración — `narrate(astralMsg)` espera el `onEnd` del `waitMsg` antes de disparar.
