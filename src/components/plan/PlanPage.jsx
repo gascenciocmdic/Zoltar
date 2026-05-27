@@ -105,13 +105,13 @@ function TabResumen() {
         <div style={{ fontSize: 24 }}>🎯</div>
         <div>
           <div style={{ fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>Próxima acción</div>
-          <div style={{ fontSize: 13, color: '#ddd', marginTop: 3 }}>Validar MVP con primeros 200 usuarios · configurar Stripe live · conectar dominio propio</div>
+          <div style={{ fontSize: 13, color: '#ddd', marginTop: 3 }}>Configurar Stripe live · validar flujo premium end-to-end con usuarios reales · lanzamiento</div>
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 24 }}>
         <StatCard val="13/13" label="Plan MVP completado" color="#a78bfa" />
-        <StatCard val="39" label="Commits Sprint 2" color="#34A853" />
-        <StatCard val="4" label="Módulos rediseñados" color="#C7A24C" />
+        <StatCard val="5" label="Sprints completados" color="#34A853" />
+        <StatCard val="3" label="Tiers de pago activos" color="#C7A24C" />
         <StatCard val="$0/mes" label="Costo infra actual" color="#4ade80" />
       </div>
       <div style={S.sectionTitle}>Progreso por sprint</div>
@@ -121,6 +121,8 @@ function TabResumen() {
         { label: 'Light Mode + fixes post-Sprint 1', pct: 100, color: '#C7A24C', note: 'Toggle dark/light · logo · botones · modales · mobile', tag: 'done' },
         { label: 'Sprint 2 — Rediseño Visual & UX (39 commits)', pct: 100, color: 'linear-gradient(90deg,#2563eb,#60a5fa)', note: 'Mesa de madera · abanico interactivo · pétalos · mobile responsiveness', tag: 'done' },
         { label: 'Sprint 3 — UX Improvements + Mobile', pct: 100, color: '#10b981', note: 'Flujo simplificado · fecha opcional · sticky CTA · scroll to top · centrado mobile', tag: 'done' },
+        { label: 'Sprint 4 — Premium Voice (ElevenLabs)', pct: 100, color: 'linear-gradient(90deg,#b8860b,#ffd700)', note: 'Tier premium 100cr · 4 voces ElevenLabs · UnlockModal multi-step · auto-email', tag: 'done' },
+        { label: 'Sprint 5 — UX Batch + WCAG + Bug Fixes', pct: 100, color: 'linear-gradient(90deg,#0ea5e9,#38bdf8)', note: 'T1-T9 UX · OG image · auditoría WCAG AA · testimonios · fix audio astral', tag: 'done' },
       ].map((s, i) => (
         <div key={i} style={S.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -135,16 +137,20 @@ function TabResumen() {
       <div style={S.sectionTitle}>Estado actual de features</div>
       <div style={S.row2}>
         {[
-          'Portal gratuito hasta revelación', 'UnlockModal (Standard 40cr / Full 70cr)',
+          'Portal gratuito hasta revelación', 'UnlockModal (Standard 40cr / Full 65cr / Premium 100cr)',
           'InviteWidget (email + WhatsApp + link)', 'Analytics → Supabase mvp_events',
-          'Landing page con pricing', 'Auth (email + password + forgot)',
+          'Landing page con banderas + selección de voz/tier', 'Auth (email + password + forgot)',
           'T&C + Privacy Policy', 'Cookie consent banner',
           'Toast notifications', 'PostHog (consent-gated)',
-          'UAT route (/uat)', 'Light mode por defecto',
-          'Mesa de madera + assets PNG', 'Abanico interactivo',
-          'Pétalos púrpura', 'Mobile: fan borde a borde',
+          'UAT route (/uat)', 'Light mode + dark mode toggle',
+          'Mesa de madera + assets PNG', 'Abanico interactivo drag-to-select',
+          'Pétalos púrpura', 'Mobile: fan borde a borde + portrait cover',
           'Flujo simplificado (sin "Permitir")', 'Fecha de nacimiento opcional',
-          'Nueva consulta guarda nombre', 'Textos centrados en móvil',
+          'Nueva consulta guarda nombre', 'Toggle Truth/Whisper (pill switch)',
+          '4 voces ElevenLabs (es/en/pt)', 'Auto-email síntesis para premium',
+          'OG image dinámica (/api/og)', 'WCAG AA — todos los pares corregidos',
+          'Testimonios en landing (3 por idioma)', 'SVG mute icons (Material Design)',
+          'Nombres de carta bajo cartas reveladas (en/pt)', 'Fix audio: narración astral encadenada',
         ].map((f, i) => (
           <div key={i} style={{ ...S.card, padding: '14px 16px' }}><span style={{ color: '#34A853' }}>✓</span> <span style={{ fontSize: 12, color: '#ccc' }}>{f}</span></div>
         ))}
@@ -248,6 +254,54 @@ function TabSprints() {
             <div key={i} style={{ fontSize: 12, color: '#bbb' }}><span style={{ color: '#34A853' }}>✓</span> {f}</div>
           ))}
         </div>
+      </div>
+
+      <div style={{ ...S.sectionTitle, marginTop: 28 }}>Sprint 4 — Premium Voice con ElevenLabs (23–24 Mayo 2026)</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        {[
+          { icon: '🎙️', color: '#ffd700', title: 'ElevenLabs TTS', tasks: ['api/tts.js — 4 voces por idioma (Eric, Zoltar, Jane, Lly)', 'speakPremium() en speech.js con fallback Web Speech', 'Variables de entorno en Vercel (ELEVENLABS_API_KEY)', 'narrate() helper despacha premium vs. estándar'] },
+          { icon: '💎', color: '#a78bfa', title: 'Tier Premium 100cr', tasks: ['credits.js: premium_ritual: 100', 'UnlockModal: selección tier → selección de voz (2 pasos)', 'handleUnlock wired para premium en App.jsx', 'Deepening gratuito para usuarios premium'] },
+          { icon: '📧', color: '#34A853', title: 'Auto-email + UX', tasks: ['Auto-email síntesis al completar lectura premium', 'skipCreditDeduction en api/send-synthesis.js', '8 nuevas translation keys en es/en/pt', 'Voces evocativas: "Eco del cosmos", "Susurro sanador"...'] },
+        ].map((s, i) => (
+          <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{s.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#ccc' }}>{s.title}</div>
+            </div>
+            <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {s.tasks.map((t, j) => (
+                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, padding: '5px 0', borderBottom: j < s.tasks.length - 1 ? '1px solid #161616' : 'none' }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34A853', flexShrink: 0, marginTop: 4 }} />
+                  <span style={{ color: '#bbb' }}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ ...S.sectionTitle, marginTop: 28 }}>Sprint 5 — UX Batch + WCAG + Bug Fixes (26 Mayo 2026)</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        {[
+          { icon: '🎨', color: '#0ea5e9', title: 'UX Batch (T1–T9)', tasks: ['Abanico: texto subtítulo más visible', 'brain-bubble: esquinas redondeadas (18px) + blur', 'Mesa: background-size contain (sin clipping)', 'Nombres de carta bajo revelación (en/pt)', 'Toggle Truth/Whisper como pill switch', 'Landing: banderas + selección tier/voz pre-entrada', 'Testimonios (3 por idioma, scroll horizontal)'] },
+          { icon: '🌐', color: '#c4b5fd', title: 'OG Image + Meta', tasks: ['api/og.jsx — Edge runtime con @vercel/og/Satori', 'Diseño: fondo cósmico · orbe 🔮 · ZOLTAR dorado', 'index.html: og:image y twitter:image apuntan a /api/og', 'Mesa portrait: @media (orientation:portrait) → cover', 'SVG mute icons (Material Design, reemplaza emojis)'] },
+          { icon: '♿', color: '#f472b6', title: 'WCAG AA + Bug Fixes', tasks: ['App.css: 6 rgba-white-0.4 → 0.62 (3.26→5.72:1)', 'LandingScreen: 10+ tokens corregidos', 'UnlockModal: 6 tokens corregidos', 'Botón premium: texto blanco→#2d1a00 sobre ámbar', 'Fix: 3er testimonio cortado en desktop (flex-wrap)', 'Fix: narración astral encadenada (no corta waitMsg)'] },
+        ].map((s, i) => (
+          <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{s.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#ccc' }}>{s.title}</div>
+            </div>
+            <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {s.tasks.map((t, j) => (
+                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, padding: '5px 0', borderBottom: j < s.tasks.length - 1 ? '1px solid #161616' : 'none' }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34A853', flexShrink: 0, marginTop: 4 }} />
+                  <span style={{ color: '#bbb' }}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );
@@ -657,10 +711,10 @@ function TabPendiente() {
     <>
       <div style={S.sectionTitle}>Issues conocidos / deuda técnica</div>
       {[
-        { icon: '⚠️', style: S.cardGold, titleColor: '#C7A24C', title: 'Verificar flujo completo en producción', desc: 'Confirmar que el portal free → unlock → deepening → invite funciona end-to-end en Vercel. Especialmente el cobro de créditos y el envío de emails.' },
-        { icon: '📋', style: S.card, titleColor: '#ccc', title: 'Compra de créditos (Stripe live)', desc: 'El flujo de recarga vía Stripe está implementado pero necesita verificación en producción con claves live. Webhook de Stripe pendiente de configurar.' },
-        { icon: '📋', style: S.card, titleColor: '#ccc', title: 'Variables de entorno en Vercel', desc: 'Confirmar que VITE_APP_URL, VITE_POSTHOG_KEY y RESEND_API_KEY están seteadas correctamente en el dashboard de Vercel para producción.' },
-        { icon: '📋', style: S.card, titleColor: '#ccc', title: 'Dominio propio', desc: 'Actualmente en zoltar-two.vercel.app y cosmic-guidance.com. Definir dominio principal y conectarlo correctamente.' },
+        { icon: '⚠️', style: S.cardGold, titleColor: '#C7A24C', title: 'Stripe live — compra de créditos', desc: 'El flujo de recarga vía Stripe está implementado pero necesita verificación en producción con claves live. Webhook de Stripe pendiente de configurar.' },
+        { icon: '⚠️', style: S.cardGold, titleColor: '#C7A24C', title: 'Verificación end-to-end Premium', desc: 'Confirmar flujo completo: landing → selección premium → ElevenLabs audio → revelación → auto-email síntesis. Probar los 4 perfiles de voz.' },
+        { icon: '📋', style: S.card, titleColor: '#ccc', title: 'OG image en social media', desc: 'Verificar que https://www.cosmic-guidance.com/api/og genera correctamente en opengraph.xyz y que Twitter/LinkedIn la muestran.' },
+        { icon: '📋', style: S.card, titleColor: '#ccc', title: 'Dominio principal definitivo', desc: 'cosmic-guidance.com está operativo. Confirmar que zoltar-two.vercel.app redirige correctamente y que el dominio está como producción en Vercel.' },
       ].map((i, idx) => (
         <div key={idx} style={{ ...i.style, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
           <div style={{ fontSize: 18, flexShrink: 0 }}>{i.icon}</div>
@@ -671,9 +725,9 @@ function TabPendiente() {
         </div>
       ))}
 
-      <div style={{ ...S.sectionTitle, marginTop: 24 }}>Candidatos Sprint 4 (post-validación)</div>
+      <div style={{ ...S.sectionTitle, marginTop: 24 }}>Candidatos Sprint 6 (post-lanzamiento)</div>
       <div style={S.row2}>
-        {['🛒 Stripe live (compra créditos)', '🌐 Dominio propio definitivo', '🎯 OG tags / SEO landing', '📧 Email de bienvenida al registrarse', '📊 Dashboard KPIs para usuario', '🔔 Notificaciones push', '📱 Tarjeta compartible de resultado', '💳 Suscripción mensual $9.99'].map((t, i) => (
+        {['🛒 Stripe live (compra créditos)', '📧 Email de bienvenida al registrarse', '📊 Dashboard KPIs para usuario', '🔔 Notificaciones push', '📱 Tarjeta compartible de resultado', '💳 Suscripción mensual $9.99', '🔗 Programa de afiliados', '🌍 SEO + blog espiritual'].map((t, i) => (
           <div key={i} style={{ ...S.card, padding: '12px 14px', fontSize: 12, color: '#888' }}>{t}</div>
         ))}
       </div>
@@ -688,13 +742,17 @@ function TabStack() {
       <div style={S.row2}>
         {[
           ['Frontend', 'React + Vite'],
-          ['Deploy', 'Vercel (zoltar-two.vercel.app)'],
+          ['Deploy', 'Vercel — cosmic-guidance.com'],
           ['Auth + DB', 'Supabase'],
           ['Pagos', 'Stripe (pendiente live)'],
           ['Email', 'Resend + dominio cosmic-guidance.com'],
           ['Analytics', 'PostHog + Supabase mvp_events'],
-          ['IA', 'Pollinations.ai (Gemini/OpenAI vía proxy)'],
+          ['IA texto', 'Pollinations.ai (Gemini/OpenAI vía proxy)'],
+          ['IA voz', 'ElevenLabs (4 voces · eleven_multilingual_v2)'],
+          ['TTS fallback', 'Web Speech API (nativo del navegador)'],
+          ['OG image', '@vercel/og · Edge runtime · Satori'],
           ['Créditos', 'Iniciado $4.99 · Explorador $9.99 · Oráculo $19.99'],
+          ['Tiers lectura', 'Estándar 40cr · Full 65cr · Premium 100cr'],
         ].map(([label, val], i) => (
           <div key={i} style={{ ...S.card, padding: '14px 16px' }}>
             <div style={{ fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
@@ -706,12 +764,13 @@ function TabStack() {
       <div style={S.sectionTitle}>URLs clave</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[
-          ['Producción (principal)', 'zoltar-two.vercel.app'],
-          ['Dominio de email', 'cosmic-guidance.com'],
-          ['UAT Dashboard', 'zoltar-two.vercel.app/uat'],
-          ['Plan de negocio', 'zoltar-two.vercel.app/plan'],
-          ['Términos', 'zoltar-two.vercel.app/terms'],
-          ['Privacidad', 'zoltar-two.vercel.app/privacy'],
+          ['Producción (principal)', 'cosmic-guidance.com'],
+          ['Deploy alternativo', 'zoltar-two.vercel.app'],
+          ['OG Image', 'cosmic-guidance.com/api/og'],
+          ['UAT Dashboard', 'cosmic-guidance.com/uat'],
+          ['Plan de negocio', 'cosmic-guidance.com/plan'],
+          ['Términos', 'cosmic-guidance.com/terms'],
+          ['Privacidad', 'cosmic-guidance.com/privacy'],
         ].map(([label, url], i) => (
           <div key={i} style={{ ...S.card, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: '#777' }}>{label}</span>
