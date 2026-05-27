@@ -40,10 +40,10 @@ const LANDING_I18N = {
       { id: 'std_feminine',  label: '🗣 Femenina',  desc: 'La voz etérea del universo' },
     ],
     voices: [
-      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural y serena' },
-      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda y mística' },
-      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Voz femenina etérea y sanadora' },
-      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz femenina cálida y compasiva' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Presencia clara y serena — guía con calma ancestral' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Eco del cosmos — profundo, hipnótico, inescrutable' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Susurro sanador — etérea como la seda del tiempo' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Abrazo de luz — cálida, cercana, eternamente compasiva' },
     ],
     begin_btn: '✦ Comenzar',
     begin_premium_btn: '✦ Comenzar Premium',
@@ -56,6 +56,12 @@ const LANDING_I18N = {
       { label: 'Oráculo',    credits: '1100 cr', readings: '22 lecturas', price: '$19.99' },
     ],
     most_popular: 'MÁS POPULAR',
+    testimonials_title: '✦ Voces del Cosmos ✦',
+    testimonials: [
+      { text: 'Una experiencia que nunca olvidaré. La lectura tocó mi alma de manera inexplicable.', author: 'Valentina M., Buenos Aires' },
+      { text: 'Las cartas describieron exactamente lo que siento pero no logro expresar con palabras.', author: 'Diego R., Ciudad de México' },
+      { text: 'La voz premium fue sobrecogedora. Sentí que el oráculo me conocía desde siempre.', author: 'María L., Madrid' },
+    ],
     footer: 'Experiencia de entretenimiento digital. Las lecturas son generadas por IA con fines de exploración personal, no constituyen asesoramiento profesional.',
     terms: 'Términos',
     privacy: 'Privacidad',
@@ -95,10 +101,10 @@ const LANDING_I18N = {
       { id: 'std_feminine',  label: '🗣 Feminine',  desc: 'The ethereal voice of the universe' },
     ],
     voices: [
-      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Natural, serene masculine voice' },
-      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Deep, profound and mystical voice' },
-      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Ethereal, healing feminine voice' },
-      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Warm, compassionate feminine voice' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Clear, serene presence — guides with ancestral calm' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Echo of the cosmos — deep, hypnotic, inscrutable' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Healing whisper — ethereal as the silk of time' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Embrace of light — warm, near, eternally compassionate' },
     ],
     begin_btn: '✦ Begin',
     begin_premium_btn: '✦ Begin Premium',
@@ -111,6 +117,12 @@ const LANDING_I18N = {
       { label: 'Oracle',   credits: '1100 cr', readings: '22 readings', price: '$19.99' },
     ],
     most_popular: 'MOST POPULAR',
+    testimonials_title: '✦ Voices from the Cosmos ✦',
+    testimonials: [
+      { text: "An experience I'll never forget. The reading touched my soul in an unexplainable way.", author: 'Emily T., New York' },
+      { text: 'The cards described exactly what I feel but cannot express in words.', author: 'James P., London' },
+      { text: 'The premium voice was overwhelming. It felt like the oracle had always known me.', author: 'Sofia K., Toronto' },
+    ],
     footer: 'Digital entertainment experience. Readings are AI-generated for personal exploration and do not constitute professional advice.',
     terms: 'Terms',
     privacy: 'Privacy',
@@ -150,10 +162,10 @@ const LANDING_I18N = {
       { id: 'std_feminine',  label: '🗣 Feminino',  desc: 'A voz etérea do universo' },
     ],
     voices: [
-      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Voz masculina natural e serena' },
-      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Voz grave, profunda e mística' },
-      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Voz feminina etérea e curadora' },
-      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Voz feminina calorosa e compassiva' },
+      { id: 'masculine_1', label: '🌌 Eric, Default',  desc: 'Presença clara e serena — guia com calma ancestral' },
+      { id: 'masculine_2', label: '🔮 Zoltar, Calm',   desc: 'Eco do cosmos — profundo, hipnótico, inescrutável' },
+      { id: 'feminine_1',  label: '🌸 Jane, Smooth',   desc: 'Sussurro que cura — etéreo como a seda do tempo' },
+      { id: 'feminine_2',  label: '💜 Lly, Empathy',   desc: 'Abraço de luz — caloroso, próximo, eternamente compassivo' },
     ],
     begin_btn: '✦ Começar',
     begin_premium_btn: '✦ Começar Premium',
@@ -166,6 +178,12 @@ const LANDING_I18N = {
       { label: 'Oráculo',    credits: '1100 cr', readings: '22 leituras', price: '$19.99' },
     ],
     most_popular: 'MAIS POPULAR',
+    testimonials_title: '✦ Vozes do Cosmos ✦',
+    testimonials: [
+      { text: 'Uma experiência que nunca esquecerei. A leitura tocou minha alma de forma inexplicável.', author: 'Mariana S., São Paulo' },
+      { text: 'As cartas descreveram exatamente o que sinto, mas não consigo expressar em palavras.', author: 'Rafael M., Rio de Janeiro' },
+      { text: 'A voz premium foi arrebatadora. Senti que o oráculo me conhecia desde sempre.', author: 'Ana F., Lisboa' },
+    ],
     footer: 'Experiência de entretenimento digital. As leituras são geradas por IA para fins de exploração pessoal e não constituem aconselhamento profissional.',
     terms: 'Termos',
     privacy: 'Privacidade',
@@ -617,6 +635,51 @@ export default function LandingScreen({ onEnter }) {
       </div>
 
       {/* ── Pricing anchor — hidden for MVP launch ── */}
+
+      {/* ── Testimonials ── */}
+      {t.testimonials && (
+        <div style={{
+          width: '100%', maxWidth: 680, marginBottom: 28, padding: '0 8px',
+        }}>
+          <p style={{
+            color: taglineColor, fontSize: 10, letterSpacing: '0.14em',
+            textTransform: 'uppercase', marginBottom: 14, fontWeight: 700,
+            textAlign: 'center', transition: 'color 0.4s',
+          }}>
+            {t.testimonials_title}
+          </p>
+          <div style={{
+            display: 'flex', gap: 12,
+            overflowX: 'auto', paddingBottom: 8,
+            /* hide scrollbar — still scrollable */
+            msOverflowStyle: 'none', scrollbarWidth: 'none',
+          }}>
+            {t.testimonials.map((item, i) => (
+              <div key={i} style={{
+                background: pillBg,
+                border: `1px solid ${pillBorder}`,
+                borderRadius: 16, padding: '14px 16px',
+                minWidth: 220, maxWidth: 240, flex: '0 0 auto',
+                textAlign: 'left', transition: 'background 0.4s, border-color 0.4s',
+              }}>
+                <p style={{
+                  color: pillDescColor, fontSize: 12, lineHeight: 1.65,
+                  fontStyle: 'italic', margin: '0 0 10px',
+                  transition: 'color 0.4s',
+                }}>
+                  &ldquo;{item.text}&rdquo;
+                </p>
+                <p style={{
+                  color: taglineColor, fontSize: 10, fontWeight: 700,
+                  margin: 0, transition: 'color 0.4s',
+                }}>
+                  — {item.author}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Footer micro-copy ── */}
       <p style={{
