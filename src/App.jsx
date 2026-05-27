@@ -836,7 +836,20 @@ function App() {
     }
     setLoading(true);
     setVibe('karmic_red');
-    narrate(sessionTexts.waitMsg, language);
+
+    // Chain narrations: waitMsg must finish before astralMsg starts.
+    // Two cases:
+    //   A) API returns BEFORE waitMsg ends → store text, fire when onEnd fires.
+    //   B) waitMsg ends BEFORE API returns → fire immediately when API returns.
+    let pendingAstralText = null;
+    let waitMsgDone = false;
+    const fireAstralNarration = (text) => narrate(text, language, () => setCanProceed(true));
+
+    narrate(sessionTexts.waitMsg, language, () => {
+      waitMsgDone = true;
+      if (pendingAstralText !== null) fireAstralNarration(pendingAstralText);
+    });
+
     try {
        const bdStr = birthDate.day ? `${birthDate.day}/${birthDate.month}/${birthDate.year}` : '';
        const userContext = { name: userName, birthDate: bdStr, reason: visitReason };
@@ -851,7 +864,12 @@ function App() {
          setLastDebug(result._debug || { error: "FALLBACK TRIGGERED (Astral failed)" });
          setShowDebug(true);
        }
-       narrate(result.mensajeAstral || result.mensajeGuia, language, () => setCanProceed(true));
+       const astralText = result.mensajeAstral || result.mensajeGuia;
+       if (waitMsgDone) {
+         fireAstralNarration(astralText);   // case B: waitMsg already finished
+       } else {
+         pendingAstralText = astralText;    // case A: waitMsg still playing, queue it
+       }
     } catch (error) {
        console.error("Astral Error:", error);
        setIntrospectionMessage(translations.ui.oracle_misfire);
