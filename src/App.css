@@ -261,7 +261,6 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   border-radius: 18px;
   font-size: 1.05rem;
   line-height: 1.7;
-  border-left: 4px solid transparent;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
@@ -2409,6 +2408,19 @@ p, .welcome-text, .narrative-text, .brain-bubble, .decree-text, .task-text,
   .fan-scene,
   .revelation-cloth-scene {
     border-radius: 12px;
+  }
+}
+
+/* ── Mesa portrait fix ─────────────────────────────────────
+   La mesa es landscape (1.52:1). En portrait 9:16 el container
+   queda más alto que ancho → contain deja gaps arriba/abajo.
+   cover llena el frame completo mostrando el centro de la mesa.
+────────────────────────────────────────────────────────── */
+@media (orientation: portrait) {
+  .fan-scene,
+  .revelation-cloth-scene {
+    background-size: cover;
+    background-position: center center;
   }
 }
 
