@@ -8,6 +8,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { setCors } from './_cors.js';
 
 const CREDIT_COSTS = {
   consultation:     40,
@@ -54,9 +55,7 @@ function genReferralCode() {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const sb = supabaseAdmin();
@@ -73,20 +72,6 @@ export default async function handler(req, res) {
       .single();
 
     if (error) return res.status(404).json({ error: 'Perfil no encontrado' });
-
-    // ── Cuenta UAT: siempre reinicia con 100 créditos al abrir la app ──
-    const UAT_ACCOUNT = 'ascencio.gustavo@gmail.com';
-    const UAT_CREDITS = 100;
-    if (user.email === UAT_ACCOUNT) {
-      await sb.from('profiles').update({ credits: UAT_CREDITS }).eq('id', user.id);
-      await sb.from('credit_ledger').insert({
-        user_id: user.id,
-        amount: UAT_CREDITS,
-        reason: 'uat_session_reset',
-        meta: { previous_credits: data.credits, reset_at: new Date().toISOString() },
-      });
-      return res.status(200).json({ credits: UAT_CREDITS, uat_reset: true });
-    }
 
     return res.status(200).json({ credits: data.credits });
   }
@@ -112,21 +97,8 @@ export default async function handler(req, res) {
         .eq('id', user.id)
         .single();
 
-      // Si ya está inicializado, retornar sin cambios (salvo cuenta UAT: siempre 100)
-      const TEST_ACCOUNT = 'ascencio.gustavo@gmail.com';
-      const UAT_CREDITS  = 100;
+      // Si ya está inicializado, retornar sin cambios
       if (existing?.signup_bonus_given) {
-        if (user.email === TEST_ACCOUNT) {
-          // Cuenta UAT: siempre resetear a 100 créditos al inicializar sesión
-          await sb.from('profiles').update({ credits: UAT_CREDITS }).eq('id', user.id);
-          await sb.from('credit_ledger').insert({
-            user_id: user.id,
-            amount: UAT_CREDITS,
-            reason: 'uat_session_reset',
-            meta: { test_reset: true, reset_at: new Date().toISOString() },
-          });
-          return res.status(200).json({ credits: UAT_CREDITS, uat_reset: true });
-        }
         return res.status(200).json({ credits: existing.credits, already_initialized: true });
       }
 
@@ -235,13 +207,16 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, credits: newCredits });
     }
 
-    // ── refund: devolver créditos (profundización no utilizada) ─
+    // ── refund: devolver créditos (solo montos equivalentes a costos conocidos) ─
     if (action === 'refund') {
       const user = await getUser(req);
       if (!user) return res.status(401).json({ error: 'No autenticado' });
 
       const amount = parseInt(req.body.amount, 10);
-      if (!amount || amount <= 0) return res.status(400).json({ error: 'Monto inválido' });
+      const validAmounts = Object.values(CREDIT_COSTS);
+      if (!amount || !validAmounts.includes(amount)) {
+        return res.status(400).json({ error: 'Monto de reembolso inválido' });
+      }
 
       const { data: profile, error: pe } = await sb
         .from('profiles').select('credits').eq('id', user.id).single();

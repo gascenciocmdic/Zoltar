@@ -81,6 +81,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
+  const VALID_CREDIT_AMOUNTS = [150, 400, 1100];
+
   if (event.type === 'checkout.session.completed') {
     const session  = event.data.object;
     const userId   = session.metadata?.user_id;
@@ -89,6 +91,11 @@ export default async function handler(req, res) {
 
     if (!userId || !credits) {
       return res.status(400).json({ error: 'Metadata incompleta' });
+    }
+
+    if (!VALID_CREDIT_AMOUNTS.includes(credits)) {
+      console.error(`[Webhook] Monto de créditos inválido: ${credits}`);
+      return res.status(400).json({ error: 'Monto de créditos inválido' });
     }
 
     const sb = supabaseAdmin();

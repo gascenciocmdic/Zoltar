@@ -1,8 +1,10 @@
 /**
- * /api/reset-test-account?secret=zoltar-debug
+ * /api/reset-test-account?secret=<ADMIN_SECRET>
  * Elimina completamente la cuenta de prueba para tests desde cero.
+ * Solo disponible fuera de producción.
  */
 import { createClient } from '@supabase/supabase-js';
+import { setCors } from './_cors.js';
 
 const TEST_EMAIL = 'ascencio.gustavo@gmail.com';
 
@@ -11,8 +13,9 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'Not found' });
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.query?.secret !== 'zoltar-debug') {
+  setCors(req, res);
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret || req.query?.secret !== adminSecret) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
 

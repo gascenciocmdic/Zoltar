@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react';
 
 /* ── Auth ─────────────────────────────────────────────────────── */
-const PLAN_USER = 'ascencio.gustavo@gmail.com';
-const PLAN_PASS = 'Zoltar2026';
 const SESSION_KEY = 'zoltar_plan_auth';
+const API_BASE = import.meta.env.VITE_APP_URL || '';
 
 function PlanGate({ onAuth }) {
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (user === PLAN_USER && pass === PLAN_PASS) {
-      sessionStorage.setItem(SESSION_KEY, '1');
-      onAuth();
-    } else {
-      setError('Credenciales incorrectas');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/plan-auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user, pass }),
+      });
+      if (res.ok) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        onAuth();
+      } else {
+        setError('Credenciales incorrectas');
+      }
+    } catch (_) {
+      setError('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -31,7 +44,7 @@ function PlanGate({ onAuth }) {
         <input type="text" placeholder="Usuario" value={user} onChange={e => setUser(e.target.value)} autoComplete="username" style={inputSt} />
         <input type="password" placeholder="Contraseña" value={pass} onChange={e => setPass(e.target.value)} autoComplete="current-password" style={inputSt} />
         {error && <div style={{ color: '#ef4444', fontSize: 12, textAlign: 'center' }}>{error}</div>}
-        <button type="submit" style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, color: '#fff', cursor: 'pointer', fontSize: 14, marginTop: 4 }}>Ingresar</button>
+        <button type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, color: '#fff', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 14, marginTop: 4, opacity: loading ? 0.7 : 1 }}>{loading ? 'Verificando…' : 'Ingresar'}</button>
       </form>
     </div>
   );

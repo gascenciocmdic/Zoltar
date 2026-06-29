@@ -2,15 +2,18 @@
  * /api/test-resend  — Diagnóstico de configuración Resend
  * GET → retorna estado de variables y hace un envío de prueba
  *
- * Solo accesible en desarrollo o con ?secret=zoltar-debug
+ * Solo accesible con ?secret=<ADMIN_SECRET>
  */
+import { setCors } from './_cors.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const secret = req.query?.secret || req.query?.['secret'];
-  if (secret !== 'zoltar-debug') {
-    return res.status(403).json({ error: 'Acceso denegado. Agrega ?secret=zoltar-debug' });
+  const adminSecret = process.env.ADMIN_SECRET;
+  const secret = req.query?.secret;
+  if (!adminSecret || secret !== adminSecret) {
+    return res.status(403).json({ error: 'Acceso denegado' });
   }
 
   const apiKey    = process.env.RESEND_API_KEY    || '';
