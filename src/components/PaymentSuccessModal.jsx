@@ -40,7 +40,7 @@ export default function PaymentSuccessModal({
           <div className="auth-icon" style={{ fontSize: '3rem' }}>⏳</div>
           <h2 className="auth-title">{t.payment_verifying}{dots}</h2>
           <p className="auth-subtitle" style={{ marginTop: '8px' }}>
-            Procesando tu pago con Stripe
+            Procesando tu pago con Paddle
           </p>
           <div style={{
             margin: '20px auto', width: '48px', height: '48px',

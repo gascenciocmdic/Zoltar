@@ -1,50 +1,90 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PACKAGES } from '../lib/credits';
 
+const PADDLE_TOKEN = import.meta.env.VITE_PADDLE_CLIENT_TOKEN;
+
+let paddleReady = false;
+
+function initPaddle() {
+  if (paddleReady || !PADDLE_TOKEN || typeof window === 'undefined') return;
+  if (!window.Paddle) return;
+  window.Paddle.Initialize({ token: PADDLE_TOKEN });
+  paddleReady = true;
+}
+
 /**
- * Modal de compra de créditos vía Stripe.
+ * Modal de compra de créditos vía Paddle.
  *
  * Props:
  *   isOpen          boolean
  *   onClose         () => void
  *   session         Supabase session object
- *   reason          string | null   ← mensaje opcional del por qué se abrió
- *   onSaveState     () => void      ← guardar estado de la app antes de redirigir
+ *   reason          string | null
+ *   onSaveState     () => void  ← guardar estado antes de que Paddle redirija al success URL
  */
 export default function PurchaseModal({ isOpen, onClose, session, reason, onSaveState, language = 'es' }) {
-  const [loading, setLoading] = useState(null);  // packageId cargando
+  const [loading, setLoading] = useState(null);
   const [error,   setError]   = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // Intentar inicializar Paddle cuando se abre el modal
+    if (window.Paddle) {
+      initPaddle();
+    } else {
+      // Si el script aún no cargó, esperar
+      const check = setInterval(() => {
+        if (window.Paddle) { initPaddle(); clearInterval(check); }
+      }, 100);
+      return () => clearInterval(check);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleBuy = async (packageId) => {
+  const handleBuy = async (pkg) => {
     if (!session) return setError('Debes iniciar sesión primero');
-    setLoading(packageId);
+    if (!window.Paddle) return setError('Error al cargar el sistema de pagos. Recarga la página.');
+
+    setLoading(pkg.id);
     setError('');
 
     try {
-      const res = await fetch('/api/checkout', {
+      // Obtenemos el priceId desde el servidor (nunca hardcodeado en el cliente)
+      const res = await fetch('/api/paddle-checkout', {
         method:  'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization:  `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ packageId, language }),
+        body: JSON.stringify({ packageId: pkg.id }),
       });
 
-      let data;
-      try { data = await res.json(); } catch (_) {
-        throw new Error('Error del servidor. Intenta de nuevo en un momento.');
-      }
-      if (!res.ok || !data.url) throw new Error(data.error || 'Error al crear sesión de pago');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar el pago');
 
-      // Guardar estado de la app antes de salir
+      // Guardar estado antes de que Paddle redirija al success URL
       if (onSaveState) onSaveState();
 
-      // Redirigir a Stripe Checkout
-      window.location.href = data.url;
+      const appUrl = window.location.origin;
+
+      window.Paddle.Checkout.open({
+        items: [{ priceId: data.priceId, quantity: 1 }],
+        customData: {
+          userId:    data.userId,
+          packageId: data.packageId,
+        },
+        customer: { email: session.user.email },
+        settings: {
+          successUrl: `${appUrl}?payment=success&credits=${data.credits}`,
+        },
+      });
+
+      // El modal de Paddle se abre encima — cerramos este modal
+      onClose();
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(null);
     }
   };
@@ -78,10 +118,10 @@ export default function PurchaseModal({ isOpen, onClose, session, reason, onSave
 
               <button
                 className="purchase-btn"
-                onClick={() => handleBuy(pkg.id)}
+                onClick={() => handleBuy(pkg)}
                 disabled={!!loading}
               >
-                {loading === pkg.id ? 'Redirigiendo...' : 'Comprar'}
+                {loading === pkg.id ? 'Cargando...' : 'Comprar'}
               </button>
             </div>
           ))}
@@ -90,7 +130,7 @@ export default function PurchaseModal({ isOpen, onClose, session, reason, onSave
         {error && <p className="auth-error" style={{ marginTop: '12px' }}>{error}</p>}
 
         <p className="auth-terms">
-          Pago seguro vía Stripe · Sin suscripción · Los créditos no expiran
+          Pago seguro vía Paddle · Sin suscripción · Los créditos no expiran
           <br />
           <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#ffd700' }}>
             Términos y Condiciones
