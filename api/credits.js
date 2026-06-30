@@ -10,18 +10,68 @@
 import { createClient } from '@supabase/supabase-js';
 import { setCors } from './_cors.js';
 
-const CREDIT_COSTS = {
+// ── Config cache: lee app_config de Supabase con fallback a constantes ──
+let _configCache = null;
+let _configCacheTime = 0;
+const CONFIG_TTL_MS = 60_000;
+
+const CREDIT_COSTS_DEFAULT = {
   consultation:     40,
   ancestral_ritual: 65,
-  premium_ritual:  100,   // Full reading + ElevenLabs voice + auto email
+  premium_ritual:  100,
   deepening:        10,
   reconsultation:   40,
   synthesis_email:  10,
 };
 
-const SIGNUP_BONUS             = 100;
-const REFERRAL_BONUS_REFERRER  = 50;
-const REFERRAL_BONUS_NEW_USER  = 25;
+const BONUSES_DEFAULT = {
+  signup:              100,
+  referral_referrer:    50,
+  referral_new_user:    25,
+};
+
+async function getAppConfig(sb) {
+  const now = Date.now();
+  if (_configCache && now - _configCacheTime < CONFIG_TTL_MS) return _configCache;
+
+  try {
+    const { data, error } = await sb
+      .from('app_config')
+      .select('key, value')
+      .in('key', [
+        'credit_cost_consultation', 'credit_cost_ancestral_ritual',
+        'credit_cost_premium_ritual', 'credit_cost_deepening',
+        'credit_cost_reconsultation', 'credit_cost_synthesis_email',
+        'signup_bonus', 'referral_bonus_referrer', 'referral_bonus_new_user',
+      ]);
+
+    if (error || !data) throw new Error(error?.message || 'No data');
+
+    const raw = Object.fromEntries(data.map(r => [r.key, Number(r.value)]));
+    _configCache = {
+      CREDIT_COSTS: {
+        consultation:     raw.credit_cost_consultation     ?? CREDIT_COSTS_DEFAULT.consultation,
+        ancestral_ritual: raw.credit_cost_ancestral_ritual ?? CREDIT_COSTS_DEFAULT.ancestral_ritual,
+        premium_ritual:   raw.credit_cost_premium_ritual   ?? CREDIT_COSTS_DEFAULT.premium_ritual,
+        deepening:        raw.credit_cost_deepening        ?? CREDIT_COSTS_DEFAULT.deepening,
+        reconsultation:   raw.credit_cost_reconsultation   ?? CREDIT_COSTS_DEFAULT.reconsultation,
+        synthesis_email:  raw.credit_cost_synthesis_email  ?? CREDIT_COSTS_DEFAULT.synthesis_email,
+      },
+      BONUSES: {
+        signup:            raw.signup_bonus            ?? BONUSES_DEFAULT.signup,
+        referral_referrer: raw.referral_bonus_referrer ?? BONUSES_DEFAULT.referral_referrer,
+        referral_new_user: raw.referral_bonus_new_user ?? BONUSES_DEFAULT.referral_new_user,
+      },
+    };
+    _configCacheTime = now;
+  } catch (err) {
+    console.warn('[credits] No se pudo leer app_config, usando defaults:', err.message);
+    _configCache = { CREDIT_COSTS: CREDIT_COSTS_DEFAULT, BONUSES: BONUSES_DEFAULT };
+    _configCacheTime = now;
+  }
+
+  return _configCache;
+}
 
 function supabaseAdmin() {
   console.log("[Supabase Admin] Initializing with URL:", process.env.SUPABASE_URL ? "SET" : "MISSING");
@@ -59,6 +109,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const sb = supabaseAdmin();
+  const { CREDIT_COSTS, BONUSES } = await getAppConfig(sb);
+  const SIGNUP_BONUS            = BONUSES.signup;
+  const REFERRAL_BONUS_REFERRER = BONUSES.referral_referrer;
+  const REFERRAL_BONUS_NEW_USER = BONUSES.referral_new_user;
 
   // ── GET: balance ──────────────────────────────────────────
   if (req.method === 'GET') {

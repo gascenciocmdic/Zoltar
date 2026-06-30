@@ -1,4 +1,14 @@
+import { createClient } from '@supabase/supabase-js';
+
 export const maxDuration = 60;
+
+function supabaseAdmin() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 // 4 premium voices from the Zoltar ElevenLabs agent
 const VOICE_IDS = {
@@ -19,6 +29,23 @@ const VOICE_SETTINGS = {
   masculine:   { stability: 0.72, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true },
   feminine:    { stability: 0.65, similarity_boost: 0.85, style: 0.20, use_speaker_boost: true },
 };
+
+async function logElevenLabsUsage({ charsSent, voiceId, userId = null }) {
+  try {
+    const costPerChar = 0.00022; // plan Creator: $22/100k chars
+    const costEst = charsSent * costPerChar;
+
+    await supabaseAdmin().from('api_usage_log').insert({
+      user_id:       userId,
+      proveedor:     'elevenlabs',
+      chars_sent:    charsSent,
+      modelo:        voiceId,
+      costo_usd_est: costEst,
+    });
+  } catch (err) {
+    console.warn('[tts] No se pudo loguear uso en api_usage_log:', err.message);
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -41,6 +68,20 @@ export default async function handler(req, res) {
   const voiceId        = VOICE_IDS[profile];
   const voice_settings = VOICE_SETTINGS[profile];
   const modelId = 'eleven_multilingual_v2';
+
+  // Obtener userId para logging (no bloquea si falla)
+  let userId = null;
+  try {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.replace('Bearer ', '').trim();
+    if (token) {
+      const { data } = await supabaseAdmin().auth.getUser(token);
+      userId = data?.user?.id || null;
+    }
+  } catch (_) {}
+
+  // Log fire-and-forget (no bloquea la respuesta de audio)
+  logElevenLabsUsage({ charsSent: text.length, voiceId, userId }).catch(() => {});
 
   try {
     const response = await fetch(
