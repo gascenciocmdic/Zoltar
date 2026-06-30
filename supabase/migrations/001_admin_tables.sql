@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS monthly_costs (
   servicio   TEXT NOT NULL,
   costo_usd  NUMERIC(10,2) DEFAULT 0,
   nota       TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT chk_monthly_costs_mes CHECK (EXTRACT(DAY FROM mes) = 1)
 );
 
 -- ── marketing_spend: gasto en marketing por canal y mes ────────────────
@@ -25,7 +26,8 @@ CREATE TABLE IF NOT EXISTS marketing_spend (
   campana    TEXT,
   gasto_usd  NUMERIC(10,2) DEFAULT 0,
   nota       TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT chk_marketing_spend_mes CHECK (EXTRACT(DAY FROM mes) = 1)
 );
 
 -- ── api_usage_log: log automático de uso de Gemini y ElevenLabs ────────
@@ -42,7 +44,8 @@ CREATE TABLE IF NOT EXISTS api_usage_log (
 );
 
 -- Índices para queries frecuentes
-CREATE INDEX IF NOT EXISTS idx_api_usage_log_created_at ON api_usage_log (created_at);
-CREATE INDEX IF NOT EXISTS idx_api_usage_log_proveedor  ON api_usage_log (proveedor);
-CREATE INDEX IF NOT EXISTS idx_monthly_costs_mes        ON monthly_costs (mes);
-CREATE INDEX IF NOT EXISTS idx_marketing_spend_mes      ON marketing_spend (mes);
+CREATE INDEX IF NOT EXISTS idx_api_usage_log_created_at          ON api_usage_log (created_at);
+CREATE INDEX IF NOT EXISTS idx_api_usage_log_proveedor            ON api_usage_log (proveedor);
+CREATE INDEX IF NOT EXISTS idx_api_usage_log_proveedor_created_at ON api_usage_log (proveedor, created_at);
+CREATE INDEX IF NOT EXISTS idx_monthly_costs_mes                  ON monthly_costs (mes);
+CREATE INDEX IF NOT EXISTS idx_marketing_spend_mes                ON marketing_spend (mes);
