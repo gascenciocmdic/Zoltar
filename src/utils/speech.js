@@ -110,8 +110,11 @@ export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
   const wantKeys = gender === 'feminine' ? femKeys  : mascKeys;
   const skipKeys = gender === 'feminine' ? mascKeys : femKeys;
 
-  // 1. Preferencia: voz con nombre del género correcto en variante latina
-  let voice = pool.find(v => wantKeys.some(k => v.name.toLowerCase().includes(k)));
+  // 1. Primera prioridad explícita por género/idioma
+  const firstPick = (gender === 'masculine') ? 'grandpa' : null;
+  let voice = firstPick ? pool.find(v => v.name.toLowerCase().includes(firstPick)) : null;
+  // 2. Fallback: voz con nombre del género correcto
+  if (!voice) voice = pool.find(v => wantKeys.some(k => v.name.toLowerCase().includes(k)));
   // 2. Fallback: voz sin nombre del género contrario en variante latina
   if (!voice) voice = pool.find(v => !skipKeys.some(k => v.name.toLowerCase().includes(k)));
   // 3. Fallback: cualquier voz del idioma (pool completo)
