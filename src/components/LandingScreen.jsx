@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../lib/themeContext';
-import { startAmbientMusic, initSpeech } from '../utils/speech';
+import { startAmbientMusic, initSpeech, speakText } from '../utils/speech';
 import logoDark from '../assets/Logo_Zoltar_oscuro.png';
 import logoClaro from '../assets/Logo_Zoltar_claro.png';
 
@@ -190,6 +190,54 @@ const LANDING_I18N = {
   },
 };
 
+// ── Voice preview — frases pre-grabadas, sin IA en tiempo real ───────────────
+// Las voces premium reproducen MP3 estáticos de public/voices/preview/.
+// Las voces estándar usan la Web Speech API del navegador (costo $0).
+const VOICE_PREVIEW_PHRASES = {
+  std_masculine: {
+    es: 'El cosmos te llama. Tus cartas están listas.',
+    en: 'The cosmos calls you. Your cards are ready.',
+    pt: 'O cosmos te chama. Suas cartas estão prontas.',
+  },
+  std_feminine: {
+    es: 'Tu alma conoce el camino. Las cartas lo revelarán.',
+    en: 'Your soul knows the way. The cards will reveal it.',
+    pt: 'Sua alma conhece o caminho. As cartas vão revelá-lo.',
+  },
+  masculine_1: {
+    es: 'La serenidad abre las puertas del destino. Yo seré tu guía.',
+    en: 'Serenity opens the gates of destiny. I will be your guide.',
+    pt: 'A serenidade abre as portas do destino. Serei seu guia.',
+  },
+  masculine_2: {
+    es: 'Desde las profundidades del cosmos, tu verdad emerge ahora.',
+    en: 'From the depths of the cosmos, your truth now emerges.',
+    pt: 'Das profundezas do cosmos, sua verdade emerge agora.',
+  },
+  feminine_1: {
+    es: 'Como seda en el viento, las respuestas llegan suavemente hasta ti.',
+    en: 'Like silk in the wind, the answers drift gently toward you.',
+    pt: 'Como seda ao vento, as respostas chegam suavemente até você.',
+  },
+  feminine_2: {
+    es: 'Aquí estoy, con amor y luz, para acompañar cada paso de tu camino.',
+    en: 'I am here, with love and light, to walk beside you on every step.',
+    pt: 'Estou aqui, com amor e luz, para caminhar ao seu lado em cada passo.',
+  },
+};
+
+const STD_VOICE_PREVIEW_IDS = new Set(['std_masculine', 'std_feminine']);
+
+let _previewAudio = null;
+
+function stopVoicePreview() {
+  if (_previewAudio) {
+    _previewAudio.pause();
+    _previewAudio = null;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
 // ── Helper sub-components ─────────────────────────────────────────────────────
 
 function SectionDivider({ label, isLight, taglineColor, isPremium = false }) {
@@ -286,6 +334,27 @@ export default function LandingScreen({ onEnter }) {
     }, 3200);
     return () => clearInterval(cycle);
   }, [selectedLang, t.taglines.length]);
+
+  // Para cualquier preview en curso al cambiar de idioma
+  useEffect(() => { stopVoicePreview(); }, [selectedLang]);
+
+  function handleVoiceSelect(voiceId) {
+    setSelectedVoice(voiceId);
+    stopVoicePreview();
+
+    const phrase = VOICE_PREVIEW_PHRASES[voiceId]?.[selectedLang];
+    if (!phrase) return;
+
+    if (STD_VOICE_PREVIEW_IDS.has(voiceId)) {
+      initSpeech(selectedLang);
+      speakText(phrase, selectedLang);
+    } else {
+      const audio = new Audio(`/voices/preview/${voiceId}_${selectedLang}.mp3`);
+      _previewAudio = audio;
+      audio.play().catch(() => speakText(phrase, selectedLang));
+      audio.onended = () => { _previewAudio = null; };
+    }
+  }
 
   function handleCTA() {
     setStep('configure');
@@ -426,7 +495,7 @@ export default function LandingScreen({ onEnter }) {
         }}>
           {/* Back button */}
           <button
-            onClick={() => setStep('landing')}
+            onClick={() => { stopVoicePreview(); setStep('landing'); }}
             style={{
               position: 'absolute', top: 16, left: 16,
               background: 'transparent', border: 'none',
@@ -466,7 +535,7 @@ export default function LandingScreen({ onEnter }) {
                   isLight={isLight}
                   pillTitleColor={pillTitleColor}
                   pillDescColor={pillDescColor}
-                  onSelect={setSelectedVoice}
+                  onSelect={handleVoiceSelect}
                 />
               ))}
             </div>
@@ -483,7 +552,7 @@ export default function LandingScreen({ onEnter }) {
                   isLight={isLight}
                   pillTitleColor={pillTitleColor}
                   pillDescColor={pillDescColor}
-                  onSelect={setSelectedVoice}
+                  onSelect={handleVoiceSelect}
                 />
               ))}
             </div>
