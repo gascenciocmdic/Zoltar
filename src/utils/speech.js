@@ -77,7 +77,7 @@ export const speakText = (text, lang = 'es', onEnd = null) => {
  * filtrando por idioma y luego por género. Pitch refuerza el carácter
  * cuando no hay voz nativa del género disponible.
  */
-export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
+export const speakPreviewStd = (text, lang = 'en', gender = 'masculine', onEnd = null) => {
   if (!text || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
 
@@ -120,6 +120,11 @@ export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
   // 3. Fallback: cualquier voz del idioma (pool completo)
   if (!voice) voice = pool[0] ?? forLang[0];
   if (voice) utterance.voice = voice;
+
+  if (onEnd) {
+    utterance.onend  = onEnd;
+    utterance.onerror = onEnd;
+  }
 
   utterance.pitch = gender === 'feminine' ? 1.55 : 1.90;
   utterance.rate  = gender === 'feminine' ? 0.92 : 0.72;

@@ -5,7 +5,7 @@ import { useTheme } from './lib/themeContext';
 import Card from './components/Card';
 import { interpretCards, generateIntrospection, generateAnchoring, generateDeepening } from './api/gemini';
 import { cardsData } from './data/cards';
-import { initSpeech, toggleMute, speakText, speakPremium, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
+import { initSpeech, toggleMute, speakText, speakPremium, speakPreviewStd, stopSpeech, startAmbientMusic, stopAmbient } from './utils/speech';
 import { I18N } from './data/translations';
 import TypewriterText from './components/TypewriterText';
 import Dragonfly from './components/Dragonfly';
@@ -543,8 +543,11 @@ function App() {
     // Always stop any ongoing audio before starting a new narration to prevent
     // voice overlap between Web Speech API and ElevenLabs.
     stopSpeech();
-    if (consultTier === 'premium' && voiceProfile) {
+    if (consultTier === 'premium' && voiceProfile && !voiceProfile.startsWith('std_')) {
       speakPremium(text, voiceProfile, lang, onEnd);
+    } else if (voiceProfile === 'std_masculine' || voiceProfile === 'std_feminine') {
+      const gender = voiceProfile === 'std_feminine' ? 'feminine' : 'masculine';
+      speakPreviewStd(text, lang, gender, onEnd);
     } else {
       speakText(text, lang, onEnd);
     }
@@ -611,15 +614,18 @@ function App() {
     // LandingScreen's click handlers BEFORE this setTimeout-delayed function runs.
     // Calling them here again is safe (both are idempotent) but the critical
     // first call must happen within the actual user gesture, not inside setTimeout.
-    initSpeech();
+    initSpeech(lang);
 
     // Ambient greeting — use the selected voice tier so ElevenLabs fires from
     // the very first word and the standard Web Speech API is never started in
     // parallel.  This prevents the "double voice" overlap on premium sessions.
     const pool = I18N[lang] || I18N.es;
     const welcomeMsg = pool.greetings[Math.floor(Math.random() * pool.greetings.length)];
-    if (tier === 'premium' && vp) {
+    if (tier === 'premium' && vp && !vp.startsWith('std_')) {
       speakPremium(welcomeMsg, vp, lang);
+    } else if (vp === 'std_masculine' || vp === 'std_feminine') {
+      const gender = vp === 'std_feminine' ? 'feminine' : 'masculine';
+      speakPreviewStd(welcomeMsg, lang, gender);
     } else {
       speakText(welcomeMsg, lang);
     }

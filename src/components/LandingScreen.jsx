@@ -364,12 +364,12 @@ export default function LandingScreen({ onEnter }) {
     setEntered(true);
     // Must call audio APIs synchronously within the user gesture to satisfy
     // browser autoplay policy — BEFORE the animation setTimeout.
-    initSpeech();
+    initSpeech(selectedLang);
     startAmbientMusic();
     if (isPremiumVoice) {
       setTimeout(() => onEnter({ language: selectedLang, tier: 'premium', voiceProfile: selectedVoice }), 400);
     } else {
-      setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: null }), 400);
+      setTimeout(() => onEnter({ language: selectedLang, tier: 'standard', voiceProfile: selectedVoice }), 400);
     }
   }
 
