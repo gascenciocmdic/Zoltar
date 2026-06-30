@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS monthly_costs (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   mes        DATE NOT NULL,
   servicio   TEXT NOT NULL,
-  costo_usd  NUMERIC(10,2) NOT NULL DEFAULT 0,
+  costo_usd  NUMERIC(10,2) DEFAULT 0,
   nota       TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS marketing_spend (
   mes        DATE NOT NULL,
   canal      TEXT NOT NULL,
   campana    TEXT,
-  gasto_usd  NUMERIC(10,2) NOT NULL DEFAULT 0,
+  gasto_usd  NUMERIC(10,2) DEFAULT 0,
   nota       TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
