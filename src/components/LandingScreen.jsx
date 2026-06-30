@@ -522,6 +522,7 @@ export default function LandingScreen({ onEnter }) {
         </div>
       )}
 
+      {step === 'landing' && (<>
       {/* ── Logo ── */}
       <div style={{ marginBottom: 8, lineHeight: 0 }}>
         {isLight ? (
@@ -700,6 +701,7 @@ export default function LandingScreen({ onEnter }) {
           50% { box-shadow: ${ctaShadowHover}; }
         }
       `}</style>
+      </>)}
     </div>
     </>
   );
