@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../lib/themeContext';
-import { startAmbientMusic, initSpeech, speakText } from '../utils/speech';
+import { startAmbientMusic, initSpeech, speakText, speakPreviewStd } from '../utils/speech';
 import logoDark from '../assets/Logo_Zoltar_oscuro.png';
 import logoClaro from '../assets/Logo_Zoltar_claro.png';
 
@@ -346,8 +346,8 @@ export default function LandingScreen({ onEnter }) {
     if (!phrase) return;
 
     if (STD_VOICE_PREVIEW_IDS.has(voiceId)) {
-      initSpeech(selectedLang);
-      speakText(phrase, selectedLang);
+      const gender = voiceId === 'std_feminine' ? 'feminine' : 'masculine';
+      speakPreviewStd(phrase, selectedLang, gender);
     } else {
       const audio = new Audio(`/voices/preview/${voiceId}_${selectedLang}.mp3`);
       _previewAudio = audio;

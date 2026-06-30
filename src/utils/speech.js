@@ -72,6 +72,43 @@ export const speakText = (text, lang = 'es', onEnd = null) => {
   window.speechSynthesis.speak(utterance);
 };
 
+/**
+ * Preview de voces estándar: resuelve la voz en el momento (sin cache),
+ * filtrando por idioma y luego por género. Pitch refuerza el carácter
+ * cuando no hay voz nativa del género disponible.
+ */
+export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
+  if (!text || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  const bcp47 = { es: 'es-MX', en: 'en-US', pt: 'pt-BR' };
+  const prefix = { es: 'es',   en: 'en',    pt: 'pt'    };
+  utterance.lang = bcp47[lang] || 'en-US';
+
+  const voices   = window.speechSynthesis.getVoices();
+  const forLang  = voices.filter(v => v.lang.startsWith(prefix[lang] || 'en'));
+
+  const femKeys  = ['female', 'woman', 'samantha', 'karen', 'victoria', 'susan',
+                    'alice', 'kate', 'moira', 'tessa', 'veena', 'ava', 'allison',
+                    'fiona', 'monica', 'paulina', 'luciana', 'joana'];
+  const mascKeys = ['male', 'man', 'alex', 'daniel', 'thomas', 'oliver',
+                    'jorge', 'diego', 'juan', 'carlos', 'felix', 'reed', 'albert'];
+
+  const wantKeys = gender === 'feminine' ? femKeys  : mascKeys;
+  const skipKeys = gender === 'feminine' ? mascKeys : femKeys;
+
+  let voice = forLang.find(v => wantKeys.some(k => v.name.toLowerCase().includes(k)));
+  if (!voice) voice = forLang.find(v => !skipKeys.some(k => v.name.toLowerCase().includes(k)));
+  if (!voice) voice = forLang[0];
+  if (voice) utterance.voice = voice;
+
+  utterance.pitch = gender === 'feminine' ? 1.20 : 0.68;
+  utterance.rate  = gender === 'feminine' ? 0.92 : 0.88;
+  window.speechSynthesis.speak(utterance);
+};
+
 export const stopSpeech = () => {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
