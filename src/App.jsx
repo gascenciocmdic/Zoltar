@@ -181,15 +181,27 @@ function App() {
   const [paymentCredits,     setPaymentCredits]     = useState(0);
   const [pendingAction,      setPendingAction]      = useState(null);
 
-  // Refrescar créditos cuando la ventana recupera el foco (ej: al volver de Stripe)
+  // Refrescar créditos cuando la app recupera actividad (desktop: focus; mobile: visibilitychange / pageshow)
   useEffect(() => {
-    const handleFocus = async () => {
-      if (!authSession) return;
+    const handleVisibility = async () => {
+      if (document.hidden || !authSession) return;
       const bal = await fetchBalance(authSession);
       if (bal !== null) setCredits(bal);
     };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    const handlePageShow = (e) => {
+      // iOS BFCache: página restaurada desde caché sin recargar el JS
+      if (e.persisted && authSession) {
+        fetchBalance(authSession).then(bal => { if (bal !== null) setCredits(bal); });
+      }
+    };
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, [authSession]);
 
   useEffect(() => {
@@ -308,6 +320,36 @@ function App() {
     }
 
     // ── 2. Helpers de sesión ──────────────────────────────────
+
+    // Restaura el flujo de consulta desde sessionStorage (recarga en móvil)
+    const tryRestoreFlow = () => {
+      try {
+        const saved = sessionStorage.getItem('zoltar_flow_checkpoint');
+        if (!saved) return false;
+        const s = JSON.parse(saved);
+        if (!s.phase || s.phase === 'landing') return false;
+        if (s.language)              setLanguage(s.language);
+        if (s.phase)                 setPhase(s.phase);
+        if (s.userName)              setUserName(s.userName);
+        if (s.birthDate)             setBirthDate(s.birthDate);
+        if (s.birthNarrative)        setBirthNarrative(s.birthNarrative);
+        if (s.visitReason)           setVisitReason(s.visitReason);
+        if (s.dichotomousChoice)     setDichotomousChoice(s.dichotomousChoice);
+        if (s.thresholdStep != null) setThresholdStep(s.thresholdStep);
+        if (s.selectedCards?.length) setSelectedCards(s.selectedCards);
+        if (s.interpretation)        setInterpretation(s.interpretation);
+        if (s.introspectionMessage)  setIntrospectionMessage(s.introspectionMessage);
+        if (s.clarifications)        setClarifications(s.clarifications);
+        if (s.revealedStage != null) setRevealedStage(s.revealedStage);
+        if (s.consultCount)          setConsultCount(s.consultCount);
+        if (s.consultTier)           setConsultTier(s.consultTier);
+        if (s.voiceProfile)          setVoiceProfile(s.voiceProfile);
+        if (s.autoRevealStarted)     setAutoRevealStarted(s.autoRevealStarted);
+        setCanProceed(true); // narración ya fue escuchada antes del reload
+        return true;
+      } catch(e) { console.warn('[flow] Restore error:', e); return false; }
+    };
+
     const loadProfile = async (session) => {
       if (!supabase) return;
       const bal = await fetchBalance(session);
@@ -330,6 +372,9 @@ function App() {
             // Cerrar modal de auth si estaba abierto (ej: confirmación de email desde otro tab)
             setShowAuthModal(false);
             await handlePostAuth(session);
+          } else if (event === 'INITIAL_SESSION' && !payment && !verified) {
+            // Sesión restaurada desde localStorage (recarga móvil) — recuperar flujo si existe
+            tryRestoreFlow();
           }
           await loadProfile(session);
         } else {
@@ -346,6 +391,8 @@ function App() {
         if (session) {
           setAuthSession(session);
           setAuthUser(session.user);
+          // Recuperar flujo de consulta en recargas de móvil (sin pago ni verificación)
+          if (!payment && !verified) tryRestoreFlow();
           if (verified === '1') await initializeProfile(session, ref || '', true);
           await loadProfile(session);
 
@@ -393,6 +440,30 @@ function App() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Persistencia de flujo para recuperación en mobile ────────────────────
+  // Guarda el estado de la consulta en sessionStorage cada vez que cambia algo relevante.
+  // Cuando iOS recarga la página, el estado se restaura sin perder créditos ni progreso.
+  useEffect(() => {
+    if (!authUser) return;
+    if (phase === 'landing') {
+      sessionStorage.removeItem('zoltar_flow_checkpoint');
+      return;
+    }
+    try {
+      sessionStorage.setItem('zoltar_flow_checkpoint', JSON.stringify({
+        phase, language, selectedCards, userName, birthDate, birthNarrative,
+        visitReason, dichotomousChoice, thresholdStep,
+        interpretation, introspectionMessage, clarifications,
+        revealedStage, consultCount, consultTier, voiceProfile, autoRevealStarted,
+      }));
+    } catch(e) { console.warn('[flow] Save error:', e); }
+  }, [
+    authUser, phase, language, selectedCards, userName, birthDate, birthNarrative,
+    visitReason, dichotomousChoice, thresholdStep, interpretation,
+    introspectionMessage, clarifications, revealedStage, consultCount,
+    consultTier, voiceProfile, autoRevealStarted,
+  ]);
 
   const initializeProfile = async (session, refCode = '', isNewRegistration = false) => {
     try {
@@ -1327,6 +1398,8 @@ function App() {
         }));
       }
     } catch (e) { /* storage not available */ }
+    // Limpiar checkpoint de sesión anterior antes de recargar
+    sessionStorage.removeItem('zoltar_flow_checkpoint');
     // Reload for a fresh session — guarantees speech recognition permissions
     // reset correctly on iOS/Android where in-session resets leave the mic in a bad state.
     window.location.reload();
