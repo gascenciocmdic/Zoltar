@@ -83,29 +83,43 @@ export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
 
   const utterance = new SpeechSynthesisUtterance(text);
 
-  const bcp47 = { es: 'es-MX', en: 'en-US', pt: 'pt-BR' };
-  const prefix = { es: 'es',   en: 'en',    pt: 'pt'    };
+  const bcp47   = { es: 'es-MX', en: 'en-US', pt: 'pt-BR' };
+  const prefix  = { es: 'es',    en: 'en',    pt: 'pt'    };
+  const latinMX = { es: 'es_MX', en: 'en-US', pt: 'pt-BR' };
   utterance.lang = bcp47[lang] || 'en-US';
 
-  const voices   = window.speechSynthesis.getVoices();
-  const forLang  = voices.filter(v => v.lang.startsWith(prefix[lang] || 'en'));
+  const voices  = window.speechSynthesis.getVoices();
+  const forLang = voices.filter(v => v.lang.startsWith(prefix[lang] || 'en'));
 
+  // Preferir variante latina (es_MX, pt_BR) sobre España/Portugal
+  const latinPref = latinMX[lang];
+  const latin   = forLang.filter(v => v.lang.replace('-', '_').startsWith(latinPref));
+  const pool    = latin.length ? latin : forLang;
+
+  // Voces masculinas y femeninas conocidas (macOS/iOS/Chrome/Windows)
   const femKeys  = ['female', 'woman', 'samantha', 'karen', 'victoria', 'susan',
                     'alice', 'kate', 'moira', 'tessa', 'veena', 'ava', 'allison',
-                    'fiona', 'monica', 'paulina', 'luciana', 'joana'];
+                    'fiona', 'monica', 'mónica', 'paulina', 'luciana', 'joana',
+                    'flo', 'sandy', 'shelley', 'grandma', 'zuzana', 'laura',
+                    'ioana', 'sinji', 'tingting'];
   const mascKeys = ['male', 'man', 'alex', 'daniel', 'thomas', 'oliver',
-                    'jorge', 'diego', 'juan', 'carlos', 'felix', 'reed', 'albert'];
+                    'jorge', 'diego', 'juan', 'carlos', 'felix', 'reed', 'albert',
+                    'rocko', 'grandpa', 'eddy', 'fred', 'ralph', 'bruce',
+                    'kanya', 'luca', 'magnus', 'nicolas', 'aaron'];
 
   const wantKeys = gender === 'feminine' ? femKeys  : mascKeys;
   const skipKeys = gender === 'feminine' ? mascKeys : femKeys;
 
-  let voice = forLang.find(v => wantKeys.some(k => v.name.toLowerCase().includes(k)));
-  if (!voice) voice = forLang.find(v => !skipKeys.some(k => v.name.toLowerCase().includes(k)));
-  if (!voice) voice = forLang[0];
+  // 1. Preferencia: voz con nombre del género correcto en variante latina
+  let voice = pool.find(v => wantKeys.some(k => v.name.toLowerCase().includes(k)));
+  // 2. Fallback: voz sin nombre del género contrario en variante latina
+  if (!voice) voice = pool.find(v => !skipKeys.some(k => v.name.toLowerCase().includes(k)));
+  // 3. Fallback: cualquier voz del idioma (pool completo)
+  if (!voice) voice = pool[0] ?? forLang[0];
   if (voice) utterance.voice = voice;
 
-  utterance.pitch = gender === 'feminine' ? 1.20 : 0.68;
-  utterance.rate  = gender === 'feminine' ? 0.92 : 0.88;
+  utterance.pitch = gender === 'feminine' ? 1.18 : 0.65;
+  utterance.rate  = gender === 'feminine' ? 0.92 : 0.86;
   window.speechSynthesis.speak(utterance);
 };
 
