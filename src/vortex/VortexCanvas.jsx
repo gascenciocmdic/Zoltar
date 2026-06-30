@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { VortexShader } from './VortexShader';
@@ -20,9 +20,26 @@ const VIBE_COLORS_LIGHT = {
 
 const VortexField = ({ vibe = 'healing_blue', theme = 'dark' }) => {
   const meshRef = useRef();
+  const matRef  = useRef();
   const isLight = theme === 'light';
   const VIBE_COLORS = isLight ? VIBE_COLORS_LIGHT : VIBE_COLORS_DARK;
   const targetColor = VIBE_COLORS[vibe] || VIBE_COLORS.healing_blue;
+
+  // Refs para valores usados en useFrame — evitan stale closures sin recrear uniforms
+  const isLightRef     = useRef(isLight);
+  const targetColorRef = useRef(targetColor);
+  useEffect(() => { isLightRef.current = isLight; }, [isLight]);
+  useEffect(() => { targetColorRef.current = targetColor; }, [targetColor]);
+
+  // Actualiza blending imperativamente al cambiar de tema — sin recrear el material
+  useEffect(() => {
+    if (!matRef.current) return;
+    matRef.current.blending    = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
+    matRef.current.needsUpdate = true;
+  }, [isLight]);
+
+  // Libera memoria GPU al desmontar el componente
+  useEffect(() => () => { if (matRef.current) matRef.current.dispose(); }, []);
 
   const count = 5000;
   const positions = useMemo(() => {
@@ -37,6 +54,7 @@ const VortexField = ({ vibe = 'healing_blue', theme = 'dark' }) => {
     return pos;
   }, [count]);
 
+  // Uniforms se crean una sola vez; isLight y targetColor se leen via refs en useFrame
   const uniforms = useMemo(() => ({
     uTime:          { value: 0 },
     uColor:         { value: targetColor.clone() },
@@ -45,12 +63,13 @@ const VortexField = ({ vibe = 'healing_blue', theme = 'dark' }) => {
   }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useFrame((state) => {
+    if (document.hidden) return; // pausa GPU en pestañas en segundo plano
     if (!meshRef.current) return;
     const mat = meshRef.current.material;
     mat.uniforms.uTime.value = state.clock.getElapsedTime();
-    mat.uniforms.uColor.value.lerp(targetColor, 0.05);
+    mat.uniforms.uColor.value.lerp(targetColorRef.current, 0.05);
     mat.uniforms.uLightMode.value +=
-      ((isLight ? 1.0 : 0.0) - mat.uniforms.uLightMode.value) * 0.08;
+      ((isLightRef.current ? 1.0 : 0.0) - mat.uniforms.uLightMode.value) * 0.08;
   });
 
   return (
@@ -64,7 +83,7 @@ const VortexField = ({ vibe = 'healing_blue', theme = 'dark' }) => {
         />
       </bufferGeometry>
       <shaderMaterial
-        key={theme}
+        ref={matRef}
         depthWrite={false}
         transparent={true}
         vertexShader={VortexShader.vertexShader}
@@ -91,7 +110,15 @@ const VortexCanvas = ({ vibe, theme = 'dark' }) => {
         zIndex: 0, background: '#050505', pointerEvents: 'none',
       }}
     >
-      <Canvas camera={{ position: [0, 0, 2.5], fov: 75 }} dpr={[1, 1.5]}>
+      <Canvas
+        camera={{ position: [0, 0, 2.5], fov: 75 }}
+        dpr={[1, 1.5]}
+        gl={{
+          antialias: false,
+          powerPreference: 'low-power',
+          precision: 'mediump',
+        }}
+      >
         <VortexField vibe={vibe} theme={theme} />
       </Canvas>
     </div>

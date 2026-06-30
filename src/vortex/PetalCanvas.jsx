@@ -173,6 +173,7 @@ export default function PetalCanvas() {
     let t = 0, lastTs = performance.now(), rafId;
 
     function tick(now) {
+      if (document.hidden) return; // loop pausado; visibilitychange lo reinicia
       rafId = requestAnimationFrame(tick);
       const dt = Math.min((now - lastTs) / 1000, 0.05);
       lastTs = now;
@@ -231,7 +232,20 @@ export default function PetalCanvas() {
       H = canvas.height = window.innerHeight;
     };
     window.addEventListener('resize', onResize);
-    return () => { cancelAnimationFrame(rafId); window.removeEventListener('resize', onResize); };
+
+    const onVisibility = () => {
+      if (!document.hidden) {
+        lastTs = performance.now(); // evita dt spike al volver
+        rafId  = requestAnimationFrame(tick);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   return (

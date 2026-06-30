@@ -64,6 +64,7 @@ const ConstellationCanvas = ({ seed }) => {
     let time = 0;
 
     const render = () => {
+      if (document.hidden) return; // loop pausado; visibilitychange lo reinicia
       time += 0.02;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
@@ -108,9 +109,15 @@ const ConstellationCanvas = ({ seed }) => {
 
     render();
 
+    const onVisibility = () => {
+      if (!document.hidden) animationFrameId = requestAnimationFrame(render);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [seed]);
 
