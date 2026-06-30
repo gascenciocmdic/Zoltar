@@ -26,7 +26,7 @@ export default function CookieConsent() {
   return (
     <div style={{
       position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-      zIndex: 99990, width: 'min(560px, calc(100vw - 32px))',
+      zIndex: 100002, width: 'min(560px, calc(100vw - 32px))',
       background: 'rgba(10,10,10,0.97)', border: '1px solid #374151',
       borderRadius: 14, padding: '18px 20px', backdropFilter: 'blur(20px)',
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
