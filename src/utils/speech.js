@@ -122,7 +122,7 @@ export const speakPreviewStd = (text, lang = 'en', gender = 'masculine') => {
   if (voice) utterance.voice = voice;
 
   utterance.pitch = gender === 'feminine' ? 1.35 : 1.20;
-  utterance.rate  = gender === 'feminine' ? 0.92 : 0.88;
+  utterance.rate  = gender === 'feminine' ? 0.92 : 0.72;
   window.speechSynthesis.speak(utterance);
 };
 
