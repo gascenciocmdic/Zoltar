@@ -1,18 +1,50 @@
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from '@supabase/supabase-js';
+
+function supabaseAdmin() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 const MODEL = "gemini-2.5-flash";
+
+async function logGeminiUsage({ tokensInput, tokensOutput, userId = null }) {
+  try {
+    const costPer1mInput  = 0.075;
+    const costPer1mOutput = 0.30;
+    const costEst = (tokensInput * costPer1mInput + tokensOutput * costPer1mOutput) / 1_000_000;
+
+    await supabaseAdmin().from('api_usage_log').insert({
+      user_id:       userId,
+      proveedor:     'gemini',
+      tokens_input:  tokensInput,
+      tokens_output: tokensOutput,
+      modelo:        MODEL,
+      costo_usd_est: costEst,
+    });
+  } catch (err) {
+    console.warn('[gemini] No se pudo loguear uso en api_usage_log:', err.message);
+  }
+}
 
 async function generateJSON(ai, prompt) {
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
+    config: { responseMimeType: "application/json" },
   });
-  const text = response.text;
+  const text  = response.text;
   const match = text.match(/{[\s\S]*}/);
-  return JSON.parse(match ? match[0] : text);
+  const data  = JSON.parse(match ? match[0] : text);
+  const usage = response.usageMetadata || {};
+  return {
+    data,
+    tokensInput:  usage.promptTokenCount     || 0,
+    tokensOutput: usage.candidatesTokenCount || 0,
+  };
 }
 
 export default async function handler(req, res) {
@@ -29,14 +61,26 @@ export default async function handler(req, res) {
 
   const ai = new GoogleGenAI({ apiKey });
 
+  // Obtener userId del JWT para logging (no bloquea si falla)
+  let userId = null;
+  try {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.replace('Bearer ', '').trim();
+    if (token) {
+      const sb = supabaseAdmin();
+      const { data } = await sb.auth.getUser(token);
+      userId = data?.user?.id || null;
+    }
+  } catch (_) {}
+
   try {
     let result;
     switch (action) {
-      case 'introspection': result = await handleIntrospection(ai, payload); break;
-      case 'interpretation': result = await handleInterpretation(ai, payload); break;
-      case 'teaser': result = await handleTeaser(ai, payload); break;
-      case 'anchoring': result = await handleAnchoring(ai, payload); break;
-      case 'deepening': result = await handleDeepening(ai, payload); break;
+      case 'teaser':         result = await handleTeaser(ai, payload, userId); break;
+      case 'introspection':  result = await handleIntrospection(ai, payload, userId); break;
+      case 'interpretation': result = await handleInterpretation(ai, payload, userId); break;
+      case 'anchoring':      result = await handleAnchoring(ai, payload, userId); break;
+      case 'deepening':      result = await handleDeepening(ai, payload, userId); break;
       default: return res.status(400).json({ error: 'Invalid action' });
     }
     return res.status(200).json(result);
@@ -46,7 +90,7 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleTeaser(ai, { cards, reason, userContext, language = 'es' }) {
+async function handleTeaser(ai, { cards, reason, userContext, language = 'es' }, userId) {
   const { name } = userContext || {};
   const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
   const prompt = `Eres Zoltar, un oráculo ancestral de vidas pasadas. El consultante se llama ${name || 'alma'} y su inquietud es: "${reason || 'búsqueda espiritual'}".
@@ -59,17 +103,19 @@ Responde ÚNICAMENTE con JSON válido:
   "teaser": "[tu susurro místico aquí]"
 }`;
   try {
-    return await generateJSON(ai, prompt);
+    const { data, tokensInput, tokensOutput } = await generateJSON(ai, prompt);
+    logGeminiUsage({ tokensInput, tokensOutput, userId }).catch(() => {});
+    return data;
   } catch (e) {
     return {
-      teaser: language === 'en' 
+      teaser: language === 'en'
         ? "The wind of centuries whispers of a throne lost in the desert sand... the cards hide a secret that your soul is ready to remember."
         : "El viento de los siglos susurra sobre un trono perdido en la arena del desierto... las cartas esconden un secreto que tu alma está lista para recordar."
     };
   }
 }
 
-async function handleIntrospection(ai, { userContext, language = 'es' }) {
+async function handleIntrospection(ai, { userContext, language = 'es' }, userId) {
   const { name, reason, birthDate } = userContext || {};
   const prompt = `Eres Zoltar, un oráculo ancestral y guía espiritual profundo. El consultante se llama ${name || 'alma'}, nació el "${birthDate || 'fecha desconocida'}" y su inquietud es: "${reason || 'búsqueda espiritual'}".
 
@@ -81,7 +127,9 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional, en este formato exac
   "mensajeAstral": "[tu mensaje astral aquí, sin mencionar cartas]"
 }`;
   try {
-    return await generateJSON(ai, prompt);
+    const { data, tokensInput, tokensOutput } = await generateJSON(ai, prompt);
+    logGeminiUsage({ tokensInput, tokensOutput, userId }).catch(() => {});
+    return data;
   } catch (e) {
     return {
       nombreConstelacion: "El Firmamento Eterno",
@@ -94,7 +142,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional, en este formato exac
   }
 }
 
-async function handleInterpretation(ai, { cards, reason, userContext, language = 'es' }) {
+async function handleInterpretation(ai, { cards, reason, userContext, language = 'es' }, userId) {
   // introspectionAnswer lives inside userContext, not at the payload root
   const { name, introspectionAnswer, preference, tier } = userContext || {};
   const cardNames = Array.isArray(cards) ? cards.map(c => c.name).join(', ') : 'cartas desconocidas';
@@ -131,7 +179,9 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido, si
   "leccion_karmica": "[La gran lección que el alma viene a aprender en esta encarnación, 2-3 oraciones]"` : ''}
 }`;
   try {
-    return await generateJSON(ai, prompt);
+    const { data, tokensInput, tokensOutput } = await generateJSON(ai, prompt);
+    logGeminiUsage({ tokensInput, tokensOutput, userId }).catch(() => {});
+    return data;
   } catch (e) {
     const fallbackMsg = language === 'en' ? `The Oracle contemplates your path in silence. The cards ${cardNames} speak of a profound journey of transformation that only your soul can fully understand.` : `El Oráculo contempla tu camino en silencio. Las cartas ${cardNames} hablan de un profundo viaje de transformación que solo tu alma puede comprender plenamente.`;
     return {
@@ -145,7 +195,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido, si
   }
 }
 
-async function handleAnchoring(ai, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }) {
+async function handleAnchoring(ai, { selectedCards, visitReason, dichotomy, userName, clarifications, language = 'es' }, userId) {
   const cardNames = Array.isArray(selectedCards) ? selectedCards.map(c => c.name).join(', ') : 'las cartas elegidas';
   const clarificationsText = clarifications && Object.keys(clarifications).length > 0
     ? `El consultante también profundizó en algunas cartas con preguntas adicionales: ${JSON.stringify(clarifications)}.`
@@ -164,7 +214,9 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido:
   "tarea_terrenal": "[Acción concreta y significativa para esta semana]"
 }`;
   try {
-    return await generateJSON(ai, prompt);
+    const { data, tokensInput, tokensOutput } = await generateJSON(ai, prompt);
+    logGeminiUsage({ tokensInput, tokensOutput, userId }).catch(() => {});
+    return data;
   } catch (e) {
     return {
       conclusionFinal: language === 'en' ? `${userName || 'Soul'}, the Oracle has witnessed your journey with deep compassion. The wisdom of your cards illuminates a path of healing and transformation. Trust the process unfolding within you.` : `${userName || 'Alma'}, el Oráculo ha contemplado tu camino con profunda compasión. La sabiduría de tus cartas ilumina un sendero de sanación y transformación. Confía en el proceso que se despliega dentro de ti.`,
@@ -176,7 +228,7 @@ Responde SOLO en idioma "${language}". Responde ÚNICAMENTE con JSON válido:
   }
 }
 
-async function handleDeepening(ai, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }) {
+async function handleDeepening(ai, { originalCard, extraCard, userQuestion, previousReading, context, language = 'es' }, userId) {
   const userName = context?.userName || 'alma';
   const prompt = `Eres Zoltar, oráculo ancestral. ${userName} tiene una pregunta específica sobre su carta "${originalCard?.name || 'desconocida'}": "${userQuestion}". Ha elegido la carta adicional "${extraCard?.name || 'desconocida'}" para profundizar. El mensaje anterior de esta carta fue: "${previousReading || ''}".
 
@@ -185,7 +237,9 @@ Genera una respuesta profunda, empática y esclarecedora que integre ambas carta
 Responde ÚNICAMENTE con JSON válido:
 {"deepeningResponse": "[Respuesta profunda de 3-4 oraciones que integre las dos cartas y responda la pregunta]"}`;
   try {
-    return await generateJSON(ai, prompt);
+    const { data, tokensInput, tokensOutput } = await generateJSON(ai, prompt);
+    logGeminiUsage({ tokensInput, tokensOutput, userId }).catch(() => {});
+    return data;
   } catch (e) {
     return { deepeningResponse: language === 'en' ? `The Oracle contemplates your question in sacred silence. The union of ${originalCard?.name} and ${extraCard?.name} reveals a path of deep understanding that will manifest in its own divine timing.` : `El Oráculo contempla tu pregunta en sagrado silencio. La unión de ${originalCard?.name} y ${extraCard?.name} revela un camino de comprensión profunda que se manifestará en su propio tiempo divino.`, __IS_FALLBACK__: true, _debug: { error: e.message } };
   }
