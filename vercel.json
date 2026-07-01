@@ -1,12 +1,13 @@
 {
   "functions": {
-    "api/gemini.js": { "maxDuration": 60 },
-    "api/credits.js": { "maxDuration": 10 },
-    "api/checkout.js": { "maxDuration": 10 },
-    "api/stripe-webhook.js": { "maxDuration": 10 }
+    "api/gemini.js":                   { "maxDuration": 60 },
+    "api/tts.js":                      { "maxDuration": 30 },
+    "api/credits.js":                  { "maxDuration": 10 },
+    "api/lemonsqueezy-checkout.js":    { "maxDuration": 15 },
+    "api/lemonsqueezy-webhook.js":     { "maxDuration": 15 }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)",     "destination": "/index.html" }
   ]
 }
